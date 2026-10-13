@@ -1,8 +1,8 @@
-# Platform (working name)
+# Selfship
 
-**Deploy any app from GitHub to your own server.** Connect a repo, add your VPS, click deploy. The platform builds the app, sets up the reverse proxy and SSL, and redeploys on every push.
+**Selfship deploys any app from GitHub to your own server.** Connect a repo, add your VPS, click deploy. The platform builds the app, sets up the reverse proxy and SSL, and redeploys on every push.
 
-> Status: early development (Phase 0 / M1). Not ready for use yet.
+> Status: early development. Sign-up, login (email or GitHub), email verification and password reset work locally. Deployments come in later milestones.
 
 ## Repository layout
 
@@ -47,7 +47,7 @@ More in [docs/10-local-development.md](docs/10-local-development.md).
 | `pnpm dev`                                   | Run all apps in watch mode                               |
 | `pnpm build`                                 | Build everything                                         |
 | `pnpm lint` · `pnpm typecheck` · `pnpm test` | Quality checks (same as CI)                              |
-| `pnpm --filter @platform/api test:e2e`       | API integration tests (needs `pnpm infra:up`)            |
+| `pnpm --filter @selfship/api test:e2e`       | API integration tests (needs `pnpm infra:up`)            |
 | `pnpm db:migrate`                            | Create/apply a migration after editing the Prisma schema |
 | `pnpm format`                                | Format all files with Prettier                           |
 

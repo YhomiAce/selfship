@@ -1,9 +1,10 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
-import { redisConnectionFromUrl } from '@platform/shared';
+import { redisConnectionFromUrl } from '@selfship/shared';
 import { AppConfigModule } from './config/app-config.module';
 import { AppConfigService } from './config/app-config.service';
+import { EmailModule } from './email/email.module';
 import { SystemModule } from './system/system.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { SystemModule } from './system/system.module';
       }),
     }),
     SystemModule,
+    EmailModule,
   ],
 })
 export class WorkerModule {}

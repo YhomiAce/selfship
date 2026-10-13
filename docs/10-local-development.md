@@ -16,7 +16,7 @@ Non-default host ports avoid clashes with other projects on the same machine.
 | Web (Next.js) | http://localhost:3000                              |                          |
 | API (NestJS)  | http://localhost:4000                              | `GET /health`            |
 | Worker        | (no port)                                          | Consumes BullMQ jobs     |
-| Postgres 16   | `localhost:5434`                                   | user/pass/db: `platform` |
+| Postgres 16   | `localhost:5434`                                   | user/pass/db: `selfship` |
 | Redis 7       | `localhost:6380`                                   |                          |
 | Mailpit       | SMTP `localhost:1026`, inbox http://localhost:8026 | Catches all dev emails   |
 
@@ -26,7 +26,7 @@ Non-default host ports avoid clashes with other projects on the same machine.
 cp .env.example .env            # fill in values; see comments in the file
 pnpm install
 pnpm infra:up                   # starts Postgres, Redis, Mailpit
-pnpm db:migrate                 # applies Prisma migrations
+pnpm db:deploy                  # applies Prisma migrations
 pnpm dev                        # web + api + worker in watch mode
 ```
 
@@ -46,3 +46,17 @@ pnpm dev                        # web + api + worker in watch mode
 - `.env.example` (committed): every variable, with a description and a safe placeholder
 - `.env` (gitignored): your real local values
 - The API and worker validate env on startup with zod, and stop with a clear message if anything is missing
+
+## Trying the auth flows
+
+1. Open http://localhost:3000 and click **Get started**
+2. After signing up, open Mailpit at http://localhost:8026 and click the confirmation link
+3. Password reset emails also land in Mailpit
+4. "Sign in with GitHub" needs an OAuth App: see [guides/github-oauth-setup.md](guides/github-oauth-setup.md)
+
+Quick API checks without the UI:
+
+```bash
+curl localhost:4000/health
+curl -X POST localhost:4000/diagnostics/ping-worker   # API → Redis → worker round trip
+```

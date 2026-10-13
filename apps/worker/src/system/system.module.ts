@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { QueueName } from '@platform/shared';
+import { QueueName } from '@selfship/shared';
 import { SystemProcessor } from './system.processor';
 
 @Module({

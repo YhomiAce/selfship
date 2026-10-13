@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   // The shared package is built to CommonJS in dist/; let Next bundle it.
-  transpilePackages: ['@platform/shared'],
+  transpilePackages: ['@selfship/shared'],
   turbopack: {
     rules: {
       '*.css': {

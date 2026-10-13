@@ -1,6 +1,6 @@
-# Platform Planning Docs
+# Selfship Planning Docs
 
-Working name: **TBD** (pick a name before we register the domain / GitHub org).
+Product name: **Selfship** (decided 2026-10-14, see decision log #36).
 
 A platform for deploying any app from GitHub to **your own server** (a VPS from Hostinger, Namecheap, WhoGoHost, GoDaddy, or AWS/GCP). Paste your server details, pick a repo, click deploy. We set up the build, the reverse proxy, SSL, and domains for you.
 

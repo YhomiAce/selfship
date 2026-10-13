@@ -33,7 +33,7 @@ export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
 ```ts
 // apps/api/src/projects/dto/create-project.dto.ts
 import { createZodDto } from 'nestjs-zod';
-import { CreateProjectSchema } from '@platform/shared';
+import { CreateProjectSchema } from '@selfship/shared';
 
 /** Validated DTO for creating a project. */
 export class CreateProjectDto extends createZodDto(CreateProjectSchema) {}

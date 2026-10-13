@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars (gitignored) and adjust.
+
+# aws_profile  = "default"
+# aws_region   = "us-east-1"
+# ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# Get an email when spend passes 80% / is forecast to pass 100% of the budget.
+# budget_email = "you@example.com"
+# budget_usd   = 20
+
+# Test a Debian server too (uncomment to add a third box):
+# servers = {
+#   "test-1gb"    = { instance_type = "t3.micro", os = "ubuntu-24.04", disk_gb = 20 }
+#   "test-2gb"    = { instance_type = "t3.small", os = "ubuntu-24.04", disk_gb = 20 }
+#   "test-debian" = { instance_type = "t3.small", os = "debian-12",    disk_gb = 20 }
+# }

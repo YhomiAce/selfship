@@ -68,3 +68,10 @@
 - Founder: no fake VPS. Use the AWS VPS once we reach the deployment stage. Start scaffolding and implementing now.
 - Decision #28 revised, #29 (NestJS 11 + TS 6 for ecosystem compatibility), #30 (deploy spike moved to M3).
 - Implementation started: Phase 0 scaffold, then M1 (auth).
+
+## Session 6 — 2026-10-14 — Phase 0 + M1 implemented
+
+- **Phase 0 scaffold** (branch `feat/phase0-scaffold`): pnpm/Turborepo monorepo, NestJS 11 API + worker, Next.js 16 web, shared/db/adapters packages, Docker dev services, CI, AGPL license.
+- **M1 auth** (branch `feat/m1-auth`, on top of the scaffold): email/password + GitHub sign-in, email verification, password reset, sessions, rate limiting, CSRF origin check, dashboard shell.
+- Decisions #31–#35 (database sessions, `/api` rewrite, OAuth App for login, queued emails, lint-staged 15).
+- Environment notes: Playwright can't install browsers on Ubuntu 20.04, so UI smoke tests use the locally installed Chrome. Git 2.25 is old; upgrading it would let us use the latest lint-staged.

@@ -1,3 +1,4 @@
+import { Public } from '../auth/decorators/public.decorator';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Controller, NotFoundException, Post } from '@nestjs/common';
 import { Queue, QueueEvents } from 'bullmq';
@@ -16,6 +17,7 @@ export interface PingWorkerResponse {
  * Development-only endpoints for checking that the moving parts are wired up.
  * Disabled in production.
  */
+@Public()
 @Controller('diagnostics')
 export class DiagnosticsController {
   constructor(

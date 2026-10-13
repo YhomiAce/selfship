@@ -44,3 +44,18 @@ export { Prisma }
  * A person who can sign in to the platform.
  */
 export type User = Prisma.UserModel
+/**
+ * Model Session
+ * A signed-in browser session. The cookie holds a random token; we store only its SHA-256 hash.
+ */
+export type Session = Prisma.SessionModel
+/**
+ * Model VerificationToken
+ * Single-use token sent by email. Only the SHA-256 hash is stored.
+ */
+export type VerificationToken = Prisma.VerificationTokenModel
+/**
+ * Model OAuthAccount
+ * Links a user to an external identity (e.g. their GitHub account).
+ */
+export type OAuthAccount = Prisma.OAuthAccountModel

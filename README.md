@@ -2,7 +2,7 @@
 
 **Deploy any app from GitHub to your own server.** Connect a repo, add your VPS, click deploy. The platform builds the app, sets up the reverse proxy and SSL, and redeploys on every push.
 
-> Status: early development (Phase 0 / M1). Not ready for use yet.
+> Status: early development. Sign-up, login (email or GitHub), email verification and password reset work locally. Deployments come in later milestones.
 
 ## Repository layout
 

@@ -20,6 +20,7 @@
     "@platform/shared": "workspace:*",
     "bullmq": "^6.3.13",
     "nestjs-pino": "^5.3.1",
+    "nodemailer": "^10.1.0",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
     "reflect-metadata": "^0.2.2",

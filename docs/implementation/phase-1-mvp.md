@@ -16,29 +16,39 @@
 
 ---
 
-## M1 — Auth & accounts
+## M1 — Auth & accounts ✅ (implemented 2026-10-14, awaiting founder review)
 
 **Backend (`apps/api`)**
 
-- [ ] Prisma: `User`, `Session`, `EmailVerificationToken`, `PasswordResetToken`, `OAuthAccount`
-- [ ] `AuthModule`: register, login, logout, me, verify email, forgot/reset password
-- [ ] Passwords hashed with argon2id. Session ID in httpOnly + Secure + SameSite=Lax cookie, sessions stored in DB (revocable)
-- [ ] GitHub OAuth **login** (links to an existing account by verified email)
-- [ ] Rate limiting (`@nestjs/throttler`) on auth routes. Generic error messages so accounts can't be enumerated
-- [ ] `MailModule`: Mailpit in dev, provider adapter for prod
-- [ ] CSRF protection for cookie-authenticated mutations
+- [x] Prisma: `User`, `Session`, `VerificationToken` (one table, `purpose` = email verification / password reset), `OAuthAccount`
+- [x] `AuthModule`: register, login, logout, me, verify email, resend verification, forgot/reset password
+- [x] Passwords hashed with argon2id. Random session token in an httpOnly + SameSite=Lax cookie (`__Host-` prefix + Secure in production); only its SHA-256 hash is stored, so sessions are revocable. Sliding 30-day expiry
+- [x] GitHub OAuth **login** (links to an existing account by verified email, with pre-registration hijack protection)
+- [x] Rate limiting (`@nestjs/throttler`) on auth routes. Same error and same timing for "unknown email" and "wrong password"
+- [x] Emails: API queues `email:send` jobs, worker renders templates and sends over SMTP (Mailpit in dev)
+- [x] CSRF: SameSite=Lax cookies + global `OriginGuard` (state-changing requests from a foreign `Origin` get 403)
+- [x] Global `AuthGuard`: every route requires a session unless marked `@Public()`
 
 **Frontend (`apps/web`)**
 
-- [ ] Pages: sign up, login, verify email, forgot/reset password, dashboard shell (sidebar: Projects, Servers, Settings)
-- [ ] Form validation with the **same zod schemas** as the API (from `packages/shared`)
-- [ ] Auth-guarded routes, toast notifications, loading/empty states
+- [x] Pages: sign up, login, verify email, forgot/reset password, dashboard shell (sidebar: Projects, Servers, Settings)
+- [x] Form validation with the **same zod schemas** as the API (from `packages/shared`), server field errors mapped onto inputs
+- [x] Auth-guarded routes (`proxy.ts` optimistic redirect + client session check), toasts, loading/empty states, unverified-email banner with resend
+
+**Tests:** 35 API unit tests, 13 API integration tests (full auth flow against Postgres), 8 worker tests, 10 shared-schema tests, plus a headless-Chrome walkthrough of sign-up → dashboard → logout → login error → forgot password → verify link (run manually)
 
 **What you'll test**
 
-- [ ] Sign up → email shows in Mailpit → verify → land on dashboard
-- [ ] Log in with GitHub
-- [ ] Wrong password 10× gets rate-limited. Password reset works end to end
+- [ ] Sign up → email shows in Mailpit (http://localhost:8026) → click link → "Email confirmed" → dashboard banner gone
+- [ ] Log in with GitHub (needs an OAuth App, see [guide](../guides/github-oauth-setup.md))
+- [ ] Wrong password 11× within a minute gets rate-limited. Password reset works end to end and signs out other sessions
+
+**Known limitations (tracked for later)**
+
+- Rate-limit counters are in memory (per API process). Move to Redis storage before running more than one API instance
+- Expired sessions are deleted lazily on use. Add a scheduled cleanup job with the first cron work (M3+)
+- In production, a trusted reverse proxy must set `X-Forwarded-For` (we trust private-network proxies by default via `TRUST_PROXY`)
+- Sign-up reveals whether an email is registered (409). Accepted for UX; login and password reset do not reveal it
 
 ---
 

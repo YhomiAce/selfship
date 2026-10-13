@@ -1,3 +1,4 @@
+export * from './auth/auth.schemas';
 export * from './common/api-error';
 export * from './common/health';
 export * from './queues';

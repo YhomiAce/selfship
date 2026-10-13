@@ -26,14 +26,14 @@ Deployment failed at stage X
 
 ## What we send (context)
 
-| Included | Excluded |
-|----------|----------|
-| Failed stage + exit code | **Env var values** (keys only) |
-| Last ~300 log lines, redacted | SSH keys, tokens, anything matching secret patterns |
-| Adapter name + generated Dockerfile | Full source code |
-| `package.json` (or `composer.json`, etc.) | Files not relevant to the error |
-| File tree, depth 2 | |
-| Server specs (RAM, disk, arch) | |
+| Included                                  | Excluded                                            |
+| ----------------------------------------- | --------------------------------------------------- |
+| Failed stage + exit code                  | **Env var values** (keys only)                      |
+| Last ~300 log lines, redacted             | SSH keys, tokens, anything matching secret patterns |
+| Adapter name + generated Dockerfile       | Full source code                                    |
+| `package.json` (or `composer.json`, etc.) | Files not relevant to the error                     |
+| File tree, depth 2                        |                                                     |
+| Server specs (RAM, disk, arch)            |                                                     |
 
 Redaction runs twice: known secret values are masked, and regexes catch keys/tokens (AWS keys, GitHub tokens, private key blocks, JWTs, connection strings).
 
@@ -44,24 +44,30 @@ Defined once with zod in `packages/shared`, and used both as the Claude **struct
 ```ts
 export const DiagnosisSchema = z.object({
   category: z.enum([
-    'user_code',          // syntax/type errors, failing imports
-    'dependency',         // install failures, version conflicts, missing lockfile
-    'configuration',      // wrong build/start cmd, port, root dir, missing env var
-    'server_resources',   // OOM, disk full
-    'platform',           // our bug / infra issue (Docker, Traefik, SSH)
-    'network',            // registry/DNS timeouts
+    'user_code', // syntax/type errors, failing imports
+    'dependency', // install failures, version conflicts, missing lockfile
+    'configuration', // wrong build/start cmd, port, root dir, missing env var
+    'server_resources', // OOM, disk full
+    'platform', // our bug / infra issue (Docker, Traefik, SSH)
+    'network', // registry/DNS timeouts
     'unknown',
   ]),
-  summary: z.string(),            // one sentence, plain language
-  rootCause: z.string(),          // detailed explanation
-  evidence: z.array(z.string()),  // the log lines that prove it
-  fixSteps: z.array(z.string()),  // ordered, actionable steps
-  suggestedPatch: z
-    .object({ filePath: z.string(), diff: z.string() })
-    .nullable(),
+  summary: z.string(), // one sentence, plain language
+  rootCause: z.string(), // detailed explanation
+  evidence: z.array(z.string()), // the log lines that prove it
+  fixSteps: z.array(z.string()), // ordered, actionable steps
+  suggestedPatch: z.object({ filePath: z.string(), diff: z.string() }).nullable(),
   remediation: z
     .object({
-      action: z.enum(['add_swap', 'prune_docker', 'retry', 'set_port', 'set_node_version', 'set_build_command', 'set_start_command']),
+      action: z.enum([
+        'add_swap',
+        'prune_docker',
+        'retry',
+        'set_port',
+        'set_node_version',
+        'set_build_command',
+        'set_start_command',
+      ]),
       params: z.record(z.string()),
     })
     .nullable(),
@@ -71,7 +77,7 @@ export const DiagnosisSchema = z.object({
 
 ## Safety rules
 
-- **The model never runs commands.** It can only *propose* an action from a fixed enum. Our code validates the params and executes a pre-written, tested implementation
+- **The model never runs commands.** It can only _propose_ an action from a fixed enum. Our code validates the params and executes a pre-written, tested implementation
 - **Auto-apply** only for `add_swap`, `prune_docker`, `retry`, and only when the category is `server_resources`/`platform`. Max **one** automatic retry per deployment
 - Config actions (`set_port`, `set_build_command` ...) need the user to click **Apply fix**
 - Code patches are only shown as a diff (v1). In v2 they can be opened as a PR on a new branch, opt-in only
@@ -90,6 +96,7 @@ export const DiagnosisSchema = z.object({
 ### Cost estimate (v1)
 
 Roughly 10–20K input tokens + ~1.5K output tokens per diagnosis. At Opus 5.5 pricing ($4 / $20 per million tokens) that's **about $0.06–$0.11 per failed build**, less with caching and fingerprint reuse. Controls:
+
 - Only runs on failure and only when rules didn't match
 - Fingerprint cache (normalized error lines + adapter + lockfile hash)
 - Daily quota per plan (e.g. Free: 3/day, paid: 50/day)

@@ -5,15 +5,15 @@
 
 Order follows value. Beta feedback can re-order it.
 
-| Milestone | Dates | Theme |
-|-----------|-------|-------|
-| M8 | Feb 15 → Feb 28 | Billing (per-app pricing, test mode) |
-| M9 | Mar 1 → Mar 14 | Adapters: PHP + Laravel, Python |
-| M10 | Mar 15 → Mar 28 | Adapters: Go, Java Spring Boot; docker-compose |
-| M11 | Mar 29 → Apr 11 | One-click databases + backups |
-| M12 | Apr 12 → Apr 25 | Teams & roles |
-| M13 | Apr 26 → May 9 | Monitoring, alerts, PR preview deployments |
-| M14 | May 10 → May 30 | Build Doctor v2 (agentic) + buffer |
+| Milestone | Dates           | Theme                                          |
+| --------- | --------------- | ---------------------------------------------- |
+| M8        | Feb 15 → Feb 28 | Billing (per-app pricing, test mode)           |
+| M9        | Mar 1 → Mar 14  | Adapters: PHP + Laravel, Python                |
+| M10       | Mar 15 → Mar 28 | Adapters: Go, Java Spring Boot; docker-compose |
+| M11       | Mar 29 → Apr 11 | One-click databases + backups                  |
+| M12       | Apr 12 → Apr 25 | Teams & roles                                  |
+| M13       | Apr 26 → May 9  | Monitoring, alerts, PR preview deployments     |
+| M14       | May 10 → May 30 | Build Doctor v2 (agentic) + buffer             |
 
 ---
 

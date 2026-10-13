@@ -4,23 +4,23 @@ Creates fresh Ubuntu/Debian servers that act as **customer VPSes** for the deplo
 
 ## What gets created
 
-| Resource | Purpose |
-|----------|---------|
+| Resource                                                                    | Purpose                                                                                                              |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | 2 × EC2 (`test-1gb` t3.micro, `test-2gb` t3.small, Ubuntu 24.04, 20 GB gp3) | Measure builds on 1 GB vs 2 GB, as in the [Phase 0 experiments](../../../docs/implementation/phase-0-foundations.md) |
-| Elastic IP per server | Stable IP, so your Cloudflare DNS record survives stop/start |
-| Security group | SSH from **your IP only** (auto-detected), 80/443 from anywhere |
-| Key pair | Your `~/.ssh/id_rsa.pub` |
-| Budget alert (optional) | Email when spend nears `budget_usd` |
+| Elastic IP per server                                                       | Stable IP, so your Cloudflare DNS record survives stop/start                                                         |
+| Security group                                                              | SSH from **your IP only** (auto-detected), 80/443 from anywhere                                                      |
+| Key pair                                                                    | Your `~/.ssh/id_rsa.pub`                                                                                             |
+| Budget alert (optional)                                                     | Email when spend nears `budget_usd`                                                                                  |
 
 Uses the **default VPC**, so there's no NAT gateway or other hidden cost.
 
 ## Rough cost (us-east-1, on-demand)
 
-| State | ~Cost |
-|-------|-------|
-| Both running 24/7 | ~$30/month (instances ~$23 + public IPv4 ~$7.30 + disk ~$3.20) |
-| Stopped (`make stop`) | ~$10.50/month (disk + IPv4 addresses) |
-| Destroyed (`make down`) | $0 |
+| State                   | ~Cost                                                          |
+| ----------------------- | -------------------------------------------------------------- |
+| Both running 24/7       | ~$30/month (instances ~$23 + public IPv4 ~$7.30 + disk ~$3.20) |
+| Stopped (`make stop`)   | ~$10.50/month (disk + IPv4 addresses)                          |
+| Destroyed (`make down`) | $0                                                             |
 
 Running only during test sessions (e.g. 20 h/week) costs a few dollars a month. **Stop or destroy when you're done.**
 
@@ -49,10 +49,10 @@ make down      # destroy everything
 
 After `make up`, in Cloudflare DNS for your domain:
 
-| Type | Name | Content | Proxy |
-|------|------|---------|-------|
-| A | `spike` | `<test-2gb public_ip>` | **DNS only** (grey cloud) |
-| A | `*.spike` | `<test-2gb public_ip>` | **DNS only** |
+| Type | Name      | Content                | Proxy                     |
+| ---- | --------- | ---------------------- | ------------------------- |
+| A    | `spike`   | `<test-2gb public_ip>` | **DNS only** (grey cloud) |
+| A    | `*.spike` | `<test-2gb public_ip>` | **DNS only**              |
 
 Keep the record **DNS only**. Traefik has to get Let's Encrypt certificates directly, so traffic must not go through Cloudflare's proxy.
 

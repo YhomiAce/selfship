@@ -1,0 +1,24 @@
+// Database schema. After editing, run `pnpm db:migrate` from the repo root.
+// Conventions: PascalCase singular models mapped to snake_case plural tables.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A person who can sign in to the platform.
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Always stored lower-cased; unique across accounts.
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}

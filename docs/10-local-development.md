@@ -11,14 +11,14 @@ The platform runs on your machine. Nothing is deployed anywhere yet (decision #2
 
 Non-default host ports avoid clashes with other projects on the same machine.
 
-| Service | URL / port | Notes |
-|---------|-----------|-------|
-| Web (Next.js) | http://localhost:3000 | |
-| API (NestJS) | http://localhost:4000 | `GET /health` |
-| Worker | (no port) | Consumes BullMQ jobs |
-| Postgres 16 | `localhost:5434` | user/pass/db: `platform` |
-| Redis 7 | `localhost:6380` | |
-| Mailpit | SMTP `localhost:1026`, inbox http://localhost:8026 | Catches all dev emails |
+| Service       | URL / port                                         | Notes                    |
+| ------------- | -------------------------------------------------- | ------------------------ |
+| Web (Next.js) | http://localhost:3000                              |                          |
+| API (NestJS)  | http://localhost:4000                              | `GET /health`            |
+| Worker        | (no port)                                          | Consumes BullMQ jobs     |
+| Postgres 16   | `localhost:5434`                                   | user/pass/db: `platform` |
+| Redis 7       | `localhost:6380`                                   |                          |
+| Mailpit       | SMTP `localhost:1026`, inbox http://localhost:8026 | Catches all dev emails   |
 
 ## First run
 
@@ -32,14 +32,14 @@ pnpm dev                        # web + api + worker in watch mode
 
 ## Common commands
 
-| Command | What it does |
-|---------|--------------|
-| `pnpm dev` | Run everything in watch mode |
-| `pnpm build` | Build all apps/packages |
-| `pnpm lint` / `pnpm typecheck` / `pnpm test` | Quality checks (same as CI) |
-| `pnpm db:migrate` | Create/apply a migration after editing `schema.prisma` |
-| `pnpm db:studio` | Browse the database in Prisma Studio |
-| `pnpm infra:down` | Stop Docker services (data is kept in volumes) |
+| Command                                      | What it does                                           |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `pnpm dev`                                   | Run everything in watch mode                           |
+| `pnpm build`                                 | Build all apps/packages                                |
+| `pnpm lint` / `pnpm typecheck` / `pnpm test` | Quality checks (same as CI)                            |
+| `pnpm db:migrate`                            | Create/apply a migration after editing `schema.prisma` |
+| `pnpm db:studio`                             | Browse the database in Prisma Studio                   |
+| `pnpm infra:down`                            | Stop Docker services (data is kept in volumes)         |
 
 ## Environment files
 

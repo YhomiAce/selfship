@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { EmailJob, type EmailJobData, QueueName } from '@platform/shared';
+import { EmailJob, type EmailJobData, QueueName } from '@selfship/shared';
 
 /**
  * Queues transactional emails. The worker renders and sends them, so slow

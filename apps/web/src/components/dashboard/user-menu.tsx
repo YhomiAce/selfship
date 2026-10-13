@@ -2,7 +2,7 @@
 
 import { LogOut, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { UserDto } from '@platform/shared';
+import type { UserDto } from '@selfship/shared';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,

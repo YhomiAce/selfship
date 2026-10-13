@@ -1,12 +1,12 @@
 import type { Job } from 'bullmq';
-import type { EmailJobData } from '@platform/shared';
+import type { EmailJobData } from '@selfship/shared';
 import type { AppConfigService } from '../config/app-config.service';
 import { EmailProcessor } from './email.processor';
 import type { MailerService } from './mailer.service';
 
 describe('EmailProcessor', () => {
   const mailer = { send: jest.fn().mockResolvedValue('<id@test>') };
-  const config = { get: jest.fn().mockReturnValue('Platform') };
+  const config = { get: jest.fn().mockReturnValue('Selfship') };
   const processor = new EmailProcessor(
     mailer as unknown as MailerService,
     config as unknown as AppConfigService,
@@ -22,7 +22,7 @@ describe('EmailProcessor', () => {
     await expect(processor.process(job)).resolves.toBe('<id@test>');
     expect(mailer.send).toHaveBeenCalledWith(
       'ada@example.com',
-      expect.objectContaining({ subject: 'Your Platform password was changed' }),
+      expect.objectContaining({ subject: 'Your Selfship password was changed' }),
     );
   });
 

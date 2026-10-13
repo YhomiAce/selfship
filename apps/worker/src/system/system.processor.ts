@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { type PingJobData, QueueName, SystemJob } from '@platform/shared';
+import { type PingJobData, QueueName, SystemJob } from '@selfship/shared';
 
 /** Handles jobs on the `system` queue (diagnostics and housekeeping). */
 @Processor(QueueName.SYSTEM)

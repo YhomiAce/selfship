@@ -9,7 +9,7 @@ export const EnvSchema = z.object({
   REDIS_URL: z.url().default('redis://localhost:6380'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   /** Product name used in email subjects and bodies. */
-  APP_NAME: z.string().default('Platform'),
+  APP_NAME: z.string().default('Selfship'),
   /** SMTP server. Defaults point at Mailpit from docker-compose.dev.yml. */
   SMTP_HOST: z.string().default('localhost'),
   SMTP_PORT: z.coerce.number().int().positive().default(1026),
@@ -17,8 +17,8 @@ export const EnvSchema = z.object({
   SMTP_SECURE: z.stringbool().default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
-  /** Sender shown to recipients, e.g. `Platform <no-reply@example.com>`. */
-  MAIL_FROM: z.string().default('Platform <no-reply@platform.local>'),
+  /** Sender shown to recipients, e.g. `Selfship <no-reply@example.com>`. */
+  MAIL_FROM: z.string().default('Selfship <no-reply@selfship.local>'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

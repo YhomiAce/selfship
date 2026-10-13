@@ -16,7 +16,7 @@ Non-default host ports avoid clashes with other projects on the same machine.
 | Web (Next.js) | http://localhost:3000                              |                          |
 | API (NestJS)  | http://localhost:4000                              | `GET /health`            |
 | Worker        | (no port)                                          | Consumes BullMQ jobs     |
-| Postgres 16   | `localhost:5434`                                   | user/pass/db: `platform` |
+| Postgres 16   | `localhost:5434`                                   | user/pass/db: `selfship` |
 | Redis 7       | `localhost:6380`                                   |                          |
 | Mailpit       | SMTP `localhost:1026`, inbox http://localhost:8026 | Catches all dev emails   |
 

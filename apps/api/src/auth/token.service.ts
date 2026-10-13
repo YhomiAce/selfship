@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { TokenPurpose } from '@platform/db';
-import { AuthErrorCode } from '@platform/shared';
+import type { TokenPurpose } from '@selfship/db';
+import { AuthErrorCode } from '@selfship/shared';
 import { generateToken, hashToken } from '../common/crypto';
 import { PrismaService } from '../prisma/prisma.service';
 

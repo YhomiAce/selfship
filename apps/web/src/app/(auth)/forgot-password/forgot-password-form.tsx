@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ForgotPasswordSchema } from '@platform/shared';
+import { ForgotPasswordSchema } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
 import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';

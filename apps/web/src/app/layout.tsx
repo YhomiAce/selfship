@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: '--font-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: { default: 'Platform', template: '%s · Platform' },
+  title: { default: 'Selfship', template: '%s · Selfship' },
   description: 'Deploy any app from GitHub to your own server.',
 };
 

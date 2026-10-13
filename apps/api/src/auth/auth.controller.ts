@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
-import type { User } from '@platform/db';
-import type { AuthProvidersResponse, AuthUserResponse } from '@platform/shared';
+import type { User } from '@selfship/db';
+import type { AuthProvidersResponse, AuthUserResponse } from '@selfship/shared';
 import { generateToken, safeEqual } from '../common/crypto';
 import { AppConfigService } from '../config/app-config.service';
 import { AUTH_THROTTLE, OAUTH_STATE_COOKIE, OAUTH_STATE_TTL_MS } from './auth.constants';

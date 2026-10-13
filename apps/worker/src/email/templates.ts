@@ -1,4 +1,4 @@
-import type { EmailJobData } from '@platform/shared';
+import type { EmailJobData } from '@selfship/shared';
 
 /** A rendered email ready to send. */
 export interface RenderedEmail {

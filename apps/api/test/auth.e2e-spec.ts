@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
-import type { EmailJobData } from '@platform/shared';
+import type { EmailJobData } from '@selfship/shared';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/configure-app';
 import { MailService } from '../src/mail/mail.service';

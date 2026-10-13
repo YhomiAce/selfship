@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import type { User } from '@platform/db';
+import type { User } from '@selfship/db';
 import type { AppConfigService } from '../config/app-config.service';
 import type { MailService } from '../mail/mail.service';
 import type { PrismaService } from '../prisma/prisma.service';

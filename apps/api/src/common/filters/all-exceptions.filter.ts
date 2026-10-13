@@ -10,7 +10,7 @@ import { ThrottlerException } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
-import { type ApiError, ErrorCode } from '@platform/shared';
+import { type ApiError, ErrorCode } from '@selfship/shared';
 
 /** Maps HTTP status codes to default machine-readable error codes. */
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {

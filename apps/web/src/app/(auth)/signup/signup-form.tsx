@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { RegisterSchema } from '@platform/shared';
+import { RegisterSchema } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
 import { GithubButton } from '@/components/auth/github-button';
 import { FormField } from '@/components/form-field';

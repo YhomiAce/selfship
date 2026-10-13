@@ -1,4 +1,4 @@
-import type { ApiError } from '@platform/shared';
+import type { ApiError } from '@selfship/shared';
 
 /** Error thrown by {@link apiFetch} for any non-2xx response. */
 export class ApiRequestError extends Error {

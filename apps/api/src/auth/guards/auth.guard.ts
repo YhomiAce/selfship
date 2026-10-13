@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Response } from 'express';
-import { ErrorCode } from '@platform/shared';
+import { ErrorCode } from '@selfship/shared';
 import type { AuthenticatedRequest } from '../auth.types';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { SessionService } from '../session.service';

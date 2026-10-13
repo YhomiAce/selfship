@@ -1,7 +1,7 @@
 import { Public } from '../auth/decorators/public.decorator';
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import type { HealthResponse } from '@platform/shared';
+import type { HealthResponse } from '@selfship/shared';
 import { HealthService } from './health.service';
 
 /** Liveness/readiness endpoint for load balancers and uptime monitors. */

@@ -45,7 +45,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }): Rea
     <div className="flex flex-1">
       <aside className="bg-muted/30 hidden w-60 shrink-0 border-r md:flex md:flex-col">
         <Link href="/dashboard" className="px-6 py-5 text-lg font-semibold tracking-tight">
-          Platform
+          Selfship
         </Link>
         <nav className="flex flex-col gap-1 px-3" aria-label="Main">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -72,7 +72,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }): Rea
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b px-6">
           <Link href="/dashboard" className="font-semibold md:hidden">
-            Platform
+            Selfship
           </Link>
           <div className="ml-auto">
             <UserMenu user={user} />

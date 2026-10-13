@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { EmailJob, type EmailJobData, QueueName } from '@platform/shared';
+import { EmailJob, type EmailJobData, QueueName } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { MailerService } from './mailer.service';
 import { renderEmail } from './templates';

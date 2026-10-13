@@ -1,5 +1,5 @@
-import type { User } from '@platform/db';
-import type { UserDto } from '@platform/shared';
+import type { User } from '@selfship/db';
+import type { UserDto } from '@selfship/shared';
 
 /**
  * Converts a database user into the public DTO. Strips the password hash and

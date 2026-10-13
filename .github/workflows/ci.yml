@@ -18,12 +18,12 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: platform
-          POSTGRES_PASSWORD: platform
-          POSTGRES_DB: platform
+          POSTGRES_USER: selfship
+          POSTGRES_PASSWORD: selfship
+          POSTGRES_DB: selfship
         ports: ['5434:5432']
         options: >-
-          --health-cmd "pg_isready -U platform" --health-interval 5s --health-timeout 3s --health-retries 10
+          --health-cmd "pg_isready -U selfship" --health-interval 5s --health-timeout 3s --health-retries 10
       redis:
         image: redis:7-alpine
         ports: ['6380:6379']
@@ -31,7 +31,7 @@ jobs:
           --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://platform:platform@localhost:5434/platform
+      DATABASE_URL: postgresql://selfship:selfship@localhost:5434/selfship
       REDIS_URL: redis://localhost:6380
       NODE_ENV: test
 
@@ -63,7 +63,7 @@ jobs:
         run: pnpm db:deploy
 
       - name: API integration tests
-        run: pnpm --filter @platform/api test:e2e
+        run: pnpm --filter @selfship/api test:e2e
 
       - name: Build
         run: pnpm build

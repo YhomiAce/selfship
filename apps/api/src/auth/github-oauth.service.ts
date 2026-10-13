@@ -38,7 +38,7 @@ const EmailsResponseSchema = z.array(
 const GITHUB_API_HEADERS = {
   Accept: 'application/vnd.github+json',
   'X-GitHub-Api-Version': '2022-11-28',
-  'User-Agent': 'platform-auth',
+  'User-Agent': 'selfship-auth',
 } as const;
 
 /**

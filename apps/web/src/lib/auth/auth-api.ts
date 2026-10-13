@@ -6,7 +6,7 @@ import type {
   RegisterInput,
   ResetPasswordInput,
   UserDto,
-} from '@platform/shared';
+} from '@selfship/shared';
 import { apiFetch } from '@/lib/api-client';
 
 /**

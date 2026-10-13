@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { User } from '@platform/db';
+import type { User } from '@selfship/db';
 
 /** Who made the request and from where; stored on sessions for auditing. */
 export interface RequestContext {

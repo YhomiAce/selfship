@@ -1,5 +1,5 @@
 import type { Job } from 'bullmq';
-import type { PingJobData } from '@platform/shared';
+import type { PingJobData } from '@selfship/shared';
 import { SystemProcessor } from './system.processor';
 
 /** Builds a minimal fake job for the processor. */

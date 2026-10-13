@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { LoginSchema } from '@platform/shared';
+import { LoginSchema } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
 import { GithubButton } from '@/components/auth/github-button';
 import { FormField } from '@/components/form-field';

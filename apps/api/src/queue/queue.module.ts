@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module } from '@nestjs/common';
-import { QueueName, redisConnectionFromUrl } from '@platform/shared';
+import { QueueName, redisConnectionFromUrl } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
 
 /**

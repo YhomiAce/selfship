@@ -8,9 +8,9 @@ describe('renderEmail', () => {
         to: 'ada@example.com',
         data: { name: 'Ada', verifyUrl: 'http://localhost:3000/verify-email?token=abc' },
       },
-      'Platform',
+      'Selfship',
     );
-    expect(email.subject).toBe('Confirm your email for Platform');
+    expect(email.subject).toBe('Confirm your email for Selfship');
     expect(email.text).toContain('http://localhost:3000/verify-email?token=abc');
     expect(email.html).toContain('href="http://localhost:3000/verify-email?token=abc"');
   });
@@ -18,7 +18,7 @@ describe('renderEmail', () => {
   it('escapes user-controlled names in HTML', () => {
     const email = renderEmail(
       { template: 'password-changed', to: 'x@y.co', data: { name: '<script>alert(1)</script>' } },
-      'Platform',
+      'Selfship',
     );
     expect(email.html).not.toContain('<script>');
     expect(email.html).toContain('&lt;script&gt;');
@@ -31,7 +31,7 @@ describe('renderEmail', () => {
         to: 'x@y.co',
         data: { name: 'Ada', resetUrl: 'http://x/r?token=t' },
       },
-      'Platform',
+      'Selfship',
     );
     expect(email.text).toContain('expires in 1 hour');
   });

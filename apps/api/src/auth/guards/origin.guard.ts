@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import type { Request } from 'express';
-import { ErrorCode } from '@platform/shared';
+import { ErrorCode } from '@selfship/shared';
 import { AppConfigService } from '../../config/app-config.service';
 
 /** Methods that don't change state and therefore don't need CSRF checks. */

@@ -1,5 +1,5 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
-import type { User } from '@platform/db';
+import type { User } from '@selfship/db';
 import type { AuthContext, AuthenticatedRequest } from '../auth.types';
 
 /**

@@ -1,4 +1,4 @@
-import { Prisma } from '@platform/db';
+import { Prisma } from '@selfship/db';
 
 /**
  * Checks whether an error is a Prisma unique-constraint violation (P2002).

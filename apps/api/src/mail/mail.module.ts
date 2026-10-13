@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module } from '@nestjs/common';
-import { QueueName } from '@platform/shared';
+import { QueueName } from '@selfship/shared';
 import { MailService } from './mail.service';
 
 /** Provides {@link MailService} to any module that sends emails. */

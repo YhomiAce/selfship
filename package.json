@@ -1,5 +1,5 @@
 {
-  "name": "platform",
+  "name": "selfship",
   "private": true,
   "description": "Deploy any app from GitHub to your own server.",
   "license": "AGPL-3.0-only",
@@ -17,9 +17,9 @@
     "format:check": "prettier --check .",
     "infra:up": "docker compose -f docker-compose.dev.yml up -d",
     "infra:down": "docker compose -f docker-compose.dev.yml down",
-    "db:migrate": "pnpm --filter @platform/db migrate:dev",
-    "db:deploy": "pnpm --filter @platform/db migrate:deploy",
-    "db:studio": "pnpm --filter @platform/db studio",
+    "db:migrate": "pnpm --filter @selfship/db migrate:dev",
+    "db:deploy": "pnpm --filter @selfship/db migrate:deploy",
+    "db:studio": "pnpm --filter @selfship/db studio",
     "prepare": "husky"
   },
   "devDependencies": {

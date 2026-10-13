@@ -1,12 +1,12 @@
 import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import type { User } from '@platform/db';
+import type { User } from '@selfship/db';
 import {
   AuthErrorCode,
   type ForgotPasswordInput,
   type LoginInput,
   type RegisterInput,
   type ResetPasswordInput,
-} from '@platform/shared';
+} from '@selfship/shared';
 import { isUniqueViolation } from '../common/prisma-errors';
 import { AppConfigService } from '../config/app-config.service';
 import { MailService } from '../mail/mail.service';

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { PasswordSchema } from '@platform/shared';
+import { PasswordSchema } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
 import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';

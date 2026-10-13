@@ -1,7 +1,7 @@
 variable "project" {
-  description = "Project name used for resource names and tags. Placeholder until the platform is named."
+  description = "Project name used for resource names and tags."
   type        = string
-  default     = "deploy-platform"
+  default     = "selfship"
 }
 
 variable "aws_region" {

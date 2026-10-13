@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import type { UserDto } from '@platform/shared';
+import type { UserDto } from '@selfship/shared';
 import { ApiRequestError } from '@/lib/api-client';
 import { authApi } from './auth-api';
 

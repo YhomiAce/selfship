@@ -5,7 +5,7 @@ import {
   RegisterSchema,
   ResetPasswordSchema,
   VerifyEmailSchema,
-} from '@platform/shared';
+} from '@selfship/shared';
 
 /** Body of `POST /auth/register`. */
 export class RegisterDto extends createZodDto(RegisterSchema) {}

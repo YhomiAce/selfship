@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { CookieOptions, Request, Response } from 'express';
-import type { User } from '@platform/db';
+import type { User } from '@selfship/db';
 import { generateToken, hashToken } from '../common/crypto';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';

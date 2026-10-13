@@ -11,7 +11,7 @@ Optional. Without it, the GitHub button is hidden and email/password sign-in sti
 2. Fill in:
    | Field                      | Value                                            |
    | -------------------------- | ------------------------------------------------ |
-   | Application name           | `Platform (local)`                               |
+   | Application name           | `Selfship (local)`                               |
    | Homepage URL               | `http://localhost:3000`                          |
    | Authorization callback URL | `http://localhost:3000/api/auth/github/callback` |
 3. Click **Register application**

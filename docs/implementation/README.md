@@ -2,12 +2,12 @@
 
 This folder turns the [roadmap](../05-roadmap.md) into concrete, dated work.
 
-| Phase | Doc | Dates (target) | Outcome |
-|-------|-----|----------------|---------|
-| 0 | [Foundations](phase-0-foundations.md) | 2026-10-13 → 2026-10-26 | Monorepo, CI, and a working deploy **spike** |
-| 1 | [MVP](phase-1-mvp.md) | 2026-10-27 → 2027-02-14 | Public beta: GitHub → VPS → HTTPS, Build Doctor, free sandbox |
-| 2 | [Widen](phase-2-widen.md) | 2027-02-15 → 2027-05-30 | Billing, more languages, databases, teams, monitoring |
-| 3 | [Scale](phase-3-scale.md) | 2027-06 → ongoing | Remote builders, Go agent, dynamic provisioning, shared hosting |
+| Phase | Doc                                   | Dates (target)          | Outcome                                                         |
+| ----- | ------------------------------------- | ----------------------- | --------------------------------------------------------------- |
+| 0     | [Foundations](phase-0-foundations.md) | 2026-10-13 → 2026-10-26 | Monorepo, CI, app skeletons running locally                     |
+| 1     | [MVP](phase-1-mvp.md)                 | 2026-10-27 → 2027-02-14 | Public beta: GitHub → VPS → HTTPS, Build Doctor, free sandbox   |
+| 2     | [Widen](phase-2-widen.md)             | 2027-02-15 → 2027-05-30 | Billing, more languages, databases, teams, monitoring           |
+| 3     | [Scale](phase-3-scale.md)             | 2027-06 → ongoing       | Remote builders, Go agent, dynamic provisioning, shared hosting |
 
 ## Working agreement
 
@@ -33,15 +33,15 @@ This folder turns the [roadmap](../05-roadmap.md) into concrete, dated work.
 
 ## What the founder needs to set up (and when)
 
-| When | Item | Notes |
-|------|------|-------|
-| Phase 0 | GitHub org + public repo | Name can be a placeholder and renamed later |
-| Phase 0 | Cheapest test VPS (Ubuntu 24.04, 1–2 GB) | Hetzner, DigitalOcean, Hostinger VPS... about $5/month |
-| Phase 0 | A domain on **Cloudflare** | Any cheap domain works for now. Used for the spike and platform subdomains |
-| Phase 1 · M1 | Email sending account (e.g. Resend / Postmark) | Dev uses Mailpit locally, so this is only needed for staging |
-| Phase 1 · M2 | **GitHub App** registered | We'll write a step-by-step guide |
-| Phase 1 · M5 | Cloudflare API token (DNS edit, one zone) | For platform subdomains |
-| Phase 1 · M6 | **Anthropic API key** from the Claude Console | For the Build Doctor. See [08](../08-ai-build-doctor.md) |
-| Phase 1 · M6 | One VPS for the **free sandbox** | About €5–10/month, hosts many small free apps |
-| Phase 1 · M7 | Production VPS for the platform itself | 4 GB RAM is plenty at launch |
-| Phase 2 | Stripe account (test mode) | Payment provider is abstracted. See [Phase 2](phase-2-widen.md) |
+| When         | Item                                             | Notes                                                                      |
+| ------------ | ------------------------------------------------ | -------------------------------------------------------------------------- |
+| Phase 0      | GitHub org + public repo                         | Name can be a placeholder and renamed later                                |
+| Phase 1 · M3 | Test VPS (`make up` in `infra/aws/test-servers`) | Terraform is ready, run only during test sessions                          |
+| Phase 1 · M3 | A domain on **Cloudflare**                       | Any cheap domain works for now. Used for the spike and platform subdomains |
+| Phase 1 · M1 | Email sending account (e.g. Resend / Postmark)   | Dev uses Mailpit locally, so this is only needed for staging               |
+| Phase 1 · M2 | **GitHub App** registered                        | We'll write a step-by-step guide                                           |
+| Phase 1 · M5 | Cloudflare API token (DNS edit, one zone)        | For platform subdomains                                                    |
+| Phase 1 · M6 | **Anthropic API key** from the Claude Console    | For the Build Doctor. See [08](../08-ai-build-doctor.md)                   |
+| Phase 1 · M6 | One VPS for the **free sandbox**                 | About €5–10/month, hosts many small free apps                              |
+| Phase 1 · M7 | Production VPS for the platform itself           | 4 GB RAM is plenty at launch                                               |
+| Phase 2      | Stripe account (test mode)                       | Payment provider is abstracted. See [Phase 2](phase-2-widen.md)            |

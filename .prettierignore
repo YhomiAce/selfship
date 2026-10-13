@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+**/dist
+**/.next
+**/coverage
+**/generated
+infra/**/.terraform
+LICENSE
+apps/web/next-env.d.ts

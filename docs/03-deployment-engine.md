@@ -7,11 +7,12 @@ This is the core of the product and where most of the work is.
 Every app runs in a Docker container, including plain HTML sites.
 
 **Why:**
+
 - **One deploy path.** Without Docker we'd install Node 18, Node 20, PHP 8.2, Java 21, Python 3.12... directly on servers and fight version conflicts. With Docker, each app brings its own runtime.
 - **Isolation.** App A can't break App B.
 - **Rollback.** The previous image is still there, so rolling back is just restarting it.
 - **Adapters become simple.** Supporting a new language = writing one Dockerfile template.
-- **"Bring your own Dockerfile" or docker-compose** gives us support for *any* language from day one, for users who already have a Dockerfile.
+- **"Bring your own Dockerfile" or docker-compose** gives us support for _any_ language from day one, for users who already have a Dockerfile.
 
 **Trade-off:** Docker uses some RAM and disk, and builds on a 1 GB VPS can run out of memory (Next.js builds are heavy). Mitigations: add swap during bootstrap, use multi-stage builds, and later offer remote builds (see below).
 
@@ -21,14 +22,15 @@ An **adapter** is a small module with two jobs:
 
 ```ts
 interface Adapter {
-  name: string;                                   // "nextjs"
+  name: string; // "nextjs"
   detect(files: RepoSnapshot): DetectResult | null; // looks at package.json, etc.
   defaults(): { buildCmd?: string; startCmd?: string; port: number };
-  dockerfile(config: AppConfig): string;          // renders the Dockerfile
+  dockerfile(config: AppConfig): string; // renders the Dockerfile
 }
 ```
 
 Detection order (first match wins):
+
 1. `Dockerfile` in repo → **use it as-is**
 2. `docker-compose.yml` → compose mode (Phase 2)
 3. `package.json` with `next` → **nextjs**
@@ -41,6 +43,7 @@ Detection order (first match wins):
 Package manager detection: `pnpm-lock.yaml` / `yarn.lock` / `bun.lockb` / `package-lock.json`.
 
 **Build our own templates or use Railpack / Nixpacks / Buildpacks?**
+
 - Tools exist that auto-generate builds: **Railpack** (Railway's successor to Nixpacks), **Nixpacks**, and **Cloud Native Buildpacks**. Coolify and Dokploy use them.
 - **Recommendation for MVP:** write our **own templates for 4–5 frameworks**. You'll learn how builds actually work, error messages stay under our control, and the images stay small. Re-evaluate Railpack when we add more languages, since it could become one big "fallback adapter".
 
@@ -69,23 +72,24 @@ docker run -d --name app-a-<sha> --network traefik \
 
 ## Where does the build happen?
 
-| Option | Pros | Cons | When |
-|--------|------|------|------|
-| **A. On the user's VPS** | Free for us, simple, no registry needed | Small VPSes can run out of memory; builds slow down live apps | **MVP** |
-| B. On our build servers → push to registry → VPS pulls | Fast, reliable, VPS only runs apps | Costs us compute and registry storage | Paid tier, Phase 3 |
-| C. In the user's GitHub Actions → registry → VPS pulls | Free runners for the user | Needs a workflow in their repo, more setup | Optional, Phase 3 |
+| Option                                                 | Pros                                    | Cons                                                          | When               |
+| ------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------- | ------------------ |
+| **A. On the user's VPS**                               | Free for us, simple, no registry needed | Small VPSes can run out of memory; builds slow down live apps | **MVP**            |
+| B. On our build servers → push to registry → VPS pulls | Fast, reliable, VPS only runs apps      | Costs us compute and registry storage                         | Paid tier, Phase 3 |
+| C. In the user's GitHub Actions → registry → VPS pulls | Free runners for the user               | Needs a workflow in their repo, more setup                    | Optional, Phase 3  |
 
 ## Server requirements
 
 Pre-flight measures each server and assigns a **capability tier**, so even the smallest server can host a plain HTML site.
 
-| Tier | RAM | vCPU | Disk | Can deploy |
-|------|-----|------|------|------------|
-| `static-only` | 512 MB | 1 | 10 GB | Static HTML/JS sites, pre-built SPAs (via Dockerfile passthrough or prebuilt output) |
-| `standard` | 1 GB (+2 GB swap added by bootstrap) | 1 | 20 GB | Above + Node APIs, SPA builds. Next.js *may* work (spike will confirm) |
-| `recommended` | 2 GB+ | 1–2 | 25 GB+ | Everything in MVP, several apps at once |
+| Tier          | RAM                                  | vCPU | Disk   | Can deploy                                                                           |
+| ------------- | ------------------------------------ | ---- | ------ | ------------------------------------------------------------------------------------ |
+| `static-only` | 512 MB                               | 1    | 10 GB  | Static HTML/JS sites, pre-built SPAs (via Dockerfile passthrough or prebuilt output) |
+| `standard`    | 1 GB (+2 GB swap added by bootstrap) | 1    | 20 GB  | Above + Node APIs, SPA builds. Next.js _may_ work (spike will confirm)               |
+| `recommended` | 2 GB+                                | 1–2  | 25 GB+ | Everything in MVP, several apps at once                                              |
 
 All tiers need:
+
 - **OS:** Ubuntu 22.04 / 24.04 LTS or Debian 12 / 13
 - **Arch:** x86_64 or arm64
 - **Access:** root or passwordless sudo over SSH
@@ -117,6 +121,7 @@ Run as a dedicated `deployer` user in the `docker` group, not root, after bootst
 ## Failure handling (this is where UX wins)
 
 Turn common failures into human messages:
+
 - `ENOMEM` / exit 137 → "Your server ran out of memory during build. Try adding swap or upgrading to 2 GB RAM."
 - Port mismatch / health check timeout → "Your app didn't respond on port 3000. Is it listening on `0.0.0.0` and on `process.env.PORT`?"
 - DNS not pointing → "myapp.com points to 1.2.3.4, but your server is 5.6.7.8."

@@ -3,6 +3,7 @@
 ## Session 1 — 2026-10-12 — Kickoff
 
 **Founder's brief** (original notes in [`../starter_notes.md`](../starter_notes.md)):
+
 - Platform for developers to deploy any project (HTML/JS, Node frameworks, Spring Boot, PHP/Laravel, Go, Python...). Start with the basics and add adapters over time.
 - Sign up / login with an intuitive UI (React/Next.js + TS)
 - Connect GitHub and access the user's repos
@@ -12,8 +13,9 @@
 - Questions raised: best tech? one language first? Docker for some people? GitHub Actions needed?
 
 **What we proposed** (details in docs 00–05):
+
 - Stack: NestJS + Next.js + Postgres + Redis/BullMQ, TypeScript monorepo. Go later for a server agent.
-- Docker for *every* app (not some). Traefik for routing + automatic SSL.
+- Docker for _every_ app (not some). Traefik for routing + automatic SSL.
 - Treat every server as "Ubuntu + SSH". This covers AWS, GCP and every VPS with one code path.
 - GitHub App + webhooks instead of GitHub Actions in user repos.
 - MVP: JS ecosystem + Dockerfile passthrough. Other languages in Phase 2.
@@ -26,6 +28,7 @@
 ## Session 2 — 2026-10-13 — Decisions & implementation plan
 
 **Founder's answers** (original in [`../starter_notes.md`](../starter_notes.md)):
+
 - Name TBD. Global market. All personas. Open source.
 - MVP is VPS only, but plan for shared hosting that has SSH without root (founder's own Namecheap server is an example).
 - The lowest servers should still be able to deploy a plain HTML site.
@@ -37,6 +40,7 @@
 - Add an AI agent (Claude) that diagnoses build errors and gives detailed fixes.
 
 **What we decided** (decision log #11–#24):
+
 - Capability tiers so 512 MB servers can host static sites ([03](03-deployment-engine.md#server-requirements)).
 - Free sandbox = a few shared platform-owned VPSes with strict container limits, not one VM per user ([09](09-free-tier-sandbox.md)).
 - **No Go microservice yet.** Stay a modular TypeScript monolith; clear criteria for when to split out Go.

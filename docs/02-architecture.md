@@ -40,6 +40,7 @@ Each App is deployed to one Server. Later: teams/organizations owning resources.
 ## Key flows
 
 ### 1. Connect GitHub (GitHub App)
+
 1. User clicks "Connect GitHub" and is sent to our GitHub App install page.
 2. User picks **which repos** we can access (all or selected).
 3. GitHub redirects back with an `installation_id`, which we store.
@@ -49,6 +50,7 @@ Each App is deployed to one Server. Later: teams/organizations owning resources.
 > Why a GitHub App instead of an OAuth App: fine-grained per-repo access, tokens that expire, webhooks included, and it reads as more trustworthy to users ("only these 3 repos").
 
 ### 2. Add a server
+
 1. User enters IP, SSH port and username.
 2. **Recommended:** we generate a keypair, the user runs one copy-pasted command on their server to add our public key, and we never see their private key.
    **Alternative:** the user pastes their own private key (encrypted at rest).
@@ -57,6 +59,7 @@ Each App is deployed to one Server. Later: teams/organizations owning resources.
 5. Server status becomes ✅ Ready.
 
 ### 3. Deploy an app
+
 1. User picks a repo + branch + server. We **detect the framework** and pre-fill the build/start command and port, which the user can override.
 2. User adds env vars (form, or paste a `.env` file).
 3. Click Deploy. The API creates a `Deployment` row and enqueues a job.
@@ -70,6 +73,7 @@ Each App is deployed to one Server. Later: teams/organizations owning resources.
 5. Status → ✅ Live, with the URL.
 
 ### 4. Custom domain
+
 1. User adds `myapp.com`. We show: "Create an **A record** pointing to `<server IP>`".
 2. We poll DNS until it resolves to the server.
 3. Update the container's Traefik labels. Traefik gets a Let's Encrypt certificate automatically.

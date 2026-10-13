@@ -4,11 +4,11 @@ Users without a server can deploy right away to **servers we own**. Without this
 
 ## Approach: shared sandbox servers, not a VM per user
 
-| Option | Cost | Complexity | Verdict |
-|--------|------|------------|---------|
-| Create a cloud VM per free user (AWS/GCP API) | $4–10/user/month | High (provisioning, cleanup) | ❌ Too expensive on a small budget |
-| **A few platform-owned VPSes running many small app containers** | ~€5–10/month per server, hosting 20–50 small apps | Low: reuses our deploy engine as-is | ✅ **MVP** |
-| Auto-scaled sandbox pool via cloud APIs | Scales with demand | Medium | Phase 3 (dynamic provisioning) |
+| Option                                                           | Cost                                              | Complexity                          | Verdict                            |
+| ---------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------- | ---------------------------------- |
+| Create a cloud VM per free user (AWS/GCP API)                    | $4–10/user/month                                  | High (provisioning, cleanup)        | ❌ Too expensive on a small budget |
+| **A few platform-owned VPSes running many small app containers** | ~€5–10/month per server, hosting 20–50 small apps | Low: reuses our deploy engine as-is | ✅ **MVP**                         |
+| Auto-scaled sandbox pool via cloud APIs                          | Scales with demand                                | Medium                              | Phase 3 (dynamic provisioning)     |
 
 A sandbox server is just a `Server` row with `isPlatformSandbox = true` and `ownerId = null`. The same bootstrap and deploy code runs on it. No new engine is needed.
 
@@ -16,16 +16,16 @@ A sandbox server is just a `Server` row with `isPlatformSandbox = true` and `own
 
 ## Limits (draft, tune with spike data)
 
-| Limit | Value |
-|-------|-------|
-| Apps per user | 1 (verified email required) |
-| App types | Static, SPA, small Node APIs. Next.js only if the spike shows builds fit |
-| Container memory / CPU | 256 MB / 0.25 vCPU (`--memory`, `--cpus`, `--pids-limit`) |
-| Build | Concurrency 1 per sandbox server, 10 min timeout, memory cap |
-| Lifetime | 7 days, extendable once. Then "move it to your own server" |
-| Sleep | Stopped after 24 h without traffic, woken on next deploy (wake-on-request later) |
-| Domain | Platform subdomain only |
-| Bandwidth | Rate limited via Traefik middleware |
+| Limit                  | Value                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| Apps per user          | 1 (verified email required)                                                      |
+| App types              | Static, SPA, small Node APIs. Next.js only if the spike shows builds fit         |
+| Container memory / CPU | 256 MB / 0.25 vCPU (`--memory`, `--cpus`, `--pids-limit`)                        |
+| Build                  | Concurrency 1 per sandbox server, 10 min timeout, memory cap                     |
+| Lifetime               | 7 days, extendable once. Then "move it to your own server"                       |
+| Sleep                  | Stopped after 24 h without traffic, woken on next deploy (wake-on-request later) |
+| Domain                 | Platform subdomain only                                                          |
+| Bandwidth              | Rate limited via Traefik middleware                                              |
 
 ## Abuse protection (running strangers' code is risky)
 

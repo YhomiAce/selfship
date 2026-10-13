@@ -32,14 +32,14 @@ Most of them follow a YouTube tutorial once and then dread every deploy.
 
 ## Competitors (know them, learn from them)
 
-| Product | Model | Notes |
-|---------|-------|-------|
-| **Coolify** | Open-source, self-hosted (paid cloud option) | Closest to our idea. Study it closely. |
-| **Dokploy** | Open-source, self-hosted | Docker + Traefik, very similar architecture |
-| **CapRover** | Open-source, self-hosted | Older, Docker Swarm based |
-| **Kamal** (37signals) | CLI tool | Docker deploys over SSH, zero-downtime. Good reference for the deploy flow |
-| **Laravel Forge / Ploi / RunCloud / Cleavr** | SaaS, BYO server | Proves people **pay** for "manage my VPS". Mostly PHP-focused |
-| **Vercel / Netlify / Render / Railway** | Fully managed PaaS | The DX bar we want to match, but they host the app themselves |
+| Product                                      | Model                                        | Notes                                                                      |
+| -------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------- |
+| **Coolify**                                  | Open-source, self-hosted (paid cloud option) | Closest to our idea. Study it closely.                                     |
+| **Dokploy**                                  | Open-source, self-hosted                     | Docker + Traefik, very similar architecture                                |
+| **CapRover**                                 | Open-source, self-hosted                     | Older, Docker Swarm based                                                  |
+| **Kamal** (37signals)                        | CLI tool                                     | Docker deploys over SSH, zero-downtime. Good reference for the deploy flow |
+| **Laravel Forge / Ploi / RunCloud / Cleavr** | SaaS, BYO server                             | Proves people **pay** for "manage my VPS". Mostly PHP-focused              |
+| **Vercel / Netlify / Render / Railway**      | Fully managed PaaS                           | The DX bar we want to match, but they host the app themselves              |
 
 **Takeaway:** Forge/Ploi prove the business model (SaaS + your own server). Coolify/Dokploy prove the tech (Docker + Traefik over SSH). Our angle:
 

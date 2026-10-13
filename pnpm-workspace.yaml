@@ -1,0 +1,18 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Dependencies allowed (true) or refused (false) to run install scripts.
+allowBuilds:
+  '@nestjs/core': true
+  '@parcel/watcher': false
+  '@prisma/engines': true
+  '@swc/core': true
+  argon2: true
+  esbuild: true
+  msgpackr-extract: true
+  prisma: true
+  sharp: true
+  ssh2: true
+  cpu-features: false
+  unrs-resolver: true

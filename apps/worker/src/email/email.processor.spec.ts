@@ -1,4 +1,4 @@
-import type { Job } from 'bullmq';
+import { type Job, UnrecoverableError } from 'bullmq';
 import type { EmailJobData } from '@selfship/shared';
 import type { AppConfigService } from '../config/app-config.service';
 import { EmailProcessor } from './email.processor';
@@ -26,8 +26,19 @@ describe('EmailProcessor', () => {
     );
   });
 
-  it('fails unknown job names', async () => {
+  it('fails unknown job names without retrying', async () => {
     const job = { name: 'other', data } as Job<EmailJobData, string>;
-    await expect(processor.process(job)).rejects.toThrow('Unknown email job');
+    await expect(processor.process(job)).rejects.toBeInstanceOf(UnrecoverableError);
+  });
+
+  it('fails malformed payloads without retrying or sending', async () => {
+    mailer.send.mockClear();
+    const job = { name: 'send', data: { template: 'verify-email', to: 'x' } } as Job<
+      unknown,
+      string
+    >;
+    await expect(processor.process(job)).rejects.toThrow(/Invalid email job payload/);
+    await expect(processor.process(job)).rejects.toBeInstanceOf(UnrecoverableError);
+    expect(mailer.send).not.toHaveBeenCalled();
   });
 });

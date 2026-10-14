@@ -97,6 +97,21 @@ apps/api/src/<feature>/
 - **SSH/deploy:** an integration suite that runs against a disposable VPS or a local Docker-in-Docker "fake server". Run nightly, not on every PR
 - **E2E (web):** Playwright for the critical paths (sign up → deploy) from M7
 
+## Untrusted data and safe property access
+
+TypeScript types are only promises. At runtime, data that comes **from outside the process** can be missing, `null`, an array instead of a string, or a different shape entirely. Validate it once at the boundary, then trust the types inside.
+
+| Source                                | Rule                                                                                                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Request bodies                        | zod DTOs (global `ZodValidationPipe`)                                                                                                                                                             |
+| Query params, cookies, headers        | Read through `queryString()` / `readCookie()` (`apps/api/src/common/http.ts`) or check `typeof`. Express query values can be arrays or objects, and cookie-parser turns `j:` cookies into objects |
+| JSON from external APIs (GitHub, ...) | `schema.safeParse(await res.json().catch(() => null))`, and every `fetch` gets `signal: AbortSignal.timeout(...)`                                                                                 |
+| Job payloads (Redis)                  | Validate with the zod schema from `packages/shared`. Throw `UnrecoverableError` for bad payloads so they aren't retried                                                                           |
+| Env vars                              | zod env schema at startup                                                                                                                                                                         |
+| API responses in the web app          | Go through `apiFetch`, which turns every failure (network, non-JSON, malformed error) into `ApiRequestError`                                                                                      |
+
+Inside the app, **don't sprinkle `?.` on values whose type says they exist.** It hides real bugs, and `no-unnecessary-condition` rejects it. Use `?.` / `??` where the type includes `undefined`/`null` (optional fields, `noUncheckedIndexedAccess` lookups, `Map.get`). Avoid `as` casts on untrusted data; parse it instead.
+
 ## Security rules in code
 
 - Never log request bodies on auth/server/env endpoints

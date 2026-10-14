@@ -54,6 +54,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = http.getResponse<Response>();
 
     const body = this.toApiError(exception);
+
+    // If a response was already partly sent (e.g. a stream failed midway),
+    // we can't send a JSON error anymore; just log and end it.
+    if (response.headersSent) {
+      this.logger.error({ err: exception }, 'Error after response headers were sent');
+      response.end();
+      return;
+    }
     // Set by pino-http; absent if the logger middleware didn't run.
     const reqId = (request as { id?: unknown }).id;
     if (typeof reqId === 'string' || typeof reqId === 'number') body.requestId = String(reqId);
@@ -122,8 +130,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   /** Detects `{ code, message }` bodies passed to HttpException constructors. */
-  private asCustomBody(payload: string | object): CustomErrorBody | null {
-    if (typeof payload !== 'object') return null;
+  private asCustomBody(payload: unknown): CustomErrorBody | null {
+    if (typeof payload !== 'object' || payload === null) return null;
     const candidate = payload as Partial<CustomErrorBody>;
     return typeof candidate.code === 'string' && typeof candidate.message === 'string'
       ? { code: candidate.code, message: candidate.message }

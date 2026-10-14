@@ -26,7 +26,7 @@ export function GithubButton({ label }: { label: string }): React.ReactNode {
   useEffect(() => {
     authApi
       .providers()
-      .then((providers) => setEnabled(providers.github))
+      .then((providers) => setEnabled(providers.github === true))
       .catch(() => setEnabled(false));
   }, []);
 

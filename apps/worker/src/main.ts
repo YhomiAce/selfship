@@ -14,4 +14,10 @@ async function bootstrap(): Promise<void> {
   app.get(Logger).log('Worker started, waiting for jobs', 'Bootstrap');
 }
 
-void bootstrap();
+bootstrap().catch((error: unknown) => {
+  // Logger may not be ready yet, so write straight to stderr.
+  process.stderr.write(
+    `Worker failed to start: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
+  process.exit(1);
+});

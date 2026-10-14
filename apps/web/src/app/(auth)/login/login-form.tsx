@@ -28,7 +28,9 @@ export function LoginForm(): React.ReactNode {
   const router = useRouter();
   const params = useSearchParams();
   const [formError, setFormError] = useState<string | null>(null);
-  const notice = NOTICES[params.get('error') ?? params.get('reset') ?? ''];
+  const noticeKey = params.get('error') ?? params.get('reset') ?? '';
+  // hasOwn: `?error=constructor` must not pick up Object.prototype members.
+  const notice = Object.hasOwn(NOTICES, noticeKey) ? NOTICES[noticeKey] : undefined;
 
   const {
     register,

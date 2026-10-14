@@ -1,4 +1,4 @@
-import { Global, Inject, Module, OnApplicationShutdown } from '@nestjs/common';
+import { Global, Inject, Logger, Module, OnApplicationShutdown } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { AppConfigService } from '../config/app-config.service';
 import { REDIS_CLIENT } from './redis.constants';
@@ -13,8 +13,16 @@ import { REDIS_CLIENT } from './redis.constants';
     {
       provide: REDIS_CLIENT,
       inject: [AppConfigService],
-      useFactory: (config: AppConfigService): Redis =>
-        new Redis(config.get('REDIS_URL'), { lazyConnect: false, maxRetriesPerRequest: 2 }),
+      useFactory: (config: AppConfigService): Redis => {
+        const redis = new Redis(config.get('REDIS_URL'), { maxRetriesPerRequest: 2 });
+        // Without a listener ioredis prints "Unhandled error event" on every
+        // reconnect attempt. It reconnects on its own; we just log it properly.
+        const logger = new Logger('Redis');
+        redis.on('error', (error: Error) => {
+          logger.warn(`Redis connection error: ${error.message}`);
+        });
+        return redis;
+      },
     },
   ],
   exports: [REDIS_CLIENT],

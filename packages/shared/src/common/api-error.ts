@@ -30,6 +30,10 @@ export const ErrorCode = {
   CONFLICT: 'CONFLICT',
   RATE_LIMITED: 'RATE_LIMITED',
   INTERNAL: 'INTERNAL',
+  /** Client-side only: the server could not be reached. */
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  /** Client-side only: a success response had an unexpected body. */
+  INVALID_RESPONSE: 'INVALID_RESPONSE',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

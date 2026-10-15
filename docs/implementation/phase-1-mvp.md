@@ -85,7 +85,7 @@
 
 ## M3 — Servers
 
-- [ ] **Deploy spike first** (moved from Phase 0): `make up` in `infra/aws/test-servers`, then a standalone script that bootstraps the VPS and deploys a static + Next.js app over SSH. Record results in `docs/spike-results.md`, then `make down`
+- [x] **Deploy spike** (moved from Phase 0): [`tools/deploy-spike`](../../tools/deploy-spike/README.md) bootstraps a VPS and deploys static, Vite and Next.js apps over SSH with zero-downtime switches. Results: [`docs/spike-results.md`](../spike-results.md). _Remaining: real Let's Encrypt certificates once `spike.selfship.dev` DNS exists_
 - [ ] `CryptoModule`: envelope encryption (AES-256-GCM data keys, master key from env), with key-version field for future rotation
 - [ ] Prisma: `Server` (name, host, port, sshUser, encryptedPrivateKey, publicKey, hostKeyFingerprint, os, arch, ramMb, diskGb, status, capabilityTier)
 - [ ] **Add server wizard**

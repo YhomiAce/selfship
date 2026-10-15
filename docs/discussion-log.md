@@ -85,3 +85,11 @@
 - A path-traversal bug (`../etc` as a repo name) was caught by the new integration tests and fixed in both the schema and the client.
 - Decisions #38–#43.
 - Founder action: register the GitHub App using `docs/guides/github-app-setup.md` (or try `pnpm mock:github` first).
+
+## Session 8 — 2026-10-15 — Infrastructure + M3 deploy spike
+
+- Founder: new AWS account (credits) in `eu-north-1`, bought **selfship.dev** and **selfship.app** on Cloudflare. GitHub App connected and working (made public).
+- Fixed Terraform (invalid character in a rule description) and allowed SSH from the ISP's /24 because the founder's public IP rotates.
+- **Deploy spike done** on both test servers. Key results: Next.js builds on 1 GB + swap (100 s) and 2 GB (73 s); static/SPA sites use < 1 MB each when running; idle baseline ~500 MB on AWS Ubuntu.
+- Found and fixed a zero-downtime gap: Traefik routed to new containers before they were ready (1 × 502). Docker health checks fixed it (0 failures in 92 requests).
+- Pending: Cloudflare DNS for `spike.selfship.dev` so real Let's Encrypt certificates can be verified.

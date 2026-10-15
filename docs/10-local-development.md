@@ -47,6 +47,15 @@ pnpm dev                        # web + api + worker in watch mode
 - `.env` (gitignored): your real local values
 - The API and worker validate env on startup with zod, and stop with a clear message if anything is missing
 
+## Trying the GitHub flow without GitHub
+
+```bash
+pnpm mock:github                                         # fake GitHub on :4010
+set -a; source .dev/mock-github.env; set +a; pnpm dev    # API uses the mock
+```
+
+Then **Projects → New project → Connect GitHub**. Details: [guides/github-app-setup.md](guides/github-app-setup.md#try-it-without-github-mock).
+
 ## Trying the auth flows
 
 1. Open http://localhost:3000 and click **Get started**

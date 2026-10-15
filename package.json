@@ -20,7 +20,8 @@
     "db:migrate": "pnpm --filter @selfship/db migrate:dev",
     "db:deploy": "pnpm --filter @selfship/db migrate:deploy",
     "db:studio": "pnpm --filter @selfship/db studio",
-    "prepare": "husky"
+    "prepare": "husky",
+    "mock:github": "node tools/mock-github/server.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

@@ -25,6 +25,7 @@ const runId = randomUUID().slice(0, 8);
 const base = Number.parseInt(runId.slice(0, 6), 16) * 10;
 const ACME_INSTALL = base + 1;
 const OTHER_INSTALL = base + 2;
+const ACME_REINSTALL = base + 3;
 
 /** Extracts the session cookie from a response. */
 function sessionCookie(res: request.Response): string {
@@ -117,7 +118,9 @@ describe('GitHub integration and projects (e2e)', () => {
     const prisma = app.get(PrismaService);
     await prisma.user.deleteMany({ where: { email: { contains: runId } } });
     await prisma.githubInstallation.deleteMany({
-      where: { githubInstallationId: { in: [BigInt(ACME_INSTALL), BigInt(OTHER_INSTALL)] } },
+      where: {
+        githubInstallationId: { in: [ACME_INSTALL, OTHER_INSTALL, ACME_REINSTALL].map(BigInt) },
+      },
     });
     await app.close();
   });
@@ -423,6 +426,24 @@ describe('GitHub integration and projects (e2e)', () => {
         const list = await http().get('/github/installations').set('Cookie', ada).expect(200);
         expect(list.body.items).toEqual([]);
       });
+    });
+
+    it('re-links projects when the account is reinstalled (new installation ID)', async () => {
+      github.installations.set(ACME_REINSTALL, {
+        ...(github.installations.get(ACME_INSTALL) ?? ({} as never)),
+        id: ACME_REINSTALL,
+      });
+      github.repos.set(ACME_REINSTALL, github.repos.get(ACME_INSTALL) ?? []);
+      github.codes.set('ada-code-2', [ACME_REINSTALL]);
+
+      await http()
+        .get(`/github/setup?installation_id=${ACME_REINSTALL}&setup_action=install&code=ada-code-2`)
+        .set('Cookie', ada)
+        .expect(302);
+
+      const project = await http().get(`/projects/${projectId}`).set('Cookie', ada).expect(200);
+      expect(project.body.github.state).toBe('connected');
+      expect(project.body.github.installationId).not.toBe(installationId);
     });
 
     it('deletes a project', async () => {

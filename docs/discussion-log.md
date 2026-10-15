@@ -75,3 +75,13 @@
 - **M1 auth** (branch `feat/m1-auth`, on top of the scaffold): email/password + GitHub sign-in, email verification, password reset, sessions, rate limiting, CSRF origin check, dashboard shell.
 - Decisions #31–#35 (database sessions, `/api` rewrite, OAuth App for login, queued emails, lint-staged 15).
 - Environment notes: Playwright can't install browsers on Ubuntu 20.04, so UI smoke tests use the locally installed Chrome. Git 2.25 is old; upgrading it would let us use the latest lint-staged.
+
+## Session 7 — 2026-10-15 — M2 implemented
+
+- Founder: continue implementation, don't miss anything.
+- **M2** (branch `feat/m2-github`): GitHub App integration, framework detection, projects API and UI. Every M2 checklist item is done, plus two gaps found along the way:
+  - **Ownership check** on the install callback (decision #39)
+  - **Re-linking projects** after a reinstall (decision #41). Found while reviewing the uninstall screen
+- A path-traversal bug (`../etc` as a repo name) was caught by the new integration tests and fixed in both the schema and the client.
+- Decisions #38–#43.
+- Founder action: register the GitHub App using `docs/guides/github-app-setup.md` (or try `pnpm mock:github` first).

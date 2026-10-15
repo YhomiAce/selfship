@@ -66,8 +66,33 @@ export class GithubInstallationsService {
       create: { installationId: installation.id, userId },
       update: {},
     });
+    await this.relinkProjects(userId, installation);
     await this.repositories.invalidate(githubInstallationId);
     return 'connected';
+  }
+
+  /**
+   * Moves the user's projects from removed installations of the same GitHub
+   * account to the new one. GitHub issues a new installation ID on reinstall,
+   * so without this, projects would stay "GitHub access removed" forever.
+   * Repository access is re-checked by GitHub on the next deploy/settings change.
+   *
+   * @param userId - User whose projects are moved
+   * @param installation - The freshly connected installation
+   * @returns Number of projects moved
+   */
+  private async relinkProjects(userId: string, installation: GithubInstallation): Promise<number> {
+    const { count } = await this.prisma.project.updateMany({
+      where: {
+        userId,
+        githubInstallationId: { not: installation.id },
+        githubInstallation: { accountLogin: installation.accountLogin, deletedAt: { not: null } },
+      },
+      data: { githubInstallationId: installation.id },
+    });
+    if (count > 0)
+      this.logger.log(`Re-linked ${count} project(s) to installation ${installation.id}`);
+    return count;
   }
 
   /**

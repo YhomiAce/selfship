@@ -29,3 +29,6 @@ coverage/
 
 # Personal scratch notes (may contain secrets)
 starter_notes.md
+
+# Local dev artefacts (mock keys etc.)
+.dev/

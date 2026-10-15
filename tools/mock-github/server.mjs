@@ -181,6 +181,15 @@ const server = createServer(async (req, res) => {
        <form method="post" action="/__mock/unsuspend"><button>Unsuspend (sends webhook)</button></form>`,
     );
   }
+  if (method === 'GET' && p === '/login/oauth/authorize') {
+    // "Link existing installations": authorise and go straight back with a code.
+    const back = new URL(url.searchParams.get('redirect_uri') ?? `${WEB_URL}/api/github/setup`);
+    back.searchParams.set('code', 'mock-user-code');
+    const state = url.searchParams.get('state');
+    if (state) back.searchParams.set('state', state);
+    res.writeHead(302, { Location: back.toString() });
+    return res.end();
+  }
   if (method === 'POST' && p === '/login/oauth/access_token') {
     installed = true;
     return json(res, 200, { access_token: 'mock-user-token' });

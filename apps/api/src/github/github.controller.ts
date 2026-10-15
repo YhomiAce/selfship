@@ -86,6 +86,41 @@ export class GithubController {
   }
 
   /**
+   * "Already installed? Link it": asks GitHub to authorise the user (no
+   * install step) and returns to the setup callback, which links every
+   * installation of the app the user can access.
+   */
+  @Public()
+  @Get('link')
+  link(@Req() req: AuthenticatedRequest, @Res() res: Response): void {
+    const webUrl = this.config.get('WEB_URL');
+    if (!req.auth) {
+      res.redirect(new URL(`/login?next=${encodeURIComponent(WIZARD_PATH)}`, webUrl).toString());
+      return;
+    }
+    if (!this.github.isConfigured) {
+      res.redirect(
+        new URL(
+          `${WIZARD_PATH}?github=${GithubSetupResult.ERROR}&reason=not_configured`,
+          webUrl,
+        ).toString(),
+      );
+      return;
+    }
+    const state = generateToken();
+    res.cookie(GITHUB_INSTALL_STATE_COOKIE, state, {
+      httpOnly: true,
+      secure: this.config.isProduction,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: GITHUB_INSTALL_STATE_TTL_MS,
+    });
+    res.redirect(
+      this.github.client.authorizeUrl(state, new URL('/api/github/setup', webUrl).toString()),
+    );
+  }
+
+  /**
    * GitHub redirects here after the app is installed or its repository
    * access is changed. Verifies the user really has access to the
    * installation, records it, and returns to the project wizard.
@@ -140,8 +175,30 @@ export class GithubController {
       return;
     }
 
-    const installationId = Number(queryString(rawInstallationId));
     const code = queryString(rawCode);
+    const rawId = queryString(rawInstallationId);
+
+    // No installation_id but a code: the "link existing installations" flow,
+    // which always starts from us, so the state is mandatory here.
+    if (!rawId && code) {
+      if (!state) {
+        back(GithubSetupResult.ERROR, 'state');
+        return;
+      }
+      try {
+        const linked = await this.installations.claimAll(req.auth.user.id, code);
+        back(
+          linked > 0 ? GithubSetupResult.CONNECTED : GithubSetupResult.ERROR,
+          linked > 0 ? undefined : 'no_installations',
+        );
+      } catch (error) {
+        this.logger.warn({ err: error }, 'Linking GitHub installations failed');
+        back(GithubSetupResult.ERROR, 'github');
+      }
+      return;
+    }
+
+    const installationId = Number(rawId);
     if (!Number.isSafeInteger(installationId) || installationId <= 0) {
       back(GithubSetupResult.ERROR, 'missing_installation');
       return;

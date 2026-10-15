@@ -186,6 +186,48 @@ describe('GitHub integration and projects (e2e)', () => {
       installationId = list.body.items[0].id;
     });
 
+    it('starts the "link existing installations" flow with a state cookie', async () => {
+      const res = await http().get('/github/link').set('Cookie', ada).expect(302);
+      expect(res.get('Location')).toContain('/login/oauth/authorize?state=');
+      expect(res.get('Location')).toContain(
+        encodeURIComponent('http://localhost:3000/api/github/setup'),
+      );
+    });
+
+    it('requires the state for the link flow', async () => {
+      const res = await http().get('/github/setup?code=bob-code').set('Cookie', bob).expect(302);
+      expect(res.get('Location')).toContain('reason=state');
+    });
+
+    it('reports when the app is not installed anywhere the user can access', async () => {
+      github.codes.set('nobody-code', []);
+      const res = await http()
+        .get('/github/setup?code=nobody-code&state=s1')
+        .set('Cookie', `${bob}; gh_install_state=s1`)
+        .expect(302);
+      expect(res.get('Location')).toContain('reason=no_installations');
+    });
+
+    it('links every installation the user can access (no installation_id needed)', async () => {
+      github.installations.set(OTHER_INSTALL, {
+        id: OTHER_INSTALL,
+        accountLogin: `bob-${runId}`,
+        accountType: 'User',
+        accountAvatarUrl: null,
+        repositorySelection: 'all',
+        suspended: false,
+      });
+      const res = await http()
+        .get('/github/setup?code=bob-code&state=s2')
+        .set('Cookie', `${bob}; gh_install_state=s2`)
+        .expect(302);
+      expect(res.get('Location')).toContain('github=connected');
+      const list = await http().get('/github/installations').set('Cookie', bob).expect(200);
+      expect(
+        (list.body as { items: { accountLogin: string }[] }).items.map((i) => i.accountLogin),
+      ).toEqual([`bob-${runId}`]);
+    });
+
     it('handles "request" setups (awaiting org owner approval)', async () => {
       const res = await http()
         .get('/github/setup?setup_action=request')

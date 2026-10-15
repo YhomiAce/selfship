@@ -10,6 +10,8 @@ import { validateEnv } from './env.schema';
   imports: [
     ConfigModule.forRoot({
       envFilePath: [path.resolve(process.cwd(), '../../.env'), path.resolve(process.cwd(), '.env')],
+      // Tests get a controlled environment (see test/setup-env.ts), never personal .env values.
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
       validate: validateEnv,
       cache: true,
     }),

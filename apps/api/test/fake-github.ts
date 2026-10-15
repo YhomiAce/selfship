@@ -30,6 +30,10 @@ export class FakeGithubClient {
     return `https://github.example/apps/selfship-test/installations/new?state=${state}`;
   }
 
+  authorizeUrl(state: string, redirectUri: string): string {
+    return `https://github.example/login/oauth/authorize?state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+  }
+
   manageUrl(installationId: number): string {
     return `https://github.example/settings/installations/${installationId}`;
   }

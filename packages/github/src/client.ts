@@ -160,6 +160,24 @@ export class GithubAppClient {
   }
 
   /**
+   * URL that asks the user to authorise the app (no installation step). Used
+   * to link installations that already exist, e.g. ones made on github.com.
+   * `redirectUri` must be one of the app's registered Callback URLs.
+   *
+   * @param state - CSRF state, echoed back to `redirectUri`
+   * @param redirectUri - Where GitHub sends the user with `?code=…&state=…`
+   * @returns Absolute URL
+   */
+  authorizeUrl(state: string, redirectUri: string): string {
+    const params = new URLSearchParams({
+      client_id: this.config.clientId,
+      redirect_uri: redirectUri,
+      state,
+    });
+    return `${this.webUrl}/login/oauth/authorize?${params.toString()}`;
+  }
+
+  /**
    * URL where the account owner manages which repositories the app can access.
    *
    * @param installationId - GitHub installation ID

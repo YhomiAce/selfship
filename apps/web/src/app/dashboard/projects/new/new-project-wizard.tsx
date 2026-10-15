@@ -32,6 +32,8 @@ const SETUP_ERRORS: Record<string, string> = {
   github: "We couldn't reach GitHub to finish connecting. Please try again.",
   not_configured: 'GitHub integration is not configured on this server.',
   missing_installation: 'GitHub did not send an installation. Please try again.',
+  no_installations:
+    "The Selfship app isn't installed on any GitHub account you can access yet. Click Connect GitHub to install it.",
 };
 
 type LoadState =
@@ -141,9 +143,12 @@ export function NewProjectWizard(): React.ReactNode {
               repositories it can see. You can change this any time on GitHub.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-wrap items-center gap-4">
             <a href={githubApi.installUrl} className={buttonVariants({ size: 'lg' })}>
               Connect GitHub
+            </a>
+            <a href={githubApi.linkUrl} className="text-muted-foreground text-sm hover:underline">
+              Already installed the app on GitHub? Link it
             </a>
           </CardContent>
         </Card>

@@ -36,4 +36,7 @@ export const githubApi = {
 
   /** URL that starts installing the GitHub App (full-page navigation). */
   installUrl: '/api/github/install',
+
+  /** URL that links installations made earlier or directly on github.com. */
+  linkUrl: '/api/github/link',
 };

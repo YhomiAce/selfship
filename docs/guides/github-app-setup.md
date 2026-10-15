@@ -9,19 +9,20 @@ Selfship reads repositories through a **GitHub App**. Users install it on their 
 GitHub → **Settings → Developer settings → GitHub Apps → New GitHub App**
 (direct link: https://github.com/settings/apps/new; for an organization: `https://github.com/organizations/<org>/settings/apps/new`)
 
-| Field                                                      | Value                                                                        |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| GitHub App name                                            | `Selfship Local (<your-name>)`: must be unique on GitHub                     |
-| Homepage URL                                               | `http://localhost:3000`                                                      |
-| **Callback URL**                                           | `http://localhost:3000/api/github/setup`                                     |
-| Expire user authorization tokens                           | ✅ (default)                                                                 |
-| **Request user authorization (OAuth) during installation** | ✅ **Required.** It's how Selfship verifies who installed the app            |
-| Enable Device Flow                                         | ☐                                                                            |
-| Setup URL                                                  | Leave empty (disabled when the option above is on)                           |
-| **Redirect on update**                                     | ✅ So changing repository access returns to Selfship                         |
-| Webhook → Active                                           | ✅                                                                           |
-| Webhook URL                                                | Your smee.io URL (see step 4) or `https://<your-domain>/api/webhooks/github` |
-| Webhook secret                                             | A random string: `openssl rand -hex 32`. Keep it for `.env`                  |
+| Field                                                      | Value                                                                                                 |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| GitHub App name                                            | `Selfship Local (<your-name>)`: must be unique on GitHub                                              |
+| Homepage URL                                               | `http://localhost:3000`                                                                               |
+| **Callback URL** (1)                                       | `http://localhost:3000/api/github/setup` (connecting accounts)                                        |
+| **Callback URL** (2), click "Add Callback URL"             | `http://localhost:3000/api/auth/github/callback` (only if you use this app for "Sign in with GitHub") |
+| Expire user authorization tokens                           | ✅ (default)                                                                                          |
+| **Request user authorization (OAuth) during installation** | ✅ **Required.** It's how Selfship verifies who installed the app                                     |
+| Enable Device Flow                                         | ☐                                                                                                     |
+| Setup URL                                                  | Leave empty (disabled when the option above is on)                                                    |
+| **Redirect on update**                                     | ✅ So changing repository access returns to Selfship                                                  |
+| Webhook → Active                                           | ✅                                                                                                    |
+| Webhook URL                                                | Your smee.io URL (see step 4) or `https://<your-domain>/api/webhooks/github`                          |
+| Webhook secret                                             | A random string: `openssl rand -hex 32`. Keep it for `.env`                                           |
 
 **Permissions → Repository permissions:**
 
@@ -30,7 +31,7 @@ GitHub → **Settings → Developer settings → GitHub Apps → New GitHub App*
 | Contents   | **Read-only**         |
 | Metadata   | Read-only (always on) |
 
-No account or organization permissions are needed.
+**Account permissions:** none for repository access. If you also use this app for **"Sign in with GitHub"** (`GITHUB_CLIENT_ID` = the app's client ID), set **Email addresses → Read-only**: sign-in needs the verified email.
 
 **Subscribe to events:** ✅ **Push**. Installation events are always sent to GitHub Apps; you don't select them.
 
@@ -93,14 +94,18 @@ Webhooks tell Selfship when the app is uninstalled or suspended, or when reposit
 
 ## Troubleshooting
 
-| Symptom                                                                              | Fix                                                                                                                                  |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Toast: _"…must have Request user authorization (OAuth) during installation enabled"_ | Enable that checkbox in the app settings (step 1)                                                                                    |
-| Toast: _"GitHub didn't confirm you have access to that installation"_                | You installed it with a different GitHub user than the one that authorised. Sign in to GitHub as the account owner and try again     |
-| _"GitHub isn't set up yet"_ in the wizard                                            | One or more `GITHUB_APP_*` values are missing; check the API startup log                                                             |
-| API fails to start: _"GITHUB_APP_PRIVATE_KEY could not be parsed"_                   | Re-run the `awk` command and paste the whole output, including the BEGIN/END lines                                                   |
-| Webhook deliveries show **401** in GitHub's "Recent Deliveries"                      | `GITHUB_WEBHOOK_SECRET` doesn't match the secret in the app settings                                                                 |
-| A repository is missing from the list                                                | Click **Change repository access on GitHub** in the wizard and add it. The list refreshes within 5 minutes (instantly with webhooks) |
+| Symptom                                                                              | Fix                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toast: _"…must have Request user authorization (OAuth) during installation enabled"_ | Enable that checkbox in the app settings (step 1)                                                                                                                                                                 |
+| Toast: _"GitHub didn't confirm you have access to that installation"_                | You installed it with a different GitHub user than the one that authorised. Sign in to GitHub as the account owner and try again                                                                                  |
+| _"GitHub isn't set up yet"_ in the wizard                                            | One or more `GITHUB_APP_*` values are missing; check the API startup log                                                                                                                                          |
+| API fails to start: _"GITHUB_APP_PRIVATE_KEY could not be parsed"_                   | Re-run the `awk` command and paste the whole output, including the BEGIN/END lines                                                                                                                                |
+| Webhook deliveries show **401** in GitHub's "Recent Deliveries"                      | `GITHUB_WEBHOOK_SECRET` doesn't match the secret in the app settings                                                                                                                                              |
+| Webhook deliveries show **200** on GitHub but Selfship doesn't react                 | smee.io accepted them but the relay isn't running: start `npx smee-client …` (step 4)                                                                                                                             |
+| GitHub says **"The redirect_uri is not associated with this application"**           | Add the missing Callback URL (step 1): `/api/github/setup` for connecting, `/api/auth/github/callback` for sign-in                                                                                                |
+| After installing, GitHub **doesn't send you back** to Selfship                       | Tick **Request user authorization (OAuth) during installation** and **Redirect on update**. Then use **"Already installed the app? Link it"** in the wizard: it links existing installations without reinstalling |
+| "Sign in with GitHub" fails after authorising                                        | If sign-in uses this app, give it **Email addresses: Read-only** (account permissions) and accept the new permission on your installation                                                                         |
+| A repository is missing from the list                                                | Click **Change repository access on GitHub** in the wizard and add it. The list refreshes within 5 minutes (instantly with webhooks)                                                                              |
 
 ## Try it without GitHub (mock)
 

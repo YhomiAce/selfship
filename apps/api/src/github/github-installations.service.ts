@@ -47,6 +47,31 @@ export class GithubInstallationsService {
       return 'not-yours';
     }
 
+    await this.linkToUser(userId, githubInstallationId);
+    return 'connected';
+  }
+
+  /**
+   * Links every installation of this app that the authorising user can
+   * access. Used by "Already installed? Link it", which works even when the
+   * installation was made directly on github.com.
+   *
+   * @param userId - Signed-in user
+   * @param code - OAuth code from the authorise redirect
+   * @returns Number of installations linked (0 if the app isn't installed anywhere they can see)
+   * @throws {GithubApiError} If GitHub can't be reached or the code is invalid
+   */
+  async claimAll(userId: string, code: string): Promise<number> {
+    const ids = await this.github.client.installationIdsForUserCode(code);
+    for (const id of ids) await this.linkToUser(userId, id);
+    return ids.length;
+  }
+
+  /**
+   * Records (or refreshes) an installation from GitHub and makes the user a member.
+   * Only call after GitHub confirmed the user can access it.
+   */
+  private async linkToUser(userId: string, githubInstallationId: number): Promise<void> {
     const info = await this.github.client.getInstallation(githubInstallationId);
     const data = {
       accountLogin: info.accountLogin,
@@ -68,7 +93,6 @@ export class GithubInstallationsService {
     });
     await this.relinkProjects(userId, installation);
     await this.repositories.invalidate(githubInstallationId);
-    return 'connected';
   }
 
   /**

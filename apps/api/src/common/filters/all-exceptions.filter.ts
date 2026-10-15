@@ -25,10 +25,12 @@ const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {
 /**
  * Error body thrown by services to control the code/message precisely:
  * `throw new ConflictException({ code: 'EMAIL_TAKEN', message: '...' })`.
+ * Optional `fieldErrors` attach messages to form fields.
  */
 interface CustomErrorBody {
   code: string;
   message: string;
+  fieldErrors?: Record<string, string[]>;
 }
 
 /**
@@ -108,6 +110,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode,
         code: custom?.code ?? STATUS_TO_CODE[statusCode] ?? ErrorCode.INTERNAL,
         message: custom?.message ?? exception.message,
+        ...(custom?.fieldErrors ? { fieldErrors: custom.fieldErrors } : {}),
       };
     }
 
@@ -132,9 +135,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
   /** Detects `{ code, message }` bodies passed to HttpException constructors. */
   private asCustomBody(payload: unknown): CustomErrorBody | null {
     if (typeof payload !== 'object' || payload === null) return null;
-    const candidate = payload as Partial<CustomErrorBody>;
-    return typeof candidate.code === 'string' && typeof candidate.message === 'string'
-      ? { code: candidate.code, message: candidate.message }
-      : null;
+    const candidate = payload as Record<string, unknown>;
+    if (typeof candidate.code !== 'string' || typeof candidate.message !== 'string') return null;
+    const fieldErrors = this.asFieldErrors(candidate.fieldErrors);
+    return {
+      code: candidate.code,
+      message: candidate.message,
+      ...(fieldErrors ? { fieldErrors } : {}),
+    };
+  }
+
+  /** Accepts `{ field: string[] }` objects only; anything else is dropped. */
+  private asFieldErrors(value: unknown): Record<string, string[]> | null {
+    if (typeof value !== 'object' || value === null) return null;
+    const entries = Object.entries(value).filter(
+      (entry): entry is [string, string[]] =>
+        Array.isArray(entry[1]) && entry[1].every((message) => typeof message === 'string'),
+    );
+    return entries.length > 0 ? Object.fromEntries(entries) : null;
   }
 }

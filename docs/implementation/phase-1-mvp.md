@@ -52,22 +52,34 @@
 
 ---
 
-## M2 — GitHub App, projects, detection
+## M2 — GitHub App, projects, detection ✅ (implemented 2026-10-15, awaiting founder review)
 
-- [ ] Guide: `docs/guides/github-app-setup.md` (permissions: Contents read, Metadata read; events: push, installation)
-- [ ] `GithubModule`: app JWT, installation tokens (cached < 1h, never persisted), install callback, `POST /webhooks/github` with **signature verification**, handling of installation added/removed/suspended
-- [ ] List repos (paginated, searchable) and branches
-- [ ] `packages/adapters`: `static`, `spa` (Vite/CRA/Angular/Vue CLI), `node`, `nextjs`, `dockerfile`. Each with `detect()`, `defaults()`, `dockerfile()` and unit tests using fixture repos
-- [ ] Detection **before deploy** by reading `package.json` / files through the GitHub API, so the UI pre-fills build cmd / start cmd / port / output dir
-- [ ] Monorepo support: "root directory" field
-- [ ] Prisma: `GithubInstallation`, `Project` (repo, branch, rootDir, adapter, buildCmd, startCmd, port, outputDir)
-- [ ] UI: "New Project" wizard: pick repo, pick branch, review detected settings (editable), save
+- [x] Guide: [`docs/guides/github-app-setup.md`](../guides/github-app-setup.md) (Contents read, Metadata read; push events; installation events are automatic)
+- [x] `GithubModule`: app JWT, installation tokens (in memory, refreshed before the 1 h expiry, never persisted), install redirect + setup callback, `POST /webhooks/github` with **signature verification**, installation created/deleted/suspend/unsuspend and repository-access events
+- [x] **Ownership check**: the `installation_id` in GitHub's redirect is only trusted if GitHub lists it for the user who authorised (requires "Request user authorization during installation")
+- [x] List repos (searchable, paginated, cached 5 min in Redis, cleared by webhooks) and branches (default first)
+- [x] `packages/adapters`: `static`, `spa` (Vite/CRA/Angular/Vue CLI/Astro/Parcel/Next static export), `node`, `nextjs`, `dockerfile`. Detection, suggested settings, generated Dockerfile + `.dockerignore`, fixture-based tests
+- [x] Detection **before deploy** through the GitHub API (no clone): package manager, Node version, build/start commands, output dir, port
+- [x] Monorepo support: "root directory" field, verified on GitHub
+- [x] Prisma: `GithubInstallation`, `GithubInstallationMember`, `Project`
+- [x] UI: "New project" wizard (connect GitHub → pick account/repo → review detected settings → create), projects grid, project page with editable settings and delete
+- [x] Extra: projects re-link automatically when an account reinstalls the app (GitHub issues a new installation ID)
+- [x] Extra: `pnpm mock:github`, a local fake GitHub for demos and UI testing
+
+**Tests:** 36 adapter tests, 20 GitHub client tests, 62 shared-schema tests, 64 API unit tests, 46 API integration tests (connect, ownership, repos, detection, projects, webhooks, reinstall), 32 web unit tests, plus a headless-Chrome walkthrough against the mock GitHub (run manually)
 
 **What you'll test**
 
-- [ ] Install the GitHub App on selected repos. They appear in the wizard
+- [ ] Register the GitHub App ([guide](../guides/github-app-setup.md)), install it on selected repos. They appear in the wizard
 - [ ] Create projects from a Next.js repo, a Vite React repo and a plain HTML repo. Each is detected correctly
-- [ ] Uninstall the app on GitHub. The UI reflects it
+- [ ] Uninstall the app on GitHub. The UI shows "GitHub access removed". **Reconnect GitHub** restores it
+- [ ] (Optional, no GitHub needed) `pnpm mock:github` demo
+
+**Notes for later milestones**
+
+- Generated Dockerfiles for static/SPA use a BuildKit heredoc, so M3's bootstrap must install **Docker ≥ 23** (BuildKit default)
+- The worker will reuse `packages/github` to clone with installation tokens (M4)
+- "Sign in with GitHub" still uses the separate OAuth App (decision #33); moving it onto the GitHub App is optional
 
 ---
 

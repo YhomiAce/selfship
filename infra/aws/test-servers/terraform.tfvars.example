@@ -4,6 +4,10 @@
 # aws_region   = "us-east-1"
 # ssh_public_key_path = "~/.ssh/id_rsa.pub"
 
+# SSH is allowed from your current public IP by default. If your ISP rotates
+# your IP (SSH suddenly times out), allow its block instead, e.g.:
+# allowed_ssh_cidrs = ["102.220.173.0/24"]
+
 # Get an email when spend passes 80% / is forecast to pass 100% of the budget.
 # budget_email = "you@example.com"
 # budget_usd   = 20

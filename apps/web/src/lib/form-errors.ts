@@ -10,19 +10,22 @@ import { ApiRequestError } from '@/lib/api-client';
  * @param error - Whatever the submit handler caught
  * @param setError - The form's `setError`
  * @param fields - Field names that exist on this form
+ * @param aliases - API field path → form field path, when they differ
  * @returns A form-level message, or null if every error was attached to a field
  */
 export function applyApiErrors<T extends FieldValues>(
   error: unknown,
   setError: UseFormSetError<T>,
   fields: readonly Path<T>[],
+  aliases: Readonly<Record<string, string>> = {},
 ): string | null {
   if (!(error instanceof ApiRequestError)) {
     return 'Something went wrong. Check your connection and try again.';
   }
 
   let unmatched = false;
-  for (const [field, messages] of Object.entries(error.fieldErrors)) {
+  for (const [apiField, messages] of Object.entries(error.fieldErrors)) {
+    const field = Object.hasOwn(aliases, apiField) ? aliases[apiField] : apiField;
     const known = fields.find((name) => name === field);
     if (known) setError(known, { type: 'server', message: messages[0] ?? 'Invalid value.' });
     else unmatched = true;

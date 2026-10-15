@@ -2,7 +2,7 @@
 
 **Selfship deploys any app from GitHub to your own server.** Connect a repo, add your VPS, click deploy. The platform builds the app, sets up the reverse proxy and SSL, and redeploys on every push.
 
-> Status: early development. Sign-up, login (email or GitHub), email verification and password reset work locally. Deployments come in later milestones.
+> Status: early development. Accounts, GitHub App integration, framework detection and projects work locally. Deployments to servers come next.
 
 ## Repository layout
 
@@ -15,8 +15,10 @@ packages/
   shared/     zod schemas + types shared by api, worker and web
   db/         Prisma schema, migrations and client
   adapters/   Framework detection + Dockerfile generation
+  github/     GitHub App client (auth, repositories, contents, webhooks)
 docs/         Product, architecture and planning docs (start at docs/README.md)
 infra/        Terraform for test servers
+tools/        Dev tools (mock GitHub)
 ```
 
 ## Quick start

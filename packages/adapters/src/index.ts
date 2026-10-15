@@ -1,3 +1,4 @@
 export * from './types';
-export { detectAdapter } from './detect';
+export { ADAPTERS, detectProject, fallbackSettings, getAdapter } from './registry';
+export { UnsafeBuildConfigError } from './dockerfile';
 export { memoryRepo } from './testing';

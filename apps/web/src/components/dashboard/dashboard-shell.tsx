@@ -1,20 +1,13 @@
 'use client';
 
-import { FolderGit2, Loader2, Server, Settings } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
-import { cn } from '@/lib/utils';
+import { SidebarNav, SidebarNavFallback } from './sidebar-nav';
 import { UserMenu } from './user-menu';
 import { VerifyEmailBanner } from './verify-email-banner';
-
-/** Sidebar navigation entries. */
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Projects', icon: FolderGit2 },
-  { href: '/dashboard/servers', label: 'Servers', icon: Server },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-] as const;
 
 /**
  * Dashboard frame: sidebar, header and content area.
@@ -24,14 +17,15 @@ const NAV_ITEMS = [
  */
 export function DashboardShell({ children }: { children: React.ReactNode }): React.ReactNode {
   const { user, isLoading } = useAuth();
-  const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+      // Read the path at redirect time (not via usePathname) so the shell has
+      // no URL dependency and can stay in the prerendered App Shell.
+      router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`);
     }
-  }, [isLoading, user, pathname, router]);
+  }, [isLoading, user, router]);
 
   if (!user) {
     return (
@@ -47,27 +41,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }): Rea
         <Link href="/dashboard" className="px-6 py-5 text-lg font-semibold tracking-tight">
           Selfship
         </Link>
-        <nav className="flex flex-col gap-1 px-3" aria-label="Main">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  active
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-                )}
-              >
-                <Icon className="size-4" />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+        <Suspense fallback={<SidebarNavFallback />}>
+          <SidebarNav />
+        </Suspense>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b px-6">

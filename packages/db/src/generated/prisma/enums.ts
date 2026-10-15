@@ -22,3 +22,14 @@ export const OAuthProvider = {
 } as const
 
 export type OAuthProvider = (typeof OAuthProvider)[keyof typeof OAuthProvider]
+
+
+export const Adapter = {
+  dockerfile: 'dockerfile',
+  nextjs: 'nextjs',
+  spa: 'spa',
+  node: 'node',
+  static: 'static'
+} as const
+
+export type Adapter = (typeof Adapter)[keyof typeof Adapter]

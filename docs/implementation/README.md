@@ -39,7 +39,7 @@ This folder turns the [roadmap](../05-roadmap.md) into concrete, dated work.
 | Phase 1 · M3 | Test VPS (`make up` in `infra/aws/test-servers`) | Terraform is ready, run only during test sessions                          |
 | Phase 1 · M3 | A domain on **Cloudflare**                       | Any cheap domain works for now. Used for the spike and platform subdomains |
 | Phase 1 · M1 | Email sending account (e.g. Resend / Postmark)   | Dev uses Mailpit locally, so this is only needed for staging               |
-| Phase 1 · M2 | **GitHub App** registered                        | We'll write a step-by-step guide                                           |
+| Phase 1 · M2 | **GitHub App** registered                        | Guide: [github-app-setup.md](../guides/github-app-setup.md)                |
 | Phase 1 · M5 | Cloudflare API token (DNS edit, one zone)        | For platform subdomains                                                    |
 | Phase 1 · M6 | **Anthropic API key** from the Claude Console    | For the Build Doctor. See [08](../08-ai-build-doctor.md)                   |
 | Phase 1 · M6 | One VPS for the **free sandbox**                 | About €5–10/month, hosts many small free apps                              |

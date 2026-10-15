@@ -10,9 +10,11 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppConfigModule } from './config/app-config.module';
 import { AppConfigService } from './config/app-config.service';
 import { DiagnosticsModule } from './diagnostics/diagnostics.module';
+import { GithubModule } from './github/github.module';
 import { HealthModule } from './health/health.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProjectsModule } from './projects/projects.module';
 import { QueueModule } from './queue/queue.module';
 import { RedisModule } from './redis/redis.module';
 
@@ -56,6 +58,8 @@ function requestId(req: IncomingMessage): string {
     QueueModule,
     MailModule,
     AuthModule,
+    GithubModule,
+    ProjectsModule,
     HealthModule,
     DiagnosticsModule,
   ],

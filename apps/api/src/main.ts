@@ -8,7 +8,11 @@ import { AppConfigService } from './config/app-config.service';
 
 /** Starts the HTTP server. */
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    // Keep the exact request bytes: GitHub webhook signatures are computed over them.
+    rawBody: true,
+  });
   app.useLogger(app.get(Logger));
   configureApp(app);
 

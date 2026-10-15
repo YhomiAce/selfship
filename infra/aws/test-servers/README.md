@@ -58,6 +58,6 @@ Keep the record **DNS only**. Traefik has to get Let's Encrypt certificates dire
 
 ## Notes
 
-- **IP changed?** If your home IP changes, SSH will time out. Re-run `make up` to update the allowed IP.
+- **IP changed?** If your home IP changes, SSH will time out. Re-run `make up` to update the allowed IP. If your ISP keeps rotating it (`curl https://checkip.amazonaws.com` shows a different address each time), set `allowed_ssh_cidrs` to your ISP's block in `terraform.tfvars` (see the example file). SSH stays key-only.
 - **Fresh server for every test run:** `terraform apply -replace='aws_instance.server["test-2gb"]'` rebuilds one server from scratch and keeps the IP.
 - State is stored locally in `terraform.tfstate` (gitignored). It only holds public data here, but don't commit it.

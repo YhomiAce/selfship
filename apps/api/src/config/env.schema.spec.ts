@@ -20,3 +20,34 @@ describe('validateEnv', () => {
     );
   });
 });
+
+describe('validateEnv: GitHub App settings', () => {
+  const base = { DATABASE_URL: 'postgresql://u:p@localhost:5432/db' };
+  const app = {
+    GITHUB_APP_ID: '1',
+    GITHUB_APP_SLUG: 'selfship',
+    GITHUB_APP_CLIENT_ID: 'Iv1.x',
+    GITHUB_APP_CLIENT_SECRET: 's',
+    GITHUB_APP_PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY-----',
+    GITHUB_WEBHOOK_SECRET: 'w',
+  };
+
+  it('treats empty values as not set', () => {
+    const env = validateEnv({
+      ...base,
+      GITHUB_APP_ID: '',
+      GITHUB_CLIENT_ID: '',
+      GITHUB_CLIENT_SECRET: '',
+    });
+    expect(env.GITHUB_APP_ID).toBeUndefined();
+    expect(env.GITHUB_CLIENT_ID).toBeUndefined();
+  });
+
+  it('accepts a complete GitHub App configuration', () => {
+    expect(validateEnv({ ...base, ...app }).GITHUB_APP_SLUG).toBe('selfship');
+  });
+
+  it('rejects a partial GitHub App configuration and names the missing keys', () => {
+    expect(() => validateEnv({ ...base, GITHUB_APP_ID: '1' })).toThrow(/GITHUB_APP_PRIVATE_KEY/);
+  });
+});

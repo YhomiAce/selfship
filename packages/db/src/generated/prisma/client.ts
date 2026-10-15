@@ -59,3 +59,20 @@ export type VerificationToken = Prisma.VerificationTokenModel
  * Links a user to an external identity (e.g. their GitHub account).
  */
 export type OAuthAccount = Prisma.OAuthAccountModel
+/**
+ * Model GithubInstallation
+ * A GitHub account (user or organization) where our GitHub App is installed.
+ * Created from the install callback or the `installation` webhook, whichever comes first.
+ */
+export type GithubInstallation = Prisma.GithubInstallationModel
+/**
+ * Model GithubInstallationMember
+ * Which users may use an installation (verified through GitHub at install time).
+ * Several members of one organization can share its installation.
+ */
+export type GithubInstallationMember = Prisma.GithubInstallationMemberModel
+/**
+ * Model Project
+ * An app deployed from a GitHub repository.
+ */
+export type Project = Prisma.ProjectModel

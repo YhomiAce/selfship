@@ -1,20 +1,22 @@
-/** Stable identifiers of supported adapters. */
-export type AdapterName = 'dockerfile' | 'nextjs' | 'node' | 'spa' | 'static';
+import type { AdapterName, PackageManager, ProjectSettings } from '@selfship/shared';
+
+export type { AdapterName, PackageManager, ProjectSettings } from '@selfship/shared';
 
 /**
- * Read-only view of a repository, used for detection.
+ * Read-only view of a project's files, used for detection.
  *
  * Implemented on top of the GitHub API (before the first deploy) or a local
  * clone (on the server), so adapters never care where files come from.
+ * All paths are relative to the project's root directory.
  */
 export interface RepoSnapshot {
-  /** Repo-relative paths of files in the project's root directory. */
+  /** Names of files and folders directly inside the project root. */
   readonly files: ReadonlySet<string>;
   /**
-   * Reads a file's contents.
+   * Reads a text file.
    *
-   * @param path - Repo-relative path
-   * @returns The file contents, or `null` if it does not exist
+   * @param path - Path relative to the project root
+   * @returns The contents, or `null` if missing, a directory, or too large
    */
   readFile(path: string): Promise<string | null>;
 }
@@ -22,59 +24,50 @@ export interface RepoSnapshot {
 /** Outcome of a successful detection. */
 export interface DetectResult {
   adapter: AdapterName;
-  /** Short human-readable explanation shown in the UI, e.g. "Found next in package.json". */
+  /** Short explanation shown in the UI, e.g. "Found next in package.json". */
   reason: string;
+  /** Suggested settings for this repository. */
+  settings: ProjectSettings;
+  packageManager: PackageManager | null;
 }
 
-/** Settings pre-filled in the UI after detection (the user can override them). */
-export interface AdapterDefaults {
-  installCommand?: string;
-  buildCommand?: string;
-  startCommand?: string;
-  /** Directory containing build output, for static/SPA adapters. */
-  outputDirectory?: string;
-  /** Port the app listens on inside the container. */
-  port: number;
-}
-
-/** Final per-project settings used to render the Dockerfile. */
-export interface BuildConfig extends AdapterDefaults {
-  /** Node major version for JS adapters, e.g. `22`. */
-  nodeVersion?: number;
-  /** Names of build-time environment variables (values are passed as build args). */
+/** Final settings used to render build files. */
+export interface BuildConfig {
+  settings: ProjectSettings;
+  /** Package manager (JS adapters). Defaults to npm when unknown. */
+  packageManager: PackageManager | null;
+  /** Names of build-time environment variables (values passed as build args). */
   buildArgNames: readonly string[];
+}
+
+/** Files to write into the build context before `docker build`. */
+export interface GeneratedBuildFiles {
+  Dockerfile: string;
+  '.dockerignore': string;
 }
 
 /**
  * One supported framework or project type.
  *
- * To support a new language, implement this interface and register the
- * adapter in detection order.
+ * To support a new language, implement this interface and add the adapter
+ * to `ADAPTERS` in detection order.
  */
 export interface Adapter {
   readonly name: AdapterName;
 
   /**
-   * Checks whether this adapter can handle the repository.
+   * Checks whether this adapter can handle the project.
    *
-   * @param repo - Repository snapshot
-   * @returns A result if the adapter matches, otherwise `null`
+   * @param repo - Project files
+   * @returns Detection result with suggested settings, or `null` if no match
    */
   detect(repo: RepoSnapshot): Promise<DetectResult | null>;
 
   /**
-   * Suggests default build settings for the repository.
+   * Renders the files needed to build the image.
    *
-   * @param repo - Repository snapshot
-   * @returns Defaults to pre-fill in the UI
+   * @param config - Final, validated build settings
+   * @returns Generated files, or `null` when the repository's own Dockerfile is used
    */
-  defaults(repo: RepoSnapshot): Promise<AdapterDefaults>;
-
-  /**
-   * Renders the Dockerfile used to build the app.
-   *
-   * @param config - Final build settings
-   * @returns Dockerfile contents
-   */
-  dockerfile(config: BuildConfig): string;
+  buildFiles(config: BuildConfig): GeneratedBuildFiles | null;
 }

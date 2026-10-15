@@ -54,7 +54,10 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
-  OAuthAccount: 'OAuthAccount'
+  OAuthAccount: 'OAuthAccount',
+  GithubInstallation: 'GithubInstallation',
+  GithubInstallationMember: 'GithubInstallationMember',
+  Project: 'Project'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -124,6 +127,55 @@ export const OAuthAccountScalarFieldEnum = {
 } as const
 
 export type OAuthAccountScalarFieldEnum = (typeof OAuthAccountScalarFieldEnum)[keyof typeof OAuthAccountScalarFieldEnum]
+
+
+export const GithubInstallationScalarFieldEnum = {
+  id: 'id',
+  githubInstallationId: 'githubInstallationId',
+  accountLogin: 'accountLogin',
+  accountType: 'accountType',
+  accountAvatarUrl: 'accountAvatarUrl',
+  repositorySelection: 'repositorySelection',
+  suspendedAt: 'suspendedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GithubInstallationScalarFieldEnum = (typeof GithubInstallationScalarFieldEnum)[keyof typeof GithubInstallationScalarFieldEnum]
+
+
+export const GithubInstallationMemberScalarFieldEnum = {
+  id: 'id',
+  installationId: 'installationId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type GithubInstallationMemberScalarFieldEnum = (typeof GithubInstallationMemberScalarFieldEnum)[keyof typeof GithubInstallationMemberScalarFieldEnum]
+
+
+export const ProjectScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  githubInstallationId: 'githubInstallationId',
+  name: 'name',
+  repoId: 'repoId',
+  repoFullName: 'repoFullName',
+  branch: 'branch',
+  rootDirectory: 'rootDirectory',
+  adapter: 'adapter',
+  installCommand: 'installCommand',
+  buildCommand: 'buildCommand',
+  startCommand: 'startCommand',
+  outputDirectory: 'outputDirectory',
+  port: 'port',
+  nodeVersion: 'nodeVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
 
 
 export const SortOrder = {

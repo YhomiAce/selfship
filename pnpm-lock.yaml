@@ -74,9 +74,15 @@ importers:
       '@nestjs/throttler':
         specifier: ^6.7.1
         version: 6.7.1(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.7)(reflect-metadata@0.2.2)
+      '@selfship/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
       '@selfship/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@selfship/github':
+        specifier: workspace:*
+        version: link:../../packages/github
       '@selfship/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -276,7 +282,14 @@ importers:
         specifier: ^13.2.0
         version: 13.2.0
 
-  packages/adapters: {}
+  packages/adapters:
+    dependencies:
+      '@selfship/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
 
   packages/db:
     dependencies:
@@ -293,6 +306,12 @@ importers:
       prisma:
         specifier: ~7.10.0
         version: 7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
+
+  packages/github:
+    dependencies:
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
 
   packages/shared:
     dependencies:

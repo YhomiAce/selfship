@@ -24,9 +24,11 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  sessions      Session[]
-  tokens        VerificationToken[]
-  oauthAccounts OAuthAccount[]
+  sessions            Session[]
+  tokens              VerificationToken[]
+  oauthAccounts       OAuthAccount[]
+  githubInstallations GithubInstallationMember[]
+  projects            Project[]
 
   @@map("users")
 }
@@ -96,4 +98,88 @@ model OAuthAccount {
   @@unique([provider, providerAccountId])
   @@index([userId])
   @@map("oauth_accounts")
+}
+
+/// A GitHub account (user or organization) where our GitHub App is installed.
+/// Created from the install callback or the `installation` webhook, whichever comes first.
+model GithubInstallation {
+  id                   String    @id @default(uuid()) @db.Uuid
+  /// GitHub's numeric installation ID.
+  githubInstallationId BigInt    @unique @map("github_installation_id")
+  accountLogin         String    @map("account_login")
+  /// "User" or "Organization".
+  accountType          String    @map("account_type")
+  accountAvatarUrl     String?   @map("account_avatar_url")
+  /// "all" or "selected" repositories.
+  repositorySelection  String    @default("selected") @map("repository_selection")
+  suspendedAt          DateTime? @map("suspended_at")
+  /// Set when the app is uninstalled. Kept so projects can show "GitHub access removed".
+  deletedAt            DateTime? @map("deleted_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  members  GithubInstallationMember[]
+  projects Project[]
+
+  @@map("github_installations")
+}
+
+/// Which users may use an installation (verified through GitHub at install time).
+/// Several members of one organization can share its installation.
+model GithubInstallationMember {
+  id             String   @id @default(uuid()) @db.Uuid
+  installationId String   @map("installation_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  installation GithubInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([installationId, userId])
+  @@index([userId])
+  @@map("github_installation_members")
+}
+
+/// How a project is built. Values match the adapter names in packages/adapters.
+enum Adapter {
+  dockerfile
+  nextjs
+  spa
+  node
+  static
+
+  @@map("adapter")
+}
+
+/// An app deployed from a GitHub repository.
+model Project {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @map("user_id") @db.Uuid
+  githubInstallationId String   @map("github_installation_id") @db.Uuid
+  /// Unique per user; DNS-safe slug.
+  name                 String
+  /// GitHub's numeric repository ID (stable across renames).
+  repoId               BigInt   @map("repo_id")
+  /// `owner/name` at the time of the last sync.
+  repoFullName         String   @map("repo_full_name")
+  branch               String
+  /// Project folder inside the repository ('' = repository root).
+  rootDirectory        String   @default("") @map("root_directory")
+  adapter              Adapter
+  installCommand       String?  @map("install_command")
+  buildCommand         String?  @map("build_command")
+  startCommand         String?  @map("start_command")
+  outputDirectory      String?  @map("output_directory")
+  port                 Int
+  nodeVersion          Int?     @map("node_version")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubInstallation GithubInstallation @relation(fields: [githubInstallationId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, name])
+  @@index([githubInstallationId])
+  @@index([repoId])
+  @@map("projects")
 }

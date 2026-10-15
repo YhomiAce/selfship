@@ -61,3 +61,20 @@ describe('AllExceptionsFilter edge cases', () => {
     expect(body.code).toBe('VALIDATION_FAILED');
   });
 });
+
+describe('AllExceptionsFilter custom field errors', () => {
+  const filter = new AllExceptionsFilter();
+
+  it('passes through well-formed fieldErrors from services', () => {
+    const body = filter.toApiError(
+      new BadRequestException({
+        code: 'ROOT_DIRECTORY_NOT_FOUND',
+        message: 'Folder not found.',
+        fieldErrors: { 'source.rootDirectory': ['Folder not found on this branch.'], bad: 'x' },
+      }),
+    );
+    expect(body.fieldErrors).toEqual({
+      'source.rootDirectory': ['Folder not found on this branch.'],
+    });
+  });
+});

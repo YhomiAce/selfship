@@ -130,7 +130,7 @@ export function ProjectDetail(): React.ReactNode {
           />
           {project.github.state === 'removed' ? (
             <a
-              href={githubApi.installUrl}
+              href={githubApi.connectUrl}
               className={buttonVariants({ variant: 'outline', className: 'self-start' })}
             >
               Reconnect GitHub

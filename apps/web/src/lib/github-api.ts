@@ -34,9 +34,12 @@ export const githubApi = {
       `/github/installations/${encodeURIComponent(installationId)}/branches?repo=${encodeURIComponent(repoFullName)}`,
     ),
 
-  /** URL that starts installing the GitHub App (full-page navigation). */
-  installUrl: '/api/github/install',
+  /**
+   * "Connect GitHub": links installations the user already has, or continues
+   * to the install page if there are none (full-page navigation).
+   */
+  connectUrl: '/api/github/link',
 
-  /** URL that links installations made earlier or directly on github.com. */
-  linkUrl: '/api/github/link',
+  /** Installs the app on another account or organization. */
+  installUrl: '/api/github/install',
 };

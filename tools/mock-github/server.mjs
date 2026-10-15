@@ -91,6 +91,8 @@ const REPOS = [
 }));
 
 let installed = false;
+/** Set when the install page is shown; the next code exchange completes the install. */
+let pendingInstall = false;
 
 /** GitHub-shaped repository JSON. */
 const repoJson = (repo) => ({
@@ -159,6 +161,7 @@ const server = createServer(async (req, res) => {
 
   // ── "github.com" pages ────────────────────────────────────────────────────
   if (method === 'GET' && /^\/apps\/[^/]+\/installations\/new$/.test(p)) {
+    pendingInstall = true;
     const callback = new URL('/api/github/setup', WEB_URL);
     callback.searchParams.set('installation_id', String(INSTALLATION_ID));
     callback.searchParams.set('setup_action', installed ? 'update' : 'install');
@@ -191,7 +194,8 @@ const server = createServer(async (req, res) => {
     return res.end();
   }
   if (method === 'POST' && p === '/login/oauth/access_token') {
-    installed = true;
+    if (pendingInstall) installed = true;
+    pendingInstall = false;
     return json(res, 200, { access_token: 'mock-user-token' });
   }
 
@@ -215,7 +219,14 @@ const server = createServer(async (req, res) => {
 
   // ── REST API ──────────────────────────────────────────────────────────────
   if (method === 'GET' && p === '/user/installations') {
-    return json(res, 200, { total_count: 1, installations: [{ id: INSTALLATION_ID }] });
+    // Like GitHub: only installations that actually exist are listed.
+    return json(
+      res,
+      200,
+      installed
+        ? { total_count: 1, installations: [{ id: INSTALLATION_ID }] }
+        : { total_count: 0, installations: [] },
+    );
   }
   if (method === 'GET' && p === `/app/installations/${INSTALLATION_ID}`)
     return json(res, 200, installationPayload());

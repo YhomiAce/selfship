@@ -199,13 +199,14 @@ describe('GitHub integration and projects (e2e)', () => {
       expect(res.get('Location')).toContain('reason=state');
     });
 
-    it('reports when the app is not installed anywhere the user can access', async () => {
+    it('continues to the install page when the app is not installed anywhere yet', async () => {
       github.codes.set('nobody-code', []);
       const res = await http()
         .get('/github/setup?code=nobody-code&state=s1')
         .set('Cookie', `${bob}; gh_install_state=s1`)
         .expect(302);
-      expect(res.get('Location')).toContain('reason=no_installations');
+      expect(res.get('Location')).toMatch(/installations\/new\?state=/);
+      expect(res.get('Set-Cookie')?.join(';')).toContain('gh_install_state=');
     });
 
     it('links every installation the user can access (no installation_id needed)', async () => {

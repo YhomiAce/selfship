@@ -74,6 +74,11 @@ export class GithubController {
       return;
     }
 
+    this.redirectToInstall(res);
+  }
+
+  /** Sets a fresh CSRF state cookie and redirects to the GitHub install page. */
+  private redirectToInstall(res: Response): void {
     const state = generateToken();
     res.cookie(GITHUB_INSTALL_STATE_COOKIE, state, {
       httpOnly: true,
@@ -86,9 +91,11 @@ export class GithubController {
   }
 
   /**
-   * "Already installed? Link it": asks GitHub to authorise the user (no
-   * install step) and returns to the setup callback, which links every
-   * installation of the app the user can access.
+   * "Connect GitHub": asks GitHub to authorise the user and returns to the
+   * setup callback, which links every installation of the app the user can
+   * already access. If there are none, the callback continues to the install
+   * page. This avoids GitHub's "already installed" settings page, which never
+   * redirects back when nothing changes.
    */
   @Public()
   @Get('link')
@@ -187,10 +194,12 @@ export class GithubController {
       }
       try {
         const linked = await this.installations.claimAll(req.auth.user.id, code);
-        back(
-          linked > 0 ? GithubSetupResult.CONNECTED : GithubSetupResult.ERROR,
-          linked > 0 ? undefined : 'no_installations',
-        );
+        if (linked > 0) {
+          back(GithubSetupResult.CONNECTED);
+        } else {
+          // Nothing installed yet: continue straight to installing the app.
+          this.redirectToInstall(res);
+        }
       } catch (error) {
         this.logger.warn({ err: error }, 'Linking GitHub installations failed');
         back(GithubSetupResult.ERROR, 'github');

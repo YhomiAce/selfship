@@ -35,7 +35,7 @@ GitHub → **Settings → Developer settings → GitHub Apps → New GitHub App*
 
 **Subscribe to events:** ✅ **Push**. Installation events are always sent to GitHub Apps; you don't select them.
 
-**Where can this GitHub App be installed?**: _Only on this account_ for local testing. Use _Any account_ for the real product.
+**Where can this GitHub App be installed?**: _Only on this account_ keeps it private: **only your own GitHub account** can install or sign in with it, and every other account gets a 404. Choose _Any account_ (or later: app settings → **Advanced → Make public**) as soon as anyone else needs to try it, including your own second test account.
 
 Click **Create GitHub App**.
 
@@ -103,6 +103,7 @@ Webhooks tell Selfship when the app is uninstalled or suspended, or when reposit
 | Webhook deliveries show **401** in GitHub's "Recent Deliveries"                      | `GITHUB_WEBHOOK_SECRET` doesn't match the secret in the app settings                                                                                                                                              |
 | Webhook deliveries show **200** on GitHub but Selfship doesn't react                 | smee.io accepted them but the relay isn't running: start `npx smee-client …` (step 4)                                                                                                                             |
 | GitHub says **"The redirect_uri is not associated with this application"**           | Add the missing Callback URL (step 1): `/api/github/setup` for connecting, `/api/auth/github/callback` for sign-in                                                                                                |
+| Another GitHub account gets a **404** on the authorize or install page               | The app is private ("Only on this account"). App settings → **Advanced → Make public**                                                                                                                            |
 | After installing, GitHub **doesn't send you back** to Selfship                       | Tick **Request user authorization (OAuth) during installation** and **Redirect on update**. Then use **"Already installed the app? Link it"** in the wizard: it links existing installations without reinstalling |
 | "Sign in with GitHub" fails after authorising                                        | If sign-in uses this app, give it **Email addresses: Read-only** (account permissions) and accept the new permission on your installation                                                                         |
 | A repository is missing from the list                                                | Click **Change repository access on GitHub** in the wizard and add it. The list refreshes within 5 minutes (instantly with webhooks)                                                                              |

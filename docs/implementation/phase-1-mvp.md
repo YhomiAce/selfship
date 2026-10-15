@@ -85,7 +85,7 @@
 
 ## M3 — Servers
 
-- [x] **Deploy spike** (moved from Phase 0): [`tools/deploy-spike`](../../tools/deploy-spike/README.md) bootstraps a VPS and deploys static, Vite and Next.js apps over SSH with zero-downtime switches. Results: [`docs/spike-results.md`](../spike-results.md). _Remaining: real Let's Encrypt certificates once `spike.selfship.dev` DNS exists_
+- [x] **Deploy spike** (moved from Phase 0): [`tools/deploy-spike`](../../tools/deploy-spike/README.md) bootstraps a VPS and deploys static, Vite and Next.js apps over SSH with zero-downtime switches. Results: [`docs/spike-results.md`](../spike-results.md). Real Let's Encrypt certificates verified on `*.spike.selfship.dev`
 - [ ] `CryptoModule`: envelope encryption (AES-256-GCM data keys, master key from env), with key-version field for future rotation
 - [ ] Prisma: `Server` (name, host, port, sshUser, encryptedPrivateKey, publicKey, hostKeyFingerprint, os, arch, ramMb, diskGb, status, capabilityTier)
 - [ ] **Add server wizard**

@@ -52,9 +52,18 @@ Requests sent every ~100 ms (through Traefik) during redeploys:
 6. **Docker 29.9 + `traefik:v3` work together** in these tests. Pin the Traefik version in production so an upstream release can't change behaviour unexpectedly.
 7. **Firewall:** ufw allows the SSH port first, then 80/443. Docker-published ports bypass ufw, but only Traefik publishes ports, so app containers are unreachable except through Traefik.
 
+## Let's Encrypt (verified 2026-10-15, after DNS was added)
+
+`spike` and `*.spike` A records on Cloudflare (DNS only) → test-2gb. After deleting the staging `acme.json` and re-running bootstrap without `--staging`, Traefik obtained real certificates on the first request:
+
+| Host                                | Result                                                       |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `https://static.spike.selfship.dev` | HTTP 200, certificate valid                                  |
+| `https://vite.spike.selfship.dev`   | HTTP 200, certificate valid                                  |
+| `https://next.spike.selfship.dev`   | HTTP 200, issuer Let's Encrypt (YR2), valid until 2027-01-13 |
+
 ## Not yet verified
 
-- **Real Let's Encrypt certificates.** The `spike.selfship.dev` DNS records weren't in place yet, so these runs used Let's Encrypt **staging** and were checked with `curl --resolve -k` (Traefik's default certificate). Re-run with production ACME once DNS exists, deleting `/opt/selfship/traefik/acme.json` first (it holds the staging account).
 - 512 MB servers, Debian 12/13, arm64.
 
 ## Decisions for the product (M3/M4)

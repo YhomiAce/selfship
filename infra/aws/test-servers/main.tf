@@ -89,7 +89,7 @@ resource "aws_vpc_security_group_ingress_rule" "web" {
 
 resource "aws_vpc_security_group_egress_rule" "all" {
   security_group_id = aws_security_group.test_server.id
-  description       = "All outbound (apt, Docker Hub, GitHub, Let's Encrypt)"
+  description       = "All outbound: apt, Docker Hub, GitHub, Lets Encrypt"
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
 }

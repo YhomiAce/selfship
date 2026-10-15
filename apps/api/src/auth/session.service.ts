@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { CookieOptions, Request, Response } from 'express';
 import type { User } from '@selfship/db';
 import { generateToken, hashToken } from '../common/crypto';
+import { readCookie } from '../common/http';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SESSION_COOKIE, SESSION_REFRESH_INTERVAL_MS } from './auth.constants';
@@ -123,8 +124,7 @@ export class SessionService {
    * @returns The raw token, or undefined
    */
   readCookie(req: Request): string | undefined {
-    const cookies = req.cookies as Record<string, string | undefined> | undefined;
-    return cookies?.[this.cookieName];
+    return readCookie(req, this.cookieName);
   }
 
   /**

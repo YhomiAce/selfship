@@ -35,6 +35,9 @@ const EmailsResponseSchema = z.array(
   z.object({ email: z.string(), primary: z.boolean(), verified: z.boolean() }),
 );
 
+/** GitHub calls happen inside a user's sign-in request, so never wait forever. */
+const GITHUB_TIMEOUT_MS = 10_000;
+
 const GITHUB_API_HEADERS = {
   Accept: 'application/vnd.github+json',
   'X-GitHub-Api-Version': '2022-11-28',
@@ -119,6 +122,7 @@ export class GithubOAuthService {
         code,
         redirect_uri: this.callbackUrl,
       }),
+      signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
     });
     const parsed = TokenResponseSchema.safeParse(await response.json().catch(() => null));
     if (!parsed.success || 'error' in parsed.data) {
@@ -133,9 +137,10 @@ export class GithubOAuthService {
   private async getJson<T>(url: string, accessToken: string, schema: z.ZodType<T>): Promise<T> {
     const response = await fetch(url, {
       headers: { ...GITHUB_API_HEADERS, Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS),
     });
     if (!response.ok) throw new GithubOAuthError(`${url} returned ${response.status}`);
-    const parsed = schema.safeParse(await response.json());
+    const parsed = schema.safeParse(await response.json().catch(() => null));
     if (!parsed.success) throw new GithubOAuthError(`${url} returned an unexpected body`);
     return parsed.data;
   }

@@ -1,4 +1,9 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 import { ZodValidationException } from 'nestjs-zod';
 import { z } from 'zod';
@@ -39,5 +44,20 @@ describe('AllExceptionsFilter.toApiError', () => {
     const body = filter.toApiError(new Error('db password is hunter2'));
     expect(body.statusCode).toBe(500);
     expect(body.message).not.toContain('hunter2');
+  });
+});
+
+describe('AllExceptionsFilter edge cases', () => {
+  const filter = new AllExceptionsFilter();
+
+  it('handles HttpExceptions created with a null body', () => {
+    const body = filter.toApiError(new HttpException(null as unknown as string, 418));
+    expect(body.statusCode).toBe(418);
+    expect(body.code).toBe('INTERNAL');
+  });
+
+  it('ignores bodies whose code/message are not strings', () => {
+    const body = filter.toApiError(new BadRequestException({ code: 42, message: ['a', 'b'] }));
+    expect(body.code).toBe('VALIDATION_FAILED');
   });
 });

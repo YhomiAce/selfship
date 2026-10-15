@@ -1,7 +1,8 @@
 import type { NextConfig } from 'next';
 
 /** Where the NestJS API listens. The browser never calls it directly. */
-const API_URL = process.env.API_URL ?? 'http://localhost:4000';
+// `||` (not `??`) so an empty `API_URL=` line also falls back to the default.
+const API_URL = process.env.API_URL || 'http://localhost:4000';
 
 const nextConfig: NextConfig = {
   cacheComponents: true,

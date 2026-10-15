@@ -16,6 +16,7 @@ import type { Request, Response } from 'express';
 import type { User } from '@selfship/db';
 import type { AuthProvidersResponse, AuthUserResponse } from '@selfship/shared';
 import { generateToken, safeEqual } from '../common/crypto';
+import { queryString, readCookie } from '../common/http';
 import { AppConfigService } from '../config/app-config.service';
 import { AUTH_THROTTLE, OAUTH_STATE_COOKIE, OAUTH_STATE_TTL_MS } from './auth.constants';
 import { AuthService, type SignedIn } from './auth.service';
@@ -192,21 +193,22 @@ export class AuthController {
    * GitHub redirects here after the user approves. Verifies state, signs the
    * user in and redirects to the dashboard (or back to login with an error).
    *
-   * @param code - One-time authorization code
-   * @param state - Must match the state cookie
+   * @param rawCode - One-time authorization code (validated to a single string)
+   * @param rawState - Must match the state cookie
    */
   @Public()
   @Throttle(AUTH_THROTTLE)
   @Get('github/callback')
   async githubCallback(
-    @Query('code') code: string | undefined,
-    @Query('state') state: string | undefined,
+    @Query('code') rawCode: unknown,
+    @Query('state') rawState: unknown,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
     const webUrl = this.config.get('WEB_URL');
-    const cookies = req.cookies as Record<string, string | undefined>;
-    const expectedState = cookies[OAUTH_STATE_COOKIE];
+    const code = queryString(rawCode);
+    const state = queryString(rawState);
+    const expectedState = readCookie(req, OAUTH_STATE_COOKIE);
     res.clearCookie(OAUTH_STATE_COOKIE, { path: '/' });
 
     if (

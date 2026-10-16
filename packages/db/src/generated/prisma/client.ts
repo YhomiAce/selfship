@@ -86,3 +86,18 @@ export type Server = Prisma.ServerModel
  * One run of a check or setup on a server, with its full log.
  */
 export type ServerJob = Prisma.ServerJobModel
+/**
+ * Model EnvVar
+ * A project's environment variable. The value is encrypted at rest.
+ */
+export type EnvVar = Prisma.EnvVarModel
+/**
+ * Model Deployment
+ * One attempt to build and run a commit of a project on a server.
+ */
+export type Deployment = Prisma.DeploymentModel
+/**
+ * Model DeploymentLogChunk
+ * The saved log of a deployment, written in chunks while it runs (secrets already masked).
+ */
+export type DeploymentLogChunk = Prisma.DeploymentLogChunkModel

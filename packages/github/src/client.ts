@@ -6,11 +6,14 @@ import { createAppJwt, parsePrivateKey } from './jwt';
 /** Configuration for {@link GithubAppClient}. */
 export interface GithubAppConfig {
   appId: string;
-  /** App slug, from `https://github.com/apps/<slug>`. */
-  slug: string;
-  /** OAuth client ID/secret of the app (used to verify who installed it). */
-  clientId: string;
-  clientSecret: string;
+  /** App slug, from `https://github.com/apps/<slug>` (needed for {@link GithubAppClient.installUrl}). */
+  slug?: string;
+  /**
+   * OAuth client ID/secret of the app (needed to verify who installed it).
+   * The worker only clones repositories, so it can leave these out.
+   */
+  clientId?: string;
+  clientSecret?: string;
   /** Private key (PEM). */
   privateKey: string;
   /** REST API base URL. Default `https://api.github.com` (change for GitHub Enterprise). */
@@ -32,6 +35,15 @@ export interface GithubRepository {
   private: boolean;
   defaultBranch: string;
   pushedAt: string | null;
+}
+
+/** A commit, as shown on a deployment. */
+export interface GithubCommit {
+  sha: string;
+  /** First line of the commit message. */
+  message: string;
+  /** GitHub login if linked to an account, otherwise the git author name. */
+  author: string | null;
 }
 
 /** An entry in a directory listing. */
@@ -72,6 +84,15 @@ const RepositoryPageSchema = z.object({
 });
 
 const BranchSchema = z.object({ name: z.string() });
+
+const CommitSchema = z.object({
+  sha: z.string().regex(/^[0-9a-f]{40}$/),
+  commit: z.object({
+    message: z.string(),
+    author: z.object({ name: z.string() }).nullable().optional(),
+  }),
+  author: z.object({ login: z.string() }).nullable().optional(),
+});
 
 const DirEntrySchema = z.object({
   name: z.string(),
@@ -156,7 +177,7 @@ export class GithubAppClient {
    * @returns Absolute URL
    */
   installUrl(state: string): string {
-    return `${this.webUrl}/apps/${encodeURIComponent(this.config.slug)}/installations/new?state=${encodeURIComponent(state)}`;
+    return `${this.webUrl}/apps/${encodeURIComponent(this.required('slug'))}/installations/new?state=${encodeURIComponent(state)}`;
   }
 
   /**
@@ -170,7 +191,7 @@ export class GithubAppClient {
    */
   authorizeUrl(state: string, redirectUri: string): string {
     const params = new URLSearchParams({
-      client_id: this.config.clientId,
+      client_id: this.required('clientId'),
       redirect_uri: redirectUri,
       state,
     });
@@ -316,6 +337,38 @@ export class GithubAppClient {
   }
 
   /**
+   * Resolves a branch, tag or SHA to its commit.
+   *
+   * @param installationId - GitHub installation ID
+   * @param fullName - `owner/name`
+   * @param ref - Branch, tag or commit SHA
+   * @returns The commit (full SHA, first message line, author)
+   * @throws {GithubApiError} 404/422 if the ref doesn't exist
+   */
+  async getCommit(installationId: number, fullName: string, ref: string): Promise<GithubCommit> {
+    const data = await this.installationRequest(
+      installationId,
+      `/repos/${repoPath(fullName)}/commits/${encodePath(ref)}`,
+      CommitSchema,
+    );
+    return {
+      sha: data.sha,
+      message: (data.commit.message.split('\n')[0] ?? '').slice(0, 300),
+      author: data.author?.login ?? data.commit.author?.name ?? null,
+    };
+  }
+
+  /**
+   * HTTPS URL for cloning a repository (credentials are sent separately, never in the URL).
+   *
+   * @param fullName - `owner/name`
+   * @returns Clone URL
+   */
+  cloneUrl(fullName: string): string {
+    return `${this.webUrl}/${repoPath(fullName)}.git`;
+  }
+
+  /**
    * Checks that a branch exists.
    *
    * @param installationId - GitHub installation ID
@@ -417,7 +470,11 @@ export class GithubAppClient {
       `${this.webUrl}/login/oauth/access_token`,
       {
         method: 'POST',
-        body: { client_id: this.config.clientId, client_secret: this.config.clientSecret, code },
+        body: {
+          client_id: this.required('clientId'),
+          client_secret: this.required('clientSecret'),
+          code,
+        },
         absolute: true,
       },
       OAuthTokenSchema,
@@ -436,6 +493,13 @@ export class GithubAppClient {
       if (data.installations.length < 100 || ids.length >= data.total_count) break;
     }
     return ids;
+  }
+
+  /** A config value only some features need; throws a clear error when it's missing. */
+  private required(name: 'slug' | 'clientId' | 'clientSecret'): string {
+    const value = this.config[name];
+    if (!value) throw new Error(`GitHub App ${name} is not configured`);
+    return value;
   }
 
   /** Authenticated request on behalf of an installation. Retries once on 401. */

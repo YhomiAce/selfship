@@ -1,5 +1,14 @@
 export { bootstrapServer, BOOTSTRAP_SCRIPT } from './bootstrap';
 export type { BootstrapOptions } from './bootstrap';
+export {
+  APPS_DIR,
+  AppDeployer,
+  DeployCancelledError,
+  DeployError,
+  exportLines,
+  teardownApp,
+} from './deploy';
+export type { DeployHooks, DeployOutcome, DeployPlan, DeployTimings } from './deploy';
 export { assertPublicHost, ForbiddenHostError, isBlockedAddress } from './host';
 export { authorizeKeyCommand, installKeyWithPassword, revokeKeyCommand } from './install-key';
 export type { InstallKeyOptions } from './install-key';

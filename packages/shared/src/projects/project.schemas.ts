@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import type { DeploymentDto } from '../deployments/deployment.schemas';
+import type { ServerStatus } from '../servers/server.schemas';
 
 /** Supported project types, in detection priority order. */
 export const ADAPTER_NAMES = ['dockerfile', 'nextjs', 'spa', 'node', 'static'] as const;
@@ -89,6 +91,16 @@ export const BranchNameSchema = z
     'Invalid branch name.',
   );
 
+/**
+ * Path requested to decide whether a new version is up. Any response below
+ * 500 counts as healthy (redirects and 404s still prove the app is serving).
+ */
+export const HealthCheckPathSchema = z
+  .string()
+  .trim()
+  .max(200, 'Use at most 200 characters.')
+  .regex(/^\/[\w\-./~%?=&]*$/, 'Start with "/" and use URL characters only, e.g. /health.');
+
 /** Build and run settings of a project (pre-filled by detection, editable). */
 export const ProjectSettingsSchema = z
   .object({
@@ -168,6 +180,9 @@ export const UpdateProjectSchema = z.object({
   branch: BranchNameSchema.optional(),
   rootDirectory: RelativePathSchema.optional(),
   settings: ProjectSettingsSchema.optional(),
+  /** Server to deploy to (`null` = none yet). */
+  serverId: z.uuid().nullable().optional(),
+  healthCheckPath: HealthCheckPathSchema.optional(),
 });
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
 
@@ -183,6 +198,13 @@ export interface ProjectDto {
   rootDirectory: string;
   settings: ProjectSettings;
   github: { installationId: string; accountLogin: string; state: GithubConnectionState };
+  /** Where it deploys to. */
+  server: { id: string; name: string; status: ServerStatus } | null;
+  healthCheckPath: string;
+  /** The deployment serving traffic now, if any. */
+  liveDeployment: DeploymentDto | null;
+  /** The newest deployment (may be in progress or failed). */
+  latestDeployment: DeploymentDto | null;
   createdAt: string;
   updatedAt: string;
 }

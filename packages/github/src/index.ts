@@ -1,6 +1,7 @@
 export { GithubAppClient } from './client';
 export type {
   GithubAppConfig,
+  GithubCommit,
   GithubDirEntry,
   GithubInstallationInfo,
   GithubRepository,

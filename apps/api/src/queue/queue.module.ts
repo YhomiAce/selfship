@@ -23,7 +23,11 @@ import { AppConfigService } from '../config/app-config.service';
         },
       }),
     }),
-    BullModule.registerQueue({ name: QueueName.SYSTEM }, { name: QueueName.SERVERS }),
+    BullModule.registerQueue(
+      { name: QueueName.SYSTEM },
+      { name: QueueName.SERVERS },
+      { name: QueueName.DEPLOYMENTS },
+    ),
   ],
   exports: [BullModule],
 })

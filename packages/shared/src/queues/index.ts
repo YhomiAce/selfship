@@ -15,6 +15,8 @@ export const QueueName = {
   EMAIL: 'email',
   /** Server checks and setup (SSH). */
   SERVERS: 'servers',
+  /** Deployments: clone, build and run apps on servers. */
+  DEPLOYMENTS: 'deployments',
 } as const;
 
 export type QueueName = (typeof QueueName)[keyof typeof QueueName];
@@ -89,4 +91,35 @@ export type ServerJobData = z.infer<typeof ServerJobDataSchema>;
  */
 export function serverJobStreamKey(serverJobId: string): string {
   return `selfship:server-job:${serverJobId}:log`;
+}
+
+/** Job names on the `deployments` queue. */
+export const DeploymentQueueJob = {
+  RUN: 'run',
+  /** Remove a project's app from a server (project deleted or moved). */
+  TEARDOWN: 'teardown',
+} as const;
+
+/**
+ * Payload of `deployments:run`. Only the ID: the worker loads everything
+ * else (including encrypted env vars) from the database.
+ */
+export const DeploymentJobDataSchema = z.object({ deploymentId: z.uuid() });
+export type DeploymentJobData = z.infer<typeof DeploymentJobDataSchema>;
+
+/**
+ * Payload of `deployments:teardown`: stop and remove a project's containers,
+ * images and files on one server. The project may already be deleted.
+ */
+export const TeardownJobDataSchema = z.object({ projectId: z.uuid(), serverId: z.uuid() });
+export type TeardownJobData = z.infer<typeof TeardownJobDataSchema>;
+
+/**
+ * Redis Stream holding a deployment's live log.
+ *
+ * @param deploymentId - Deployment ID
+ * @returns Stream key
+ */
+export function deploymentStreamKey(deploymentId: string): string {
+  return `selfship:deployment:${deploymentId}:log`;
 }

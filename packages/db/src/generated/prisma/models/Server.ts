@@ -410,6 +410,8 @@ export type ServerWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   jobs?: Prisma.ServerJobListRelationFilter
+  projects?: Prisma.ProjectListRelationFilter
+  deployments?: Prisma.DeploymentListRelationFilter
 }
 
 export type ServerOrderByWithRelationInput = {
@@ -443,6 +445,8 @@ export type ServerOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   jobs?: Prisma.ServerJobOrderByRelationAggregateInput
+  projects?: Prisma.ProjectOrderByRelationAggregateInput
+  deployments?: Prisma.DeploymentOrderByRelationAggregateInput
 }
 
 export type ServerWhereUniqueInput = Prisma.AtLeast<{
@@ -480,6 +484,8 @@ export type ServerWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   jobs?: Prisma.ServerJobListRelationFilter
+  projects?: Prisma.ProjectListRelationFilter
+  deployments?: Prisma.DeploymentListRelationFilter
 }, "id" | "userId_name">
 
 export type ServerOrderByWithAggregationInput = {
@@ -582,6 +588,8 @@ export type ServerCreateInput = {
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutServersInput
   jobs?: Prisma.ServerJobCreateNestedManyWithoutServerInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutServerInput
 }
 
 export type ServerUncheckedCreateInput = {
@@ -614,6 +622,8 @@ export type ServerUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutServerInput
 }
 
 export type ServerUpdateInput = {
@@ -646,6 +656,8 @@ export type ServerUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
   jobs?: Prisma.ServerJobUpdateManyWithoutServerNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutServerNestedInput
 }
 
 export type ServerUncheckedUpdateInput = {
@@ -678,6 +690,8 @@ export type ServerUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutServerNestedInput
 }
 
 export type ServerCreateManyInput = {
@@ -780,6 +794,11 @@ export type ServerListRelationFilter = {
 
 export type ServerOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ServerNullableScalarRelationFilter = {
+  is?: Prisma.ServerWhereInput | null
+  isNot?: Prisma.ServerWhereInput | null
 }
 
 export type StringNullableListFilter<$PrismaModel = never> = {
@@ -947,6 +966,22 @@ export type ServerUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.ServerScalarWhereInput | Prisma.ServerScalarWhereInput[]
 }
 
+export type ServerCreateNestedOneWithoutProjectsInput = {
+  create?: Prisma.XOR<Prisma.ServerCreateWithoutProjectsInput, Prisma.ServerUncheckedCreateWithoutProjectsInput>
+  connectOrCreate?: Prisma.ServerCreateOrConnectWithoutProjectsInput
+  connect?: Prisma.ServerWhereUniqueInput
+}
+
+export type ServerUpdateOneWithoutProjectsNestedInput = {
+  create?: Prisma.XOR<Prisma.ServerCreateWithoutProjectsInput, Prisma.ServerUncheckedCreateWithoutProjectsInput>
+  connectOrCreate?: Prisma.ServerCreateOrConnectWithoutProjectsInput
+  upsert?: Prisma.ServerUpsertWithoutProjectsInput
+  disconnect?: Prisma.ServerWhereInput | boolean
+  delete?: Prisma.ServerWhereInput | boolean
+  connect?: Prisma.ServerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ServerUpdateToOneWithWhereWithoutProjectsInput, Prisma.ServerUpdateWithoutProjectsInput>, Prisma.ServerUncheckedUpdateWithoutProjectsInput>
+}
+
 export type ServerCreateproblemsInput = {
   set: string[]
 }
@@ -991,6 +1026,22 @@ export type ServerUpdateOneRequiredWithoutJobsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ServerUpdateToOneWithWhereWithoutJobsInput, Prisma.ServerUpdateWithoutJobsInput>, Prisma.ServerUncheckedUpdateWithoutJobsInput>
 }
 
+export type ServerCreateNestedOneWithoutDeploymentsInput = {
+  create?: Prisma.XOR<Prisma.ServerCreateWithoutDeploymentsInput, Prisma.ServerUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.ServerCreateOrConnectWithoutDeploymentsInput
+  connect?: Prisma.ServerWhereUniqueInput
+}
+
+export type ServerUpdateOneWithoutDeploymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.ServerCreateWithoutDeploymentsInput, Prisma.ServerUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.ServerCreateOrConnectWithoutDeploymentsInput
+  upsert?: Prisma.ServerUpsertWithoutDeploymentsInput
+  disconnect?: Prisma.ServerWhereInput | boolean
+  delete?: Prisma.ServerWhereInput | boolean
+  connect?: Prisma.ServerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ServerUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.ServerUpdateWithoutDeploymentsInput>, Prisma.ServerUncheckedUpdateWithoutDeploymentsInput>
+}
+
 export type ServerCreateWithoutUserInput = {
   id: string
   name: string
@@ -1020,6 +1071,8 @@ export type ServerCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobCreateNestedManyWithoutServerInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutServerInput
 }
 
 export type ServerUncheckedCreateWithoutUserInput = {
@@ -1051,6 +1104,8 @@ export type ServerUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutServerInput
 }
 
 export type ServerCreateOrConnectWithoutUserInput = {
@@ -1113,6 +1168,154 @@ export type ServerScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Server"> | Date | string
 }
 
+export type ServerCreateWithoutProjectsInput = {
+  id: string
+  name: string
+  host: string
+  port?: number
+  sshUser: string
+  keySource: $Enums.ServerKeySource
+  encryptedPrivateKey: string
+  publicKey: string
+  keyComment: string
+  hostKeyFingerprint?: string | null
+  status?: $Enums.ServerStatus
+  statusMessage?: string | null
+  os?: string | null
+  osVersion?: string | null
+  arch?: string | null
+  cpus?: number | null
+  ramMb?: number | null
+  swapMb?: number | null
+  diskFreeGb?: number | null
+  dockerVersion?: string | null
+  tier?: $Enums.CapabilityTier | null
+  problems?: Prisma.ServerCreateproblemsInput | string[]
+  warnings?: Prisma.ServerCreatewarningsInput | string[]
+  lastCheckedAt?: Date | string | null
+  readyAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutServersInput
+  jobs?: Prisma.ServerJobCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutServerInput
+}
+
+export type ServerUncheckedCreateWithoutProjectsInput = {
+  id: string
+  userId: string
+  name: string
+  host: string
+  port?: number
+  sshUser: string
+  keySource: $Enums.ServerKeySource
+  encryptedPrivateKey: string
+  publicKey: string
+  keyComment: string
+  hostKeyFingerprint?: string | null
+  status?: $Enums.ServerStatus
+  statusMessage?: string | null
+  os?: string | null
+  osVersion?: string | null
+  arch?: string | null
+  cpus?: number | null
+  ramMb?: number | null
+  swapMb?: number | null
+  diskFreeGb?: number | null
+  dockerVersion?: string | null
+  tier?: $Enums.CapabilityTier | null
+  problems?: Prisma.ServerCreateproblemsInput | string[]
+  warnings?: Prisma.ServerCreatewarningsInput | string[]
+  lastCheckedAt?: Date | string | null
+  readyAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutServerInput
+}
+
+export type ServerCreateOrConnectWithoutProjectsInput = {
+  where: Prisma.ServerWhereUniqueInput
+  create: Prisma.XOR<Prisma.ServerCreateWithoutProjectsInput, Prisma.ServerUncheckedCreateWithoutProjectsInput>
+}
+
+export type ServerUpsertWithoutProjectsInput = {
+  update: Prisma.XOR<Prisma.ServerUpdateWithoutProjectsInput, Prisma.ServerUncheckedUpdateWithoutProjectsInput>
+  create: Prisma.XOR<Prisma.ServerCreateWithoutProjectsInput, Prisma.ServerUncheckedCreateWithoutProjectsInput>
+  where?: Prisma.ServerWhereInput
+}
+
+export type ServerUpdateToOneWithWhereWithoutProjectsInput = {
+  where?: Prisma.ServerWhereInput
+  data: Prisma.XOR<Prisma.ServerUpdateWithoutProjectsInput, Prisma.ServerUncheckedUpdateWithoutProjectsInput>
+}
+
+export type ServerUpdateWithoutProjectsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  host?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.IntFieldUpdateOperationsInput | number
+  sshUser?: Prisma.StringFieldUpdateOperationsInput | string
+  keySource?: Prisma.EnumServerKeySourceFieldUpdateOperationsInput | $Enums.ServerKeySource
+  encryptedPrivateKey?: Prisma.StringFieldUpdateOperationsInput | string
+  publicKey?: Prisma.StringFieldUpdateOperationsInput | string
+  keyComment?: Prisma.StringFieldUpdateOperationsInput | string
+  hostKeyFingerprint?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumServerStatusFieldUpdateOperationsInput | $Enums.ServerStatus
+  statusMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  os?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  arch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpus?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ramMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  swapMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  diskFreeGb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dockerVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tier?: Prisma.NullableEnumCapabilityTierFieldUpdateOperationsInput | $Enums.CapabilityTier | null
+  problems?: Prisma.ServerUpdateproblemsInput | string[]
+  warnings?: Prisma.ServerUpdatewarningsInput | string[]
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
+  jobs?: Prisma.ServerJobUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutServerNestedInput
+}
+
+export type ServerUncheckedUpdateWithoutProjectsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  host?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.IntFieldUpdateOperationsInput | number
+  sshUser?: Prisma.StringFieldUpdateOperationsInput | string
+  keySource?: Prisma.EnumServerKeySourceFieldUpdateOperationsInput | $Enums.ServerKeySource
+  encryptedPrivateKey?: Prisma.StringFieldUpdateOperationsInput | string
+  publicKey?: Prisma.StringFieldUpdateOperationsInput | string
+  keyComment?: Prisma.StringFieldUpdateOperationsInput | string
+  hostKeyFingerprint?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumServerStatusFieldUpdateOperationsInput | $Enums.ServerStatus
+  statusMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  os?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  arch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpus?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ramMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  swapMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  diskFreeGb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dockerVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tier?: Prisma.NullableEnumCapabilityTierFieldUpdateOperationsInput | $Enums.CapabilityTier | null
+  problems?: Prisma.ServerUpdateproblemsInput | string[]
+  warnings?: Prisma.ServerUpdatewarningsInput | string[]
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutServerNestedInput
+}
+
 export type ServerCreateWithoutJobsInput = {
   id: string
   name: string
@@ -1142,6 +1345,8 @@ export type ServerCreateWithoutJobsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutServersInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutServerInput
 }
 
 export type ServerUncheckedCreateWithoutJobsInput = {
@@ -1173,6 +1378,8 @@ export type ServerUncheckedCreateWithoutJobsInput = {
   readyAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutServerInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutServerInput
 }
 
 export type ServerCreateOrConnectWithoutJobsInput = {
@@ -1220,6 +1427,8 @@ export type ServerUpdateWithoutJobsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutServerNestedInput
 }
 
 export type ServerUncheckedUpdateWithoutJobsInput = {
@@ -1251,6 +1460,156 @@ export type ServerUncheckedUpdateWithoutJobsInput = {
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutServerNestedInput
+}
+
+export type ServerCreateWithoutDeploymentsInput = {
+  id: string
+  name: string
+  host: string
+  port?: number
+  sshUser: string
+  keySource: $Enums.ServerKeySource
+  encryptedPrivateKey: string
+  publicKey: string
+  keyComment: string
+  hostKeyFingerprint?: string | null
+  status?: $Enums.ServerStatus
+  statusMessage?: string | null
+  os?: string | null
+  osVersion?: string | null
+  arch?: string | null
+  cpus?: number | null
+  ramMb?: number | null
+  swapMb?: number | null
+  diskFreeGb?: number | null
+  dockerVersion?: string | null
+  tier?: $Enums.CapabilityTier | null
+  problems?: Prisma.ServerCreateproblemsInput | string[]
+  warnings?: Prisma.ServerCreatewarningsInput | string[]
+  lastCheckedAt?: Date | string | null
+  readyAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutServersInput
+  jobs?: Prisma.ServerJobCreateNestedManyWithoutServerInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutServerInput
+}
+
+export type ServerUncheckedCreateWithoutDeploymentsInput = {
+  id: string
+  userId: string
+  name: string
+  host: string
+  port?: number
+  sshUser: string
+  keySource: $Enums.ServerKeySource
+  encryptedPrivateKey: string
+  publicKey: string
+  keyComment: string
+  hostKeyFingerprint?: string | null
+  status?: $Enums.ServerStatus
+  statusMessage?: string | null
+  os?: string | null
+  osVersion?: string | null
+  arch?: string | null
+  cpus?: number | null
+  ramMb?: number | null
+  swapMb?: number | null
+  diskFreeGb?: number | null
+  dockerVersion?: string | null
+  tier?: $Enums.CapabilityTier | null
+  problems?: Prisma.ServerCreateproblemsInput | string[]
+  warnings?: Prisma.ServerCreatewarningsInput | string[]
+  lastCheckedAt?: Date | string | null
+  readyAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutServerInput
+}
+
+export type ServerCreateOrConnectWithoutDeploymentsInput = {
+  where: Prisma.ServerWhereUniqueInput
+  create: Prisma.XOR<Prisma.ServerCreateWithoutDeploymentsInput, Prisma.ServerUncheckedCreateWithoutDeploymentsInput>
+}
+
+export type ServerUpsertWithoutDeploymentsInput = {
+  update: Prisma.XOR<Prisma.ServerUpdateWithoutDeploymentsInput, Prisma.ServerUncheckedUpdateWithoutDeploymentsInput>
+  create: Prisma.XOR<Prisma.ServerCreateWithoutDeploymentsInput, Prisma.ServerUncheckedCreateWithoutDeploymentsInput>
+  where?: Prisma.ServerWhereInput
+}
+
+export type ServerUpdateToOneWithWhereWithoutDeploymentsInput = {
+  where?: Prisma.ServerWhereInput
+  data: Prisma.XOR<Prisma.ServerUpdateWithoutDeploymentsInput, Prisma.ServerUncheckedUpdateWithoutDeploymentsInput>
+}
+
+export type ServerUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  host?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.IntFieldUpdateOperationsInput | number
+  sshUser?: Prisma.StringFieldUpdateOperationsInput | string
+  keySource?: Prisma.EnumServerKeySourceFieldUpdateOperationsInput | $Enums.ServerKeySource
+  encryptedPrivateKey?: Prisma.StringFieldUpdateOperationsInput | string
+  publicKey?: Prisma.StringFieldUpdateOperationsInput | string
+  keyComment?: Prisma.StringFieldUpdateOperationsInput | string
+  hostKeyFingerprint?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumServerStatusFieldUpdateOperationsInput | $Enums.ServerStatus
+  statusMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  os?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  arch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpus?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ramMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  swapMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  diskFreeGb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dockerVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tier?: Prisma.NullableEnumCapabilityTierFieldUpdateOperationsInput | $Enums.CapabilityTier | null
+  problems?: Prisma.ServerUpdateproblemsInput | string[]
+  warnings?: Prisma.ServerUpdatewarningsInput | string[]
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
+  jobs?: Prisma.ServerJobUpdateManyWithoutServerNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutServerNestedInput
+}
+
+export type ServerUncheckedUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  host?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.IntFieldUpdateOperationsInput | number
+  sshUser?: Prisma.StringFieldUpdateOperationsInput | string
+  keySource?: Prisma.EnumServerKeySourceFieldUpdateOperationsInput | $Enums.ServerKeySource
+  encryptedPrivateKey?: Prisma.StringFieldUpdateOperationsInput | string
+  publicKey?: Prisma.StringFieldUpdateOperationsInput | string
+  keyComment?: Prisma.StringFieldUpdateOperationsInput | string
+  hostKeyFingerprint?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumServerStatusFieldUpdateOperationsInput | $Enums.ServerStatus
+  statusMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  os?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  osVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  arch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cpus?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  ramMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  swapMb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  diskFreeGb?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dockerVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tier?: Prisma.NullableEnumCapabilityTierFieldUpdateOperationsInput | $Enums.CapabilityTier | null
+  problems?: Prisma.ServerUpdateproblemsInput | string[]
+  warnings?: Prisma.ServerUpdatewarningsInput | string[]
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutServerNestedInput
 }
 
 export type ServerCreateManyUserInput = {
@@ -1312,6 +1671,8 @@ export type ServerUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUpdateManyWithoutServerNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutServerNestedInput
 }
 
 export type ServerUncheckedUpdateWithoutUserInput = {
@@ -1343,6 +1704,8 @@ export type ServerUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutServerNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutServerNestedInput
 }
 
 export type ServerUncheckedUpdateManyWithoutUserInput = {
@@ -1382,10 +1745,14 @@ export type ServerUncheckedUpdateManyWithoutUserInput = {
 
 export type ServerCountOutputType = {
   jobs: number
+  projects: number
+  deployments: number
 }
 
 export type ServerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   jobs?: boolean | ServerCountOutputTypeCountJobsArgs
+  projects?: boolean | ServerCountOutputTypeCountProjectsArgs
+  deployments?: boolean | ServerCountOutputTypeCountDeploymentsArgs
 }
 
 /**
@@ -1403,6 +1770,20 @@ export type ServerCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
  */
 export type ServerCountOutputTypeCountJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ServerJobWhereInput
+}
+
+/**
+ * ServerCountOutputType without action
+ */
+export type ServerCountOutputTypeCountProjectsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProjectWhereInput
+}
+
+/**
+ * ServerCountOutputType without action
+ */
+export type ServerCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeploymentWhereInput
 }
 
 
@@ -1437,6 +1818,8 @@ export type ServerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   jobs?: boolean | Prisma.Server$jobsArgs<ExtArgs>
+  projects?: boolean | Prisma.Server$projectsArgs<ExtArgs>
+  deployments?: boolean | Prisma.Server$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ServerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["server"]>
 
@@ -1539,6 +1922,8 @@ export type ServerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type ServerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   jobs?: boolean | Prisma.Server$jobsArgs<ExtArgs>
+  projects?: boolean | Prisma.Server$projectsArgs<ExtArgs>
+  deployments?: boolean | Prisma.Server$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.ServerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ServerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1553,6 +1938,8 @@ export type $ServerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     jobs: Prisma.$ServerJobPayload<ExtArgs>[]
+    projects: Prisma.$ProjectPayload<ExtArgs>[]
+    deployments: Prisma.$DeploymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1997,6 +2384,8 @@ export interface Prisma__ServerClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   jobs<T extends Prisma.Server$jobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Server$jobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ServerJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  projects<T extends Prisma.Server$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Server$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deployments<T extends Prisma.Server$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Server$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2476,6 +2865,54 @@ export type Server$jobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.ServerJobScalarFieldEnum | Prisma.ServerJobScalarFieldEnum[]
+}
+
+/**
+ * Server.projects
+ */
+export type Server$projectsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Project
+   */
+  select?: Prisma.ProjectSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Project
+   */
+  omit?: Prisma.ProjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProjectInclude<ExtArgs> | null
+  where?: Prisma.ProjectWhereInput
+  orderBy?: Prisma.ProjectOrderByWithRelationInput | Prisma.ProjectOrderByWithRelationInput[]
+  cursor?: Prisma.ProjectWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProjectScalarFieldEnum | Prisma.ProjectScalarFieldEnum[]
+}
+
+/**
+ * Server.deployments
+ */
+export type Server$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Deployment
+   */
+  select?: Prisma.DeploymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Deployment
+   */
+  omit?: Prisma.DeploymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeploymentInclude<ExtArgs> | null
+  where?: Prisma.DeploymentWhereInput
+  orderBy?: Prisma.DeploymentOrderByWithRelationInput | Prisma.DeploymentOrderByWithRelationInput[]
+  cursor?: Prisma.DeploymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeploymentScalarFieldEnum | Prisma.DeploymentScalarFieldEnum[]
 }
 
 /**

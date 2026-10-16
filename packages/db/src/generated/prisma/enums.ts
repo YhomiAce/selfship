@@ -83,3 +83,37 @@ export const JobStatus = {
 } as const
 
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus]
+
+
+export const EnvScope = {
+  runtime: 'runtime',
+  build: 'build',
+  both: 'both'
+} as const
+
+export type EnvScope = (typeof EnvScope)[keyof typeof EnvScope]
+
+
+export const DeploymentStatus = {
+  queued: 'queued',
+  cloning: 'cloning',
+  building: 'building',
+  starting: 'starting',
+  health_check: 'health_check',
+  switching: 'switching',
+  live: 'live',
+  failed: 'failed',
+  cancelled: 'cancelled',
+  replaced: 'replaced'
+} as const
+
+export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof DeploymentStatus]
+
+
+export const DeploymentTrigger = {
+  manual: 'manual',
+  push: 'push',
+  rollback: 'rollback'
+} as const
+
+export type DeploymentTrigger = (typeof DeploymentTrigger)[keyof typeof DeploymentTrigger]

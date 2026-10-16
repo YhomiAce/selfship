@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@selfship/adapters": "workspace:*",
+    "@selfship/shared": "workspace:*",
     "ssh2": "^1.17.0"
   },
   "devDependencies": {

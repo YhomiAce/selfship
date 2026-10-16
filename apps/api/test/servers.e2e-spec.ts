@@ -189,9 +189,11 @@ describe('Servers (e2e)', () => {
     it('streams the log as Server-Sent Events, ending with the result', async () => {
       // Play the worker's part: append lines and an end marker to the job's stream.
       const key = serverJobStreamKey(jobId);
-      await redis.xadd(key, '*', 'type', 'line', 'line', '→ Connecting');
-      await redis.xadd(key, '*', 'type', 'line', 'line', '✓ Connected');
-      await redis.xadd(key, '*', 'type', 'end', 'status', 'succeeded', 'error', '');
+      const add = (event: object): Promise<unknown> =>
+        redis.xadd(key, '*', 'data', JSON.stringify(event));
+      await add({ type: 'line', line: '→ Connecting' });
+      await add({ type: 'line', line: '✓ Connected' });
+      await add({ type: 'end', status: 'succeeded', error: null });
 
       const res = await http()
         .get(`/servers/${serverId}/jobs/${jobId}/stream`)

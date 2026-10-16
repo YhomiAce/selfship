@@ -1,8 +1,23 @@
-import type { GithubInstallation, Project } from '@selfship/db';
-import type { GithubConnectionState, ProjectDto } from '@selfship/shared';
+import type { GithubInstallation, Project, Server } from '@selfship/db';
+import type { DeploymentDto, GithubConnectionState, ProjectDto } from '@selfship/shared';
 
-/** A project with its GitHub installation loaded. */
-export type ProjectWithInstallation = Project & { githubInstallation: GithubInstallation };
+/** A project with its GitHub installation and server loaded. */
+export type ProjectWithRelations = Project & {
+  githubInstallation: GithubInstallation;
+  server: Pick<Server, 'id' | 'name' | 'status'> | null;
+};
+
+/** Prisma include that loads what {@link toProjectDto} needs. */
+export const PROJECT_INCLUDE = {
+  githubInstallation: true,
+  server: { select: { id: true, name: true, status: true } },
+} as const;
+
+/** The deployments shown with a project. */
+export interface ProjectDeployments {
+  live: DeploymentDto | null;
+  latest: DeploymentDto | null;
+}
 
 /**
  * State of the GitHub connection behind a project.
@@ -19,10 +34,14 @@ export function connectionState(installation: GithubInstallation): GithubConnect
 /**
  * Converts a project record to the public DTO.
  *
- * @param project - Project with its installation
+ * @param project - Project with its installation and server
+ * @param deployments - Live and latest deployment
  * @returns DTO for the API
  */
-export function toProjectDto(project: ProjectWithInstallation): ProjectDto {
+export function toProjectDto(
+  project: ProjectWithRelations,
+  deployments: ProjectDeployments,
+): ProjectDto {
   return {
     id: project.id,
     name: project.name,
@@ -43,6 +62,12 @@ export function toProjectDto(project: ProjectWithInstallation): ProjectDto {
       accountLogin: project.githubInstallation.accountLogin,
       state: connectionState(project.githubInstallation),
     },
+    server: project.server
+      ? { id: project.server.id, name: project.server.name, status: project.server.status }
+      : null,
+    healthCheckPath: project.healthCheckPath,
+    liveDeployment: deployments.live,
+    latestDeployment: deployments.latest,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
   };

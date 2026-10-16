@@ -21,13 +21,11 @@ Use `--staging` until the domain's DNS points at the server, so failed certifica
 
 ## Files
 
-| File                     | Becomes (in the worker)                                     |
-| ------------------------ | ----------------------------------------------------------- |
-| `src/ssh.ts`             | SSH service: exec with streaming, host key pinning, quoting |
-| `src/preflight.ts`       | Pre-flight job                                              |
-| `src/bootstrap.sh`       | Bootstrap job                                               |
-| `src/remote-snapshot.ts` | Detection at build time (same adapters as the dashboard)    |
-| `src/deploy.ts`          | Deploy job                                                  |
-| `src/memory-sampler.ts`  | Build metrics                                               |
+The SSH, pre-flight, bootstrap, remote-snapshot and memory-sampling code now lives in [`packages/remote`](../../packages/remote/), shared with the worker. The spike only keeps:
+
+| File            | What                                            |
+| --------------- | ----------------------------------------------- |
+| `src/cli.ts`    | Command-line entry point and the `--probe` test |
+| `src/deploy.ts` | Deploy steps (move into the worker in M4)       |
 
 Runs with Node's built-in TypeScript support (`--experimental-strip-types`), so there is no build step.

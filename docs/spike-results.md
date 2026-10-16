@@ -33,18 +33,24 @@ The spike connects over SSH, runs pre-flight checks, bootstraps the server (Dock
 
 ### Zero-downtime redeploys
 
-Requests sent every ~100 ms (through Traefik) during redeploys:
+**Day 1** (probe from the laptop, ~1 request/s): first version 1 × 502; after adding Docker health checks, 0 failures in 92 requests.
 
-| Attempt                                | Result             |
-| -------------------------------------- | ------------------ |
-| First version (no Docker health check) | 23 ok, **1 × 502** |
-| With Docker health check — Next.js     | 35 ok, 0 failed    |
-| With Docker health check — static      | 23 ok, 0 failed    |
-| With Docker health check — Vite SPA    | 34 ok, 0 failed    |
+**Day 2**: a stricter probe **on the server itself** (through Traefik, ~20 requests/s, no internet noise) showed day 1's fix wasn't enough:
+
+| Version                                                                           | Requests                         | Failures                                                                    |
+| --------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| Shared router name for old + new container, health check                          | 515                              | 1 × 502, 1 × no response at the moment the old container stopped            |
+| + retry middleware, but router labels differ between versions                     | 554                              | **97 × 404** (Traefik drops a router defined differently by two containers) |
+| **Per-deployment router, newest has the highest priority, + retry, + 3 s settle** | 549 / 556 / 556 (static, 3 runs) | **0**                                                                       |
+| Same, Next.js                                                                     | 904                              | **0**                                                                       |
 
 ## Findings
 
-1. **Traefik routes to a container as soon as it starts**, before the app listens, which caused the 502. Fix: every container gets a Docker `HEALTHCHECK` (`nc -z 127.0.0.1 <port>` in our Alpine-based images); Traefik ignores containers until Docker reports them healthy. Custom Dockerfiles keep their own `HEALTHCHECK` (if they have none, a short gap is still possible: document it and recommend adding one).
+1. **Zero downtime needs three things together:**
+   - a Docker `HEALTHCHECK` on every container (`nc -z 127.0.0.1 <port>` in our Alpine images), because Traefik otherwise routes to a container before the app listens
+   - **one Traefik router per deployment** (named after the build) with **priority = deploy time**, because two containers defining the same router differently make Traefik drop it (404s). The newest healthy deployment wins every request
+   - a **retry** middleware plus a short settle delay before stopping the old version
+     Custom Dockerfiles keep their own `HEALTHCHECK`; without one, a short gap at startup is possible (document it and recommend adding one).
 2. **1 GB + 2 GB swap is enough for small Next.js apps**, ~35 % slower to build and leaning on swap. Real-world Next.js apps are bigger: recommend 2 GB for Next.js, keep 1 GB as "works, slower". Remote builds (Phase 3) remain the answer for tiny servers.
 3. **Static/SPA sites are almost free to run** (< 1 MB each), so one small server can host many of them, which suits the free sandbox.
 4. **Idle baseline is ~500 MB** on AWS's Ubuntu image. A 512 MB "static-only" tier is too tight on AWS images; leaner VPS images (Hetzner, DigitalOcean) may differ. Re-test on a 512 MB VPS before promising that tier.

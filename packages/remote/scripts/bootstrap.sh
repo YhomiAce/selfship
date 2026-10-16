@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Selfship server bootstrap. Idempotent: safe to run again at any time.
 # Installs Docker (>= 23), adds swap on small servers, opens the firewall
-# for SSH/HTTP/HTTPS, and runs Traefik with automatic Let's Encrypt.
+# for SSH/HTTP/HTTPS, enables automatic security updates, and runs Traefik
+# with automatic Let's Encrypt.
 #
 # Inputs (environment): SSH_PORT, ACME_EMAIL (optional), ACME_STAGING (0/1)
 set -euo pipefail
@@ -11,7 +12,8 @@ SELFSHIP_DIR=/opt/selfship
 SSH_PORT="${SSH_PORT:-22}"
 ACME_EMAIL="${ACME_EMAIL:-}"
 ACME_STAGING="${ACME_STAGING:-0}"
-TRAEFIK_IMAGE="traefik:v3"
+# Pinned major+minor so an upstream release can't change behaviour unexpectedly.
+TRAEFIK_IMAGE="${TRAEFIK_IMAGE:-traefik:v3.7}"
 
 log() { echo "[bootstrap] $*"; }
 
@@ -53,7 +55,17 @@ if command -v ufw >/dev/null 2>&1; then
   log "Firewall: allowing ${SSH_PORT}, 80, 443"
 fi
 
-# ── 4. Shared network + Traefik ──────────────────────────────────────────────
+# ── 4. Automatic security updates ────────────────────────────────────────────
+if command -v apt-get >/dev/null 2>&1; then
+  dpkg -s unattended-upgrades >/dev/null 2>&1 || apt-get install -y -qq unattended-upgrades >/dev/null
+  cat > /etc/apt/apt.conf.d/20auto-upgrades <<'APT'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT
+  log "Automatic security updates enabled"
+fi
+
+# ── 5. Shared network + Traefik ──────────────────────────────────────────────
 docker network inspect selfship >/dev/null 2>&1 || { docker network create selfship >/dev/null; log "Created network selfship"; }
 install -d -m 700 "$SELFSHIP_DIR/traefik"
 [ -f "$SELFSHIP_DIR/traefik/acme.json" ] || install -m 600 /dev/null "$SELFSHIP_DIR/traefik/acme.json"

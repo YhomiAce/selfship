@@ -200,7 +200,9 @@ describe('Servers (e2e)', () => {
         .parse((response, done) => {
           let text = '';
           response.on('data', (chunk: Buffer) => (text += chunk.toString()));
-          response.on('end', () => done(null, text));
+          response.on('end', () => {
+            done(null, text);
+          });
         })
         .expect(200);
       expect(res.get('Content-Type')).toContain('text/event-stream');
@@ -236,7 +238,9 @@ describe('Servers (e2e)', () => {
         .parse((response, done) => {
           let text = '';
           response.on('data', (chunk: Buffer) => (text += chunk.toString()));
-          response.on('end', () => done(null, text));
+          response.on('end', () => {
+            done(null, text);
+          });
         })
         .expect(200);
       expect(String(res.body)).toContain('"line one"');

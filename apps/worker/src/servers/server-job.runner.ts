@@ -22,7 +22,7 @@ const STALE_JOB_MS = 30 * 60 * 1000;
 
 /** Outcome used to update the server after a failure. */
 interface Failure {
-  status: 'unreachable' | 'setup_failed' | 'needs_attention';
+  status: 'awaiting_key' | 'unreachable' | 'setup_failed' | 'needs_attention';
   message: string;
 }
 
@@ -40,13 +40,13 @@ export function sshKeyContext(serverId: string): string {
  * Turns connection/setup errors into a status and a message users can act on.
  *
  * @param error - Whatever was thrown
- * @param server - The server (for user/host in messages)
+ * @param server - The server (for user/host in messages, and whether it ever connected)
  * @param phase - Where it failed
  * @returns Status and message
  */
 export function classifyFailure(
   error: unknown,
-  server: Pick<Server, 'host' | 'port' | 'sshUser'>,
+  server: Pick<Server, 'host' | 'port' | 'sshUser' | 'keySource' | 'lastCheckedAt'>,
   phase: 'connect' | 'setup',
 ): Failure {
   if (error instanceof HostKeyMismatchError) {
@@ -66,9 +66,18 @@ export function classifyFailure(
   const text = error instanceof Error ? error.message : String(error);
   const level = (error as { level?: unknown } | null)?.level;
   if (level === 'client-authentication' || /authentication methods failed/i.test(text)) {
+    const keyFile = `~${server.sshUser === 'root' ? '' : server.sshUser}/.ssh/authorized_keys`;
+    // A generated key that never worked most likely just isn't added yet: stay
+    // on the "add our key" step so the user still sees the command to run.
+    if (server.keySource === 'generated' && server.lastCheckedAt === null) {
+      return {
+        status: 'awaiting_key',
+        message: `Couldn't log in as ${server.sshUser} yet. Run the command below on the server (it adds our key to ${keyFile}), then connect again.`,
+      };
+    }
     return {
       status: 'unreachable',
-      message: `Couldn't log in as ${server.sshUser}. Make sure Selfship's public key is in ~${server.sshUser === 'root' ? '' : server.sshUser}/.ssh/authorized_keys for that user.`,
+      message: `Couldn't log in as ${server.sshUser}. Make sure Selfship's public key is in ${keyFile} for that user.`,
     };
   }
   if (/ECONNREFUSED/.test(text)) {

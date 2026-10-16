@@ -2,7 +2,13 @@ import { DecryptionError } from '@selfship/crypto';
 import { ForbiddenHostError, HostKeyMismatchError, RemoteCommandError } from '@selfship/remote';
 import { classifyFailure } from './server-job.runner';
 
-const server = { host: '13.50.208.142', port: 22, sshUser: 'ubuntu' };
+const server = {
+  host: '13.50.208.142',
+  port: 22,
+  sshUser: 'ubuntu',
+  keySource: 'pasted' as const,
+  lastCheckedAt: new Date(),
+};
 
 /** Error with ssh2's `level` property. */
 function sshError(message: string, level?: string): Error {
@@ -29,6 +35,16 @@ describe('classifyFailure', () => {
     );
     expect(result.status).toBe('unreachable');
     expect(result.message).toContain('public key is in ~ubuntu/.ssh/authorized_keys');
+  });
+
+  it('keeps a never-connected generated-key server on the "add our key" step', () => {
+    const result = classifyFailure(
+      sshError('All configured authentication methods failed', 'client-authentication'),
+      { ...server, keySource: 'generated', lastCheckedAt: null },
+      'connect',
+    );
+    expect(result.status).toBe('awaiting_key');
+    expect(result.message).toContain('Run the command below');
   });
 
   it.each([

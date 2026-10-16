@@ -1,0 +1,21 @@
+{
+  "name": "@selfship/deploy-spike",
+  "version": "0.0.0",
+  "private": true,
+  "description": "M3 deploy spike: bootstrap a VPS over SSH and deploy a repo with Docker + Traefik. Blueprint for the worker's deploy engine.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "spike": "node --experimental-strip-types --no-warnings=ExperimentalWarning src/cli.ts",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@selfship/adapters": "workspace:*",
+    "@selfship/shared": "workspace:*",
+    "ssh2": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/ssh2": "^1.15.6"
+  }
+}

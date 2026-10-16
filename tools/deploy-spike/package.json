@@ -12,10 +12,7 @@
   },
   "dependencies": {
     "@selfship/adapters": "workspace:*",
-    "@selfship/shared": "workspace:*",
-    "ssh2": "^1.17.0"
-  },
-  "devDependencies": {
-    "@types/ssh2": "^1.15.6"
+    "@selfship/remote": "workspace:*",
+    "@selfship/shared": "workspace:*"
   }
 }

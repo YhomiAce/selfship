@@ -14,6 +14,7 @@ import { AppConfigService } from '../config/app-config.service';
       inject: [AppConfigService],
       useFactory: (config: AppConfigService) => ({
         connection: redisConnectionFromUrl(config.get('REDIS_URL')),
+        prefix: config.get('QUEUE_PREFIX'),
         defaultJobOptions: {
           attempts: 3,
           backoff: { type: 'exponential', delay: 2000 },
@@ -22,7 +23,7 @@ import { AppConfigService } from '../config/app-config.service';
         },
       }),
     }),
-    BullModule.registerQueue({ name: QueueName.SYSTEM }),
+    BullModule.registerQueue({ name: QueueName.SYSTEM }, { name: QueueName.SERVERS }),
   ],
   exports: [BullModule],
 })

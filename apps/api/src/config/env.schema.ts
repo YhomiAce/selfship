@@ -31,6 +31,11 @@ export const EnvSchema = z
     WEB_URL: z.url().default('http://localhost:3000'),
     DATABASE_URL: z.url(),
     REDIS_URL: z.url().default('redis://localhost:6380'),
+    /** Namespace for job queues in Redis, so environments/test runs sharing a Redis never take each other's jobs. */
+    QUEUE_PREFIX: z
+      .string()
+      .regex(/^[\w:-]{1,64}$/)
+      .default('bull'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     /**
      * Express `trust proxy` setting, so `req.ip` is the real client IP behind the
@@ -51,6 +56,25 @@ export const EnvSchema = z
     /** PEM private key; `\n` escapes are accepted for single-line env files. */
     GITHUB_APP_PRIVATE_KEY: optionalString,
     GITHUB_WEBHOOK_SECRET: optionalString,
+    /**
+     * Master key for encrypting secrets at rest (SSH keys…): 32 random bytes,
+     * base64 (`openssl rand -base64 32`). Never commit it; losing it makes
+     * stored keys unreadable.
+     */
+    ENCRYPTION_KEY: z.string().min(1, 'Generate one with: openssl rand -base64 32'),
+    /** Identifier stored with each ciphertext (change when rotating). */
+    ENCRYPTION_KEY_ID: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,32}$/)
+      .default('k1'),
+    /** Older keys still accepted for decryption: "id:base64,id:base64". */
+    ENCRYPTION_PREVIOUS_KEYS: optionalString,
+    /**
+     * Allow servers on private/loopback addresses. Local development only:
+     * in production this would let users make the worker connect to our own
+     * internal network.
+     */
+    ALLOW_PRIVATE_SERVER_HOSTS: z.stringbool().default(false),
     /** Override for GitHub Enterprise Server (or a local mock). */
     GITHUB_API_URL: z.url().default('https://api.github.com'),
     GITHUB_WEB_URL: z.url().default('https://github.com'),

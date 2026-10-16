@@ -1,7 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { detectProject, getAdapter, type DetectResult } from '@selfship/adapters';
-import { remoteSnapshot } from './remote-snapshot.ts';
-import { type SshConnection, sh } from './ssh.ts';
+import { remoteSnapshot, type SshConnection, sh } from '@selfship/remote';
 
 /** What to deploy and where it should be reachable. */
 export interface DeployRequest {
@@ -32,14 +31,16 @@ export class HealthCheckError extends Error {
 
 const APPS_DIR = '/opt/selfship/apps';
 const HEALTH_TIMEOUT_MS = 120_000;
+/** Time for Traefik to pick up a newly healthy container before the old one stops. */
+const SWITCH_SETTLE_MS = 3_000;
 
 /**
  * Clones, detects, builds and starts a new version, then removes the old
  * one only after the new one answers HTTP: a zero-downtime switch.
  *
- * Both versions carry the same Traefik router/service labels, so during the
- * overlap Traefik balances across them; removing the old container leaves
- * only the new one, with no gap in between.
+ * Each version has its own Traefik router; the newest has the highest
+ * priority, so once it is healthy Traefik sends every request to it. The old
+ * version is removed only after that, so there is no gap.
  *
  * @param ssh - Open connection to a bootstrapped server
  * @param request - What to deploy
@@ -105,12 +106,25 @@ export async function deploy(ssh: SshConnection, request: DeployRequest): Promis
   const startStart = Date.now();
   const container = `${app}-${buildId}`;
   const port = String(settings.port);
+  // Each deployment gets its OWN router and service (named after the build),
+  // so two versions never define the same router differently: Traefik drops
+  // conflicting routers entirely (404s during the overlap). The newest
+  // deployment gets the highest priority, so Traefik moves all traffic to it
+  // the moment it is healthy; the old one then receives nothing and can stop.
+  const route = `${app}-${buildId}`;
+  const priority = String(Math.floor(Date.now() / 1000) - 1_700_000_000);
   const labels = [
     'traefik.enable=true',
-    `traefik.http.routers.${app}.rule=Host(\`${request.domain}\`)`,
-    `traefik.http.routers.${app}.entrypoints=websecure`,
-    `traefik.http.routers.${app}.tls.certresolver=le`,
-    `traefik.http.services.${app}.loadbalancer.server.port=${port}`,
+    `traefik.http.routers.${route}.rule=Host(\`${request.domain}\`)`,
+    `traefik.http.routers.${route}.priority=${priority}`,
+    `traefik.http.routers.${route}.entrypoints=websecure`,
+    `traefik.http.routers.${route}.tls.certresolver=le`,
+    `traefik.http.routers.${route}.service=${route}`,
+    // Retry on another server if a connection is refused mid-switch.
+    `traefik.http.routers.${route}.middlewares=${route}-retry`,
+    `traefik.http.middlewares.${route}-retry.retry.attempts=3`,
+    `traefik.http.middlewares.${route}-retry.retry.initialinterval=100ms`,
+    `traefik.http.services.${route}.loadbalancer.server.port=${port}`,
     `selfship.app=${app}`,
     `selfship.build=${buildId}`,
   ];
@@ -156,7 +170,9 @@ export async function deploy(ssh: SshConnection, request: DeployRequest): Promis
   }
   const startMs = Date.now() - startStart;
 
-  // 7. Switch: remove previous versions now that the new one serves traffic.
+  // 7. Switch: give Traefik a moment to start routing to the new (healthy)
+  //    version, then remove previous versions.
+  await new Promise((resolve) => setTimeout(resolve, SWITCH_SETTLE_MS));
   const old = (
     await ssh.exec(`docker ps -a --filter label=selfship.app=${sh(app)} --format '{{.Names}}'`, {
       sudo: true,

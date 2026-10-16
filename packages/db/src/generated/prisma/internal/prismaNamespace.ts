@@ -403,7 +403,9 @@ export const ModelName = {
   OAuthAccount: 'OAuthAccount',
   GithubInstallation: 'GithubInstallation',
   GithubInstallationMember: 'GithubInstallationMember',
-  Project: 'Project'
+  Project: 'Project',
+  Server: 'Server',
+  ServerJob: 'ServerJob'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -419,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project"
+    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -941,6 +943,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Server: {
+      payload: Prisma.$ServerPayload<ExtArgs>
+      fields: Prisma.ServerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ServerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ServerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>
+        }
+        findFirst: {
+          args: Prisma.ServerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ServerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>
+        }
+        findMany: {
+          args: Prisma.ServerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>[]
+        }
+        create: {
+          args: Prisma.ServerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>
+        }
+        createMany: {
+          args: Prisma.ServerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ServerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>[]
+        }
+        delete: {
+          args: Prisma.ServerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>
+        }
+        update: {
+          args: Prisma.ServerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>
+        }
+        deleteMany: {
+          args: Prisma.ServerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ServerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ServerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>[]
+        }
+        upsert: {
+          args: Prisma.ServerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerPayload>
+        }
+        aggregate: {
+          args: Prisma.ServerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateServer>
+        }
+        groupBy: {
+          args: Prisma.ServerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ServerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServerCountAggregateOutputType> | number
+        }
+      }
+    }
+    ServerJob: {
+      payload: Prisma.$ServerJobPayload<ExtArgs>
+      fields: Prisma.ServerJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ServerJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ServerJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>
+        }
+        findFirst: {
+          args: Prisma.ServerJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ServerJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>
+        }
+        findMany: {
+          args: Prisma.ServerJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>[]
+        }
+        create: {
+          args: Prisma.ServerJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>
+        }
+        createMany: {
+          args: Prisma.ServerJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ServerJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>[]
+        }
+        delete: {
+          args: Prisma.ServerJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>
+        }
+        update: {
+          args: Prisma.ServerJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.ServerJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ServerJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ServerJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.ServerJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ServerJobPayload>
+        }
+        aggregate: {
+          args: Prisma.ServerJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateServerJob>
+        }
+        groupBy: {
+          args: Prisma.ServerJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServerJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ServerJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ServerJobCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1082,6 +1232,55 @@ export const ProjectScalarFieldEnum = {
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
 
 
+export const ServerScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  host: 'host',
+  port: 'port',
+  sshUser: 'sshUser',
+  keySource: 'keySource',
+  encryptedPrivateKey: 'encryptedPrivateKey',
+  publicKey: 'publicKey',
+  keyComment: 'keyComment',
+  hostKeyFingerprint: 'hostKeyFingerprint',
+  status: 'status',
+  statusMessage: 'statusMessage',
+  os: 'os',
+  osVersion: 'osVersion',
+  arch: 'arch',
+  cpus: 'cpus',
+  ramMb: 'ramMb',
+  swapMb: 'swapMb',
+  diskFreeGb: 'diskFreeGb',
+  dockerVersion: 'dockerVersion',
+  tier: 'tier',
+  problems: 'problems',
+  warnings: 'warnings',
+  lastCheckedAt: 'lastCheckedAt',
+  readyAt: 'readyAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServerScalarFieldEnum = (typeof ServerScalarFieldEnum)[keyof typeof ServerScalarFieldEnum]
+
+
+export const ServerJobScalarFieldEnum = {
+  id: 'id',
+  serverId: 'serverId',
+  type: 'type',
+  status: 'status',
+  log: 'log',
+  error: 'error',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type ServerJobScalarFieldEnum = (typeof ServerJobScalarFieldEnum)[keyof typeof ServerJobScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1207,6 +1406,76 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerKeySource'
+ */
+export type EnumServerKeySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerKeySource'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerKeySource[]'
+ */
+export type ListEnumServerKeySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerKeySource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerStatus'
+ */
+export type EnumServerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerStatus[]'
+ */
+export type ListEnumServerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CapabilityTier'
+ */
+export type EnumCapabilityTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CapabilityTier'>
+    
+
+
+/**
+ * Reference to a field of type 'CapabilityTier[]'
+ */
+export type ListEnumCapabilityTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CapabilityTier[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerJobType'
+ */
+export type EnumServerJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerJobType'>
+    
+
+
+/**
+ * Reference to a field of type 'ServerJobType[]'
+ */
+export type ListEnumServerJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerJobType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'JobStatus'
+ */
+export type EnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'JobStatus[]'
+ */
+export type ListEnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobStatus[]'>
     
 
 
@@ -1381,6 +1650,8 @@ export type GlobalOmitConfig = {
   githubInstallation?: Prisma.GithubInstallationOmit
   githubInstallationMember?: Prisma.GithubInstallationMemberOmit
   project?: Prisma.ProjectOmit
+  server?: Prisma.ServerOmit
+  serverJob?: Prisma.ServerJobOmit
 }
 
 /* Types for Logging */

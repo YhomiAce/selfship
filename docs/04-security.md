@@ -8,7 +8,7 @@ We will hold **root-level access to other people's servers**. One breach of our 
 2. **Fallback: user pastes a private key.** Encrypt immediately and never log it.
 3. **Never store passwords.** If a user only has a root password, use it **once** (in memory) to install our public key, then throw it away.
 4. **Verify host keys.** Store the host key fingerprint on first connect. If it changes later, refuse to connect and alert the user.
-5. **Least privilege after bootstrap.** Create a `deployer` user in the `docker` group and use that for deploys.
+5. **Least privilege after bootstrap.** Planned, deferred: a `deployer` user in the `docker` group would be root-equivalent, so it adds little until rootless Docker or the Phase 3 agent (decision log #46).
 6. Users can **revoke** access at any time. We show the exact command to remove our key.
 
 ## Encryption at rest

@@ -86,25 +86,29 @@
 ## M3 — Servers
 
 - [x] **Deploy spike** (moved from Phase 0): [`tools/deploy-spike`](../../tools/deploy-spike/README.md) bootstraps a VPS and deploys static, Vite and Next.js apps over SSH with zero-downtime switches. Results: [`docs/spike-results.md`](../spike-results.md). Real Let's Encrypt certificates verified on `*.spike.selfship.dev`
-- [ ] `CryptoModule`: envelope encryption (AES-256-GCM data keys, master key from env), with key-version field for future rotation
-- [ ] Prisma: `Server` (name, host, port, sshUser, encryptedPrivateKey, publicKey, hostKeyFingerprint, os, arch, ramMb, diskGb, status, capabilityTier)
-- [ ] **Add server wizard**
-  - Option A (default): we generate an Ed25519 keypair. UI shows a one-line command to append our public key
-  - Option B: paste private key (encrypted immediately)
-  - Option C: root password used **once** in memory to install our key, never stored
-- [ ] `SshService` (in worker): connect with timeouts, exec with streaming, host key pinning (TOFU, refuse on mismatch)
-- [ ] **Pre-flight job** checks OS (Ubuntu 22.04/24.04, Debian 12/13), arch (x86_64/arm64), RAM, disk, sudo, ports 80/443, existing web servers (nginx/apache using port 80, which we warn about and offer to handle)
-- [ ] **Capability tier** from specs: `static-only` (<1 GB), `standard` (1–2 GB), `recommended` (≥2 GB). See [03](../03-deployment-engine.md#server-requirements)
-- [ ] **Bootstrap job** (idempotent): Docker, `deployer` user, Traefik, ufw, swap, unattended-upgrades. Live log streaming
-- [ ] Real-time channel: Socket.IO gateway with auth, subscriptions per server/deployment room, worker publishes via Redis
-- [ ] UI: servers list with status badges, server detail (specs, tier, bootstrap logs, "re-run bootstrap", "remove server" + revoke instructions)
+- [x] **Envelope encryption**, [`packages/crypto`](../../packages/crypto/src/envelope.ts): AES-256-GCM data key per secret, wrapped by a master key from env. Key IDs allow rotation (`ENCRYPTION_PREVIOUS_KEYS`). Ciphertext is bound to its row and purpose (`server:<id>:ssh-key`), so it can't be copied to another server
+- [x] Prisma: `Server` (connection, encrypted key, pinned host key, specs, tier, status, problems/warnings) and `ServerJob` (check/setup runs with saved log)
+- [x] **Add server form** (`/dashboard/servers/new`)
+  - Generate a key (default): we create an Ed25519 key pair; the server page shows the one-line command that adds our public key, then "I've added it, connect"
+  - Paste a private key: validated (passphrase-protected keys rejected) and encrypted immediately
+  - Password once: used **inside the API request** to install our key, never stored, logged or queued (Redis)
+  - SSRF guard: private, loopback, link-local/metadata and CGNAT addresses are refused, re-checked on every connect (DNS can change). `ALLOW_PRIVATE_SERVER_HOSTS=true` for LAN VMs in development
+- [x] SSH in [`packages/remote`](../../packages/remote/src/ssh.ts) (used by the worker): timeouts, streaming exec, host key pinning (trust on first use, refuse on mismatch)
+- [x] **Pre-flight** ([`preflight.ts`](../../packages/remote/src/preflight.ts)): OS, arch, RAM, swap, disk, passwordless sudo, Docker version, and what is listening on 80/443 (names the program and gives the `systemctl` fix)
+- [x] **Capability tier** from RAM: static-only (<850 MB reported), standard, recommended (≥1.8 GB). Thresholds sit below 1/2 GB because VPSes report a little less than nominal
+- [x] **Setup job** ([`bootstrap.sh`](../../packages/remote/scripts/bootstrap.sh), idempotent): Docker ≥ 23, swap under 2 GB RAM, ufw (SSH port first), unattended-upgrades, Traefik `v3.7` (recreated only when its config changes). The `deployer` user is deferred (decision #46)
+- [x] **Live logs over Server-Sent Events** (not Socket.IO, decision #44): the worker appends lines to a Redis Stream per job; the API streams it with resume (`Last-Event-ID`) and falls back to the saved log after the stream expires
+- [x] UI: servers list with status badges; server page with the connect step, live log, findings, specs/tier/host key, "Check again", "Run/Re-run setup", history (replays old logs) and "Remove server" with the revoke command
+- [x] Tests: crypto 14, remote 57, worker 21, API e2e 67 (17 for servers), web 32. Browser walkthrough against a real AWS server (2026-10-16)
 
 **What you'll test**
 
 - [ ] Add your VPS with each of the 3 options. Pre-flight shows correct specs
-- [ ] Bootstrap streams live and ends ✅ Ready. Running it again is safe
+- [ ] Setup streams live and ends ✅ Ready. Running it again is safe
+- [ ] Click "connect" before adding the key: the page explains, and still shows the command
 - [ ] Change the server's host key (or point to another IP). Connection is refused with a clear warning
-- [ ] DB inspection: private keys are ciphertext
+- [ ] DB inspection: private keys are ciphertext (`select "encryptedPrivateKey" from "Server"`), and a password used to add a server appears nowhere (DB, Redis, logs)
+- [ ] Remove a server and run the shown command: our key is gone from `authorized_keys`
 
 ---
 

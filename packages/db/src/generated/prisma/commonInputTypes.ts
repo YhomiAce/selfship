@@ -294,6 +294,91 @@ export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
 }
 
+export type EnumServerKeySourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerKeySource | Prisma.EnumServerKeySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerKeySourceFilter<$PrismaModel> | $Enums.ServerKeySource
+}
+
+export type EnumServerStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerStatus | Prisma.EnumServerStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerStatusFilter<$PrismaModel> | $Enums.ServerStatus
+}
+
+export type EnumCapabilityTierNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.CapabilityTier | Prisma.EnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCapabilityTierNullableFilter<$PrismaModel> | $Enums.CapabilityTier | null
+}
+
+export type EnumServerKeySourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerKeySource | Prisma.EnumServerKeySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerKeySourceWithAggregatesFilter<$PrismaModel> | $Enums.ServerKeySource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerKeySourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerKeySourceFilter<$PrismaModel>
+}
+
+export type EnumServerStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerStatus | Prisma.EnumServerStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerStatusWithAggregatesFilter<$PrismaModel> | $Enums.ServerStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerStatusFilter<$PrismaModel>
+}
+
+export type EnumCapabilityTierNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CapabilityTier | Prisma.EnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCapabilityTierNullableWithAggregatesFilter<$PrismaModel> | $Enums.CapabilityTier | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCapabilityTierNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCapabilityTierNullableFilter<$PrismaModel>
+}
+
+export type EnumServerJobTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerJobType | Prisma.EnumServerJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerJobTypeFilter<$PrismaModel> | $Enums.ServerJobType
+}
+
+export type EnumJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobStatus | Prisma.EnumJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobStatusFilter<$PrismaModel> | $Enums.JobStatus
+}
+
+export type EnumServerJobTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerJobType | Prisma.EnumServerJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerJobTypeWithAggregatesFilter<$PrismaModel> | $Enums.ServerJobType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerJobTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerJobTypeFilter<$PrismaModel>
+}
+
+export type EnumJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobStatus | Prisma.EnumJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.JobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumJobStatusFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -583,6 +668,91 @@ export type NestedFloatNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
+}
+
+export type NestedEnumServerKeySourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerKeySource | Prisma.EnumServerKeySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerKeySourceFilter<$PrismaModel> | $Enums.ServerKeySource
+}
+
+export type NestedEnumServerStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerStatus | Prisma.EnumServerStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerStatusFilter<$PrismaModel> | $Enums.ServerStatus
+}
+
+export type NestedEnumCapabilityTierNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.CapabilityTier | Prisma.EnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCapabilityTierNullableFilter<$PrismaModel> | $Enums.CapabilityTier | null
+}
+
+export type NestedEnumServerKeySourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerKeySource | Prisma.EnumServerKeySourceFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerKeySource[] | Prisma.ListEnumServerKeySourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerKeySourceWithAggregatesFilter<$PrismaModel> | $Enums.ServerKeySource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerKeySourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerKeySourceFilter<$PrismaModel>
+}
+
+export type NestedEnumServerStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerStatus | Prisma.EnumServerStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerStatus[] | Prisma.ListEnumServerStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerStatusWithAggregatesFilter<$PrismaModel> | $Enums.ServerStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumCapabilityTierNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CapabilityTier | Prisma.EnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.CapabilityTier[] | Prisma.ListEnumCapabilityTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumCapabilityTierNullableWithAggregatesFilter<$PrismaModel> | $Enums.CapabilityTier | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCapabilityTierNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCapabilityTierNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumServerJobTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerJobType | Prisma.EnumServerJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerJobTypeFilter<$PrismaModel> | $Enums.ServerJobType
+}
+
+export type NestedEnumJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobStatus | Prisma.EnumJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobStatusFilter<$PrismaModel> | $Enums.JobStatus
+}
+
+export type NestedEnumServerJobTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServerJobType | Prisma.EnumServerJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ServerJobType[] | Prisma.ListEnumServerJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumServerJobTypeWithAggregatesFilter<$PrismaModel> | $Enums.ServerJobType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServerJobTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServerJobTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobStatus | Prisma.EnumJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobStatus[] | Prisma.ListEnumJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.JobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumJobStatusFilter<$PrismaModel>
 }
 
 

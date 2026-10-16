@@ -108,7 +108,7 @@ Docker + Traefik idle cost is roughly 100–150 MB RAM (to be confirmed in the s
         └── .env      # runtime env (chmod 600)
 ```
 
-Run as a dedicated `deployer` user in the `docker` group, not root, after bootstrap.
+For now we connect as the user the founder adds (root or passwordless sudo). A `deployer` user in the `docker` group is deferred, because that group is root-equivalent anyway (decision log #46).
 
 ## Env vars UX
 

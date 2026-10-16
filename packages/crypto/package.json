@@ -1,0 +1,20 @@
+{
+  "name": "@selfship/crypto",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Envelope encryption (AES-256-GCM) for secrets at rest: SSH keys, env vars.",
+  "license": "AGPL-3.0-only",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {}
+}

@@ -1,16 +1,16 @@
 import type { RepoSnapshot } from '@selfship/adapters';
-import { type SshConnection, sh } from './ssh.ts';
+import { type CommandRunner, sh } from './ssh';
 
 /**
  * A {@link RepoSnapshot} over a clone that lives on the server, so the same
  * adapters that detect projects through the GitHub API work at build time.
  *
- * @param ssh - Open connection
+ * @param runner - Connection to the server
  * @param dir - Absolute path of the project root on the server
  * @returns Snapshot with lazily fetched, cached file contents
  */
-export async function remoteSnapshot(ssh: SshConnection, dir: string): Promise<RepoSnapshot> {
-  const { stdout } = await ssh.exec(`ls -A1 ${sh(dir)}`, { sudo: true });
+export async function remoteSnapshot(runner: CommandRunner, dir: string): Promise<RepoSnapshot> {
+  const { stdout } = await runner.exec(`ls -A1 ${sh(dir)}`, { sudo: true });
   const files = new Set(
     stdout
       .split('\n')
@@ -21,22 +21,22 @@ export async function remoteSnapshot(ssh: SshConnection, dir: string): Promise<R
 
   return {
     files,
-    readFile(path: string): Promise<string | null> {
-      if (path.split('/').some((part) => part === '..')) return Promise.resolve(null);
-      let pending = cache.get(path);
+    readFile(file: string): Promise<string | null> {
+      if (file.split('/').some((part) => part === '..')) return Promise.resolve(null);
+      let pending = cache.get(file);
       if (!pending) {
         // Regular files under 512 KB only; anything else counts as missing.
-        const file = `${dir}/${path}`;
-        pending = ssh
+        const full = `${dir}/${file}`;
+        pending = runner
           .exec(
-            `[ -f ${sh(file)} ] && [ "$(stat -c %s ${sh(file)})" -le 524288 ] && cat ${sh(file)}`,
+            `[ -f ${sh(full)} ] && [ "$(stat -c %s ${sh(full)})" -le 524288 ] && cat ${sh(full)}`,
             {
               sudo: true,
               check: false,
             },
           )
           .then((result) => (result.code === 0 ? result.stdout : null));
-        cache.set(path, pending);
+        cache.set(file, pending);
       }
       return pending;
     },

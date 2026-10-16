@@ -13,6 +13,8 @@ export const QueueName = {
   SYSTEM: 'system',
   /** Transactional emails. */
   EMAIL: 'email',
+  /** Server checks and setup (SSH). */
+  SERVERS: 'servers',
 } as const;
 
 export type QueueName = (typeof QueueName)[keyof typeof QueueName];
@@ -64,3 +66,27 @@ export type EmailJobData = z.infer<typeof EmailJobDataSchema>;
 
 /** Name of an email template. */
 export type EmailTemplate = EmailJobData['template'];
+
+/** Job names on the `servers` queue. */
+export const ServerQueueJob = {
+  RUN: 'run',
+} as const;
+
+/**
+ * Payload of `servers:run`. Only the job ID: the worker loads the server and
+ * decrypts its key from the database, so no credentials ever sit in Redis.
+ */
+export const ServerJobDataSchema = z.object({ serverJobId: z.uuid() });
+export type ServerJobData = z.infer<typeof ServerJobDataSchema>;
+
+/**
+ * Redis Stream holding a server job's live log lines. The worker appends,
+ * the API's SSE endpoint reads from the start (history) and then blocks for
+ * new entries, so no line is lost or duplicated, and reconnects resume.
+ *
+ * @param serverJobId - Job ID
+ * @returns Stream key
+ */
+export function serverJobStreamKey(serverJobId: string): string {
+  return `selfship:server-job:${serverJobId}:log`;
+}

@@ -57,7 +57,9 @@ export const ModelName = {
   OAuthAccount: 'OAuthAccount',
   GithubInstallation: 'GithubInstallation',
   GithubInstallationMember: 'GithubInstallationMember',
-  Project: 'Project'
+  Project: 'Project',
+  Server: 'Server',
+  ServerJob: 'ServerJob'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -176,6 +178,55 @@ export const ProjectScalarFieldEnum = {
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const ServerScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  host: 'host',
+  port: 'port',
+  sshUser: 'sshUser',
+  keySource: 'keySource',
+  encryptedPrivateKey: 'encryptedPrivateKey',
+  publicKey: 'publicKey',
+  keyComment: 'keyComment',
+  hostKeyFingerprint: 'hostKeyFingerprint',
+  status: 'status',
+  statusMessage: 'statusMessage',
+  os: 'os',
+  osVersion: 'osVersion',
+  arch: 'arch',
+  cpus: 'cpus',
+  ramMb: 'ramMb',
+  swapMb: 'swapMb',
+  diskFreeGb: 'diskFreeGb',
+  dockerVersion: 'dockerVersion',
+  tier: 'tier',
+  problems: 'problems',
+  warnings: 'warnings',
+  lastCheckedAt: 'lastCheckedAt',
+  readyAt: 'readyAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServerScalarFieldEnum = (typeof ServerScalarFieldEnum)[keyof typeof ServerScalarFieldEnum]
+
+
+export const ServerJobScalarFieldEnum = {
+  id: 'id',
+  serverId: 'serverId',
+  type: 'type',
+  status: 'status',
+  log: 'log',
+  error: 'error',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type ServerJobScalarFieldEnum = (typeof ServerJobScalarFieldEnum)[keyof typeof ServerJobScalarFieldEnum]
 
 
 export const SortOrder = {

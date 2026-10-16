@@ -7,10 +7,13 @@ import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { bootstrapServer, preflight, sampleMemory, SshConnection } from '@selfship/remote';
 import { deploy } from './deploy.ts';
-import { sampleMemory } from './memory-sampler.ts';
-import { preflight } from './preflight.ts';
-import { readPrivateKey, sh, SshConnection } from './ssh.ts';
+
+/** Reads a private key file, expanding `~`. */
+function readPrivateKey(file: string): string {
+  return readFileSync(file.replace(/^~(?=\/)/, process.env.HOME ?? '~'), 'utf8');
+}
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -124,15 +127,11 @@ async function main(): Promise<void> {
     if (report.problems.length) throw new Error('Pre-flight failed; fix the problems above first');
 
     if (command === 'bootstrap') {
-      const script = readFileSync(path.join(import.meta.dirname, 'bootstrap.sh'), 'utf8');
-      const env = `SSH_PORT=${Number(values.port)} ACME_EMAIL=${sh(values['acme-email'])} ACME_STAGING=${values.staging ? 1 : 0}`;
-      await ssh.exec(`${env} bash -s`, {
-        sudo: true,
-        stdin: script,
-        timeoutMs: 15 * 60_000,
-        onOutput: (chunk) => {
-          for (const line of chunk.split('\n')) if (line.trim()) log(line);
-        },
+      await bootstrapServer(ssh, {
+        sshPort: Number(values.port),
+        acmeEmail: values['acme-email'],
+        acmeStaging: values.staging,
+        onLine: log,
       });
       const idle = await ssh.exec("free -m | awk '/Mem:/{print $3}'", { check: false });
       log(`Bootstrap done. RAM in use at idle (Docker + Traefik): ${idle.stdout.trim()} MB`);

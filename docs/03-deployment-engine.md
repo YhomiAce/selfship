@@ -100,13 +100,17 @@ Docker + Traefik idle cost is roughly 100–150 MB RAM (to be confirmed in the s
 ## Server layout (on user's VPS)
 
 ```
-/opt/<platform>/
-├── traefik/          # traefik config + acme.json (certs)
+/opt/selfship/
+├── traefik/                    # acme.json (certificates)
 └── apps/
-    └── <app-id>/
-        ├── src/      # latest clone (deleted after build)
-        └── .env      # runtime env (chmod 600)
+    └── p-<project-id-12>/      # one folder per project (app ID)
+        └── builds/<build-id>/  # last 3 kept
+            ├── src/            # the clone, deleted right after the build
+            ├── build-env.sh    # build-time variables (600), deleted after the build
+            └── run-env.sh      # runtime variables (600), deleted after the container starts
 ```
+
+Variables are not kept on disk: Docker stores the runtime ones in the container's config (root-only), which is how they survive restarts. See [`AppDeployer`](../packages/remote/src/deploy.ts) for the full pipeline and decision log #52–59 for the choices behind it.
 
 For now we connect as the user the founder adds (root or passwordless sudo). A `deployer` user in the `docker` group is deferred, because that group is root-equivalent anyway (decision log #46).
 
@@ -116,7 +120,8 @@ For now we connect as the user the founder adds (root or passwordless sudo). A `
 - "Paste .env" textarea that parses into the table (handles comments, quotes, `export` prefix)
 - Mark vars as **build-time** (e.g. `NEXT_PUBLIC_*`) or **runtime**
 - Values hidden by default with a reveal button. Encrypted in our DB.
-- Changing env vars → offer "Redeploy now"
+- Changing env vars applies on the next deployment (a "Redeploy now" prompt can come later)
+- Implemented in M4: three scopes (runtime, build, both), values masked in logs
 
 ## Failure handling (this is where UX wins)
 

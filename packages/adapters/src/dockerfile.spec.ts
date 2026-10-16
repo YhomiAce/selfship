@@ -1,5 +1,5 @@
 import type { ProjectSettings } from '@selfship/shared';
-import { UnsafeBuildConfigError } from './dockerfile';
+import { nodeBuildStage, UnsafeBuildConfigError } from './dockerfile';
 import { FIXTURES } from './fixtures.spec-helper';
 import { detectProject, getAdapter } from './registry';
 import { memoryRepo } from './testing';
@@ -97,5 +97,27 @@ describe('generated Dockerfiles', () => {
     it('rejects out-of-range ports', async () => {
       await expect(render('expressApi', { port: 0 })).rejects.toThrow(UnsafeBuildConfigError);
     });
+  });
+});
+
+describe('build defaults', () => {
+  it('sets CI=true as a build arg the user can override', () => {
+    const stage = nodeBuildStage({
+      settings: {
+        adapter: 'spa',
+        installCommand: 'npm ci',
+        buildCommand: 'npm run build',
+        startCommand: null,
+        outputDirectory: 'build',
+        port: 80,
+        nodeVersion: 22,
+      },
+      packageManager: 'npm',
+      buildArgNames: ['CI'],
+    });
+    expect(stage).toContain('ARG CI=true');
+    expect(stage).not.toMatch(/^ENV .*\bCI=/m);
+    // The user's ARG comes after the default, before the build runs.
+    expect(stage.indexOf('ARG CI=true')).toBeLessThan(stage.lastIndexOf('ARG CI\n'));
   });
 });

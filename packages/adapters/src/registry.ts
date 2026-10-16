@@ -4,7 +4,8 @@ import { nextjsAdapter } from './adapters/nextjs.adapter';
 import { nodeAdapter } from './adapters/node.adapter';
 import { spaAdapter } from './adapters/spa.adapter';
 import { staticAdapter } from './adapters/static.adapter';
-import type { Adapter, DetectResult, RepoSnapshot } from './types';
+import { detectPackageManager, readPackageJson } from './node/package-json';
+import type { Adapter, DetectResult, PackageManager, RepoSnapshot } from './types';
 
 /**
  * All adapters in detection order. More specific ones come first: a repo
@@ -65,4 +66,16 @@ export function fallbackSettings(): ProjectSettings {
     port: 3000,
     nodeVersion: DEFAULT_NODE_VERSION,
   };
+}
+
+/**
+ * The package manager of a JavaScript project, for build time (settings are
+ * already stored, but the lockfile may have changed since detection).
+ *
+ * @param repo - Project files
+ * @returns Package manager, or `null` when there is no package.json
+ */
+export async function packageManagerOf(repo: RepoSnapshot): Promise<PackageManager | null> {
+  const pkg = await readPackageJson(repo);
+  return pkg ? detectPackageManager(repo, pkg) : null;
 }

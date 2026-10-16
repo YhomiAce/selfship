@@ -115,7 +115,11 @@ export function nodeBuildStage(config: BuildConfig, stageName = 'build'): string
   const lines = [
     `FROM node:${node}-alpine AS ${stageName}`,
     'WORKDIR /app',
-    'ENV CI=true NEXT_TELEMETRY_DISABLED=1',
+    // Defaults as ARGs, not ENV: Docker lets ENV override a build arg of the
+    // same name, which would ignore a user's CI=false (needed by old Create
+    // React App builds that treat warnings as errors when CI=true).
+    'ARG CI=true',
+    'ARG NEXT_TELEMETRY_DISABLED=1',
     packageManagerSetup(pm),
     manifests ? `COPY ${manifests} ./` : 'COPY . .',
     settings.installCommand

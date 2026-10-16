@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { ADAPTER_LABELS, type ProjectDto } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
 import { EmptyState } from '@/components/dashboard/empty-state';
+import { DeploymentStatusBadge } from '@/components/deployments/deployment-status-badge';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -67,7 +68,12 @@ export function ProjectsList(): React.ReactNode {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2">
                     <span className="truncate">{project.name}</span>
-                    <GithubStateBadge state={project.github.state} />
+                    <span className="flex items-center gap-1.5">
+                      <GithubStateBadge state={project.github.state} />
+                      {project.latestDeployment ? (
+                        <DeploymentStatusBadge status={project.latestDeployment.status} />
+                      ) : null}
+                    </span>
                   </CardTitle>
                   <CardDescription className="truncate">{project.repoFullName}</CardDescription>
                 </CardHeader>
@@ -79,6 +85,11 @@ export function ProjectsList(): React.ReactNode {
                   <span className="truncate">
                     {ADAPTER_LABELS[project.settings.adapter].split(' (')[0]}
                   </span>
+                  {project.liveDeployment?.url ? (
+                    <span className="truncate text-emerald-700 dark:text-emerald-400">
+                      {project.liveDeployment.url.replace(/^https:\/\//, '')}
+                    </span>
+                  ) : null}
                 </CardContent>
               </Card>
             </Link>

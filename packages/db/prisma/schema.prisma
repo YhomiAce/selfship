@@ -30,6 +30,7 @@ model User {
   githubInstallations GithubInstallationMember[]
   projects            Project[]
   servers             Server[]
+  deployments         Deployment[]
 
   @@map("users")
 }
@@ -176,10 +177,19 @@ model Project {
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
 
+  /// Server the project deploys to (null until chosen, or after the server is removed).
+  serverId        String? @map("server_id") @db.Uuid
+  /// Path checked before traffic moves to a new version; any status below 500 passes.
+  healthCheckPath String  @default("/") @map("health_check_path")
+
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   githubInstallation GithubInstallation @relation(fields: [githubInstallationId], references: [id], onDelete: Restrict)
+  server             Server?            @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  envVars            EnvVar[]
+  deployments        Deployment[]
 
   @@unique([userId, name])
+  @@index([serverId])
   @@index([githubInstallationId])
   @@index([repoId])
   @@map("projects")
@@ -268,8 +278,10 @@ model Server {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobs ServerJob[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs        ServerJob[]
+  projects    Project[]
+  deployments Deployment[]
 
   @@unique([userId, name])
   @@index([userId])
@@ -314,4 +326,103 @@ model ServerJob {
 
   @@index([serverId, createdAt])
   @@map("server_jobs")
+}
+
+// ── Environment variables & deployments (M4) ───────────────────────────────
+
+/// When a variable is available: running app, `docker build`, or both.
+enum EnvScope {
+  runtime
+  build
+  both
+}
+
+/// A project's environment variable. The value is encrypted at rest.
+model EnvVar {
+  id             String   @id @default(uuid()) @db.Uuid
+  projectId      String   @map("project_id") @db.Uuid
+  key            String
+  /// Envelope-encrypted value (packages/crypto), context "project:<projectId>:env:<key>".
+  encryptedValue String   @map("encrypted_value")
+  scope          EnvScope @default(runtime)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, key])
+  @@map("env_vars")
+}
+
+/// Pipeline position of a deployment; in-progress values are the stages, in order.
+enum DeploymentStatus {
+  queued
+  cloning
+  building
+  starting
+  health_check
+  switching
+  live
+  failed
+  cancelled
+  /// Was live; a newer deployment took over.
+  replaced
+}
+
+enum DeploymentTrigger {
+  manual
+  push
+  rollback
+}
+
+/// One attempt to build and run a commit of a project on a server.
+model Deployment {
+  id                String            @id @default(uuid()) @db.Uuid
+  projectId         String            @map("project_id") @db.Uuid
+  /// Null if the server was removed later (the history stays).
+  serverId          String?           @map("server_id") @db.Uuid
+  /// Who started it (null for automatic deployments, or a deleted user).
+  triggeredById     String?           @map("triggered_by_id") @db.Uuid
+  trigger           DeploymentTrigger @default(manual)
+  status            DeploymentStatus  @default(queued)
+  branch            String
+  commitSha         String            @map("commit_sha")
+  commitMessage     String            @map("commit_message")
+  commitAuthor      String?           @map("commit_author")
+  /// Start/end time per stage: { "<stage>": { startedAt, finishedAt } } (ISO strings).
+  stages            Json              @default("{}")
+  failedStage       DeploymentStatus? @map("failed_stage")
+  errorSummary      String?           @map("error_summary")
+  /// Docker image and container on the server (for switching, cleanup and rollback).
+  imageTag          String?           @map("image_tag")
+  containerName     String?           @map("container_name")
+  url               String?
+  cancelRequestedAt DateTime?         @map("cancel_requested_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  startedAt         DateTime?         @map("started_at")
+  finishedAt        DateTime?         @map("finished_at")
+
+  project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  server      Server?              @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  triggeredBy User?                @relation(fields: [triggeredById], references: [id], onDelete: SetNull)
+  logChunks   DeploymentLogChunk[]
+
+  @@index([projectId, createdAt])
+  @@index([serverId, status])
+  @@map("deployments")
+}
+
+/// The saved log of a deployment, written in chunks while it runs (secrets already masked).
+model DeploymentLogChunk {
+  id           String   @id @default(uuid()) @db.Uuid
+  deploymentId String   @map("deployment_id") @db.Uuid
+  /// 0, 1, 2… in write order.
+  seq          Int
+  content      String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+
+  @@unique([deploymentId, seq])
+  @@map("deployment_log_chunks")
 }

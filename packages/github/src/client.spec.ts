@@ -214,6 +214,31 @@ describe('GithubAppClient', () => {
     await expect(client.installationIdsForUserCode('nope')).rejects.toBeInstanceOf(GithubApiError);
   });
 
+  it('resolves a branch to its commit (first message line, author fallback)', async () => {
+    const sha = 'a'.repeat(40);
+    const { client, calls } = makeClient({
+      'POST /app/installations/7/access_tokens': tokenRoute(),
+      'GET /repos/acme/web/commits/feature/x': () =>
+        json({
+          sha,
+          commit: { message: 'Fix login\n\nLonger body', author: { name: 'Ada' } },
+          author: null,
+        }),
+    });
+    await expect(client.getCommit(7, 'acme/web', 'feature/x')).resolves.toEqual({
+      sha,
+      message: 'Fix login',
+      author: 'Ada',
+    });
+    expect(calls).toContain('GET /repos/acme/web/commits/feature/x');
+  });
+
+  it('builds clone URLs without credentials and works without OAuth settings', () => {
+    const client = new GithubAppClient({ appId: '1', privateKey: PEM });
+    expect(client.cloneUrl('acme/web')).toBe('https://github.com/acme/web.git');
+    expect(() => client.installUrl('s')).toThrow('slug is not configured');
+  });
+
   it('builds install and manage URLs', () => {
     const { client } = makeClient({});
     expect(client.installUrl('s t')).toBe(

@@ -405,7 +405,10 @@ export const ModelName = {
   GithubInstallationMember: 'GithubInstallationMember',
   Project: 'Project',
   Server: 'Server',
-  ServerJob: 'ServerJob'
+  ServerJob: 'ServerJob',
+  EnvVar: 'EnvVar',
+  Deployment: 'Deployment',
+  DeploymentLogChunk: 'DeploymentLogChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob"
+    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob" | "envVar" | "deployment" | "deploymentLogChunk"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1091,6 +1094,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EnvVar: {
+      payload: Prisma.$EnvVarPayload<ExtArgs>
+      fields: Prisma.EnvVarFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EnvVarFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EnvVarFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>
+        }
+        findFirst: {
+          args: Prisma.EnvVarFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EnvVarFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>
+        }
+        findMany: {
+          args: Prisma.EnvVarFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>[]
+        }
+        create: {
+          args: Prisma.EnvVarCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>
+        }
+        createMany: {
+          args: Prisma.EnvVarCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EnvVarCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>[]
+        }
+        delete: {
+          args: Prisma.EnvVarDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>
+        }
+        update: {
+          args: Prisma.EnvVarUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>
+        }
+        deleteMany: {
+          args: Prisma.EnvVarDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EnvVarUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EnvVarUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>[]
+        }
+        upsert: {
+          args: Prisma.EnvVarUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvVarPayload>
+        }
+        aggregate: {
+          args: Prisma.EnvVarAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEnvVar>
+        }
+        groupBy: {
+          args: Prisma.EnvVarGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EnvVarGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EnvVarCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EnvVarCountAggregateOutputType> | number
+        }
+      }
+    }
+    Deployment: {
+      payload: Prisma.$DeploymentPayload<ExtArgs>
+      fields: Prisma.DeploymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeploymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeploymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        findFirst: {
+          args: Prisma.DeploymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeploymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        findMany: {
+          args: Prisma.DeploymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>[]
+        }
+        create: {
+          args: Prisma.DeploymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        createMany: {
+          args: Prisma.DeploymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeploymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>[]
+        }
+        delete: {
+          args: Prisma.DeploymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        update: {
+          args: Prisma.DeploymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeploymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeploymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeploymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeploymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        aggregate: {
+          args: Prisma.DeploymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeployment>
+        }
+        groupBy: {
+          args: Prisma.DeploymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeploymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentCountAggregateOutputType> | number
+        }
+      }
+    }
+    DeploymentLogChunk: {
+      payload: Prisma.$DeploymentLogChunkPayload<ExtArgs>
+      fields: Prisma.DeploymentLogChunkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeploymentLogChunkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeploymentLogChunkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>
+        }
+        findFirst: {
+          args: Prisma.DeploymentLogChunkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeploymentLogChunkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>
+        }
+        findMany: {
+          args: Prisma.DeploymentLogChunkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>[]
+        }
+        create: {
+          args: Prisma.DeploymentLogChunkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>
+        }
+        createMany: {
+          args: Prisma.DeploymentLogChunkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeploymentLogChunkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>[]
+        }
+        delete: {
+          args: Prisma.DeploymentLogChunkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>
+        }
+        update: {
+          args: Prisma.DeploymentLogChunkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeploymentLogChunkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeploymentLogChunkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeploymentLogChunkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeploymentLogChunkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentLogChunkPayload>
+        }
+        aggregate: {
+          args: Prisma.DeploymentLogChunkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeploymentLogChunk>
+        }
+        groupBy: {
+          args: Prisma.DeploymentLogChunkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentLogChunkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeploymentLogChunkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentLogChunkCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1226,7 +1451,9 @@ export const ProjectScalarFieldEnum = {
   port: 'port',
   nodeVersion: 'nodeVersion',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  serverId: 'serverId',
+  healthCheckPath: 'healthCheckPath'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -1281,12 +1508,69 @@ export const ServerJobScalarFieldEnum = {
 export type ServerJobScalarFieldEnum = (typeof ServerJobScalarFieldEnum)[keyof typeof ServerJobScalarFieldEnum]
 
 
+export const EnvVarScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  key: 'key',
+  encryptedValue: 'encryptedValue',
+  scope: 'scope',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EnvVarScalarFieldEnum = (typeof EnvVarScalarFieldEnum)[keyof typeof EnvVarScalarFieldEnum]
+
+
+export const DeploymentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  serverId: 'serverId',
+  triggeredById: 'triggeredById',
+  trigger: 'trigger',
+  status: 'status',
+  branch: 'branch',
+  commitSha: 'commitSha',
+  commitMessage: 'commitMessage',
+  commitAuthor: 'commitAuthor',
+  stages: 'stages',
+  failedStage: 'failedStage',
+  errorSummary: 'errorSummary',
+  imageTag: 'imageTag',
+  containerName: 'containerName',
+  url: 'url',
+  cancelRequestedAt: 'cancelRequestedAt',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum]
+
+
+export const DeploymentLogChunkScalarFieldEnum = {
+  id: 'id',
+  deploymentId: 'deploymentId',
+  seq: 'seq',
+  content: 'content',
+  createdAt: 'createdAt'
+} as const
+
+export type DeploymentLogChunkScalarFieldEnum = (typeof DeploymentLogChunkScalarFieldEnum)[keyof typeof DeploymentLogChunkScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1303,6 +1587,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1480,6 +1773,62 @@ export type ListEnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 
 
 /**
+ * Reference to a field of type 'EnvScope'
+ */
+export type EnumEnvScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EnvScope'>
+    
+
+
+/**
+ * Reference to a field of type 'EnvScope[]'
+ */
+export type ListEnumEnvScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EnvScope[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentTrigger'
+ */
+export type EnumDeploymentTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentTrigger'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentTrigger[]'
+ */
+export type ListEnumDeploymentTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentTrigger[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentStatus'
+ */
+export type EnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentStatus[]'
+ */
+export type ListEnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1652,6 +2001,9 @@ export type GlobalOmitConfig = {
   project?: Prisma.ProjectOmit
   server?: Prisma.ServerOmit
   serverJob?: Prisma.ServerJobOmit
+  envVar?: Prisma.EnvVarOmit
+  deployment?: Prisma.DeploymentOmit
+  deploymentLogChunk?: Prisma.DeploymentLogChunkOmit
 }
 
 /* Types for Logging */

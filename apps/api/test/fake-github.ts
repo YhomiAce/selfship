@@ -1,5 +1,6 @@
 import {
   GithubApiError,
+  type GithubCommit,
   type GithubDirEntry,
   type GithubInstallationInfo,
   type GithubRepository,
@@ -90,6 +91,16 @@ export class FakeGithubClient {
     return Promise.resolve(
       [...names].map(([name, type]) => ({ name, type, path: `${prefix}${name}`, size: 1 })),
     );
+  }
+
+  getCommit(id: number, fullName: string, ref: string): Promise<GithubCommit> {
+    const found = this.find(id, fullName);
+    if (!found?.branches.includes(ref)) return Promise.reject(new GithubApiError('not found', 404));
+    return Promise.resolve({
+      sha: String(found.repo.id).padEnd(40, 'c').slice(0, 40),
+      message: `Latest commit on ${ref}`,
+      author: 'ada',
+    });
   }
 
   readFile(id: number, fullName: string, path: string): Promise<string | null> {

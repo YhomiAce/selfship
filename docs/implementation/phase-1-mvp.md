@@ -114,25 +114,28 @@
 
 ## M4 — Deploy engine
 
-- [ ] Prisma: `Deployment` (projectId, serverId, commitSha, commitMessage, trigger, status, stages[], imageTag, startedAt, finishedAt, errorSummary), `EnvVar` (key, encryptedValue, scope: build|runtime)
-- [ ] **Env vars**: table UI (add/edit/delete, reveal), "Paste .env" parser (comments, quotes, `export`, multiline), build vs runtime scope, `NEXT_PUBLIC_*` / `VITE_*` auto-suggested as build-time
-- [ ] **Deployment pipeline** in worker, as a series of explicit stages so we can show progress and pinpoint failures:
-      `queued → cloning → building → starting → health_check → switching → live` (or `failed` at any stage)
-- [ ] Concurrency: one active deployment per project, a configurable limit per server. Cancel button
-- [ ] Clone with installation token (token never written to disk or logs)
-- [ ] Build args for build-time env vars. Runtime env file `chmod 600`
-- [ ] Health check: HTTP on the app port (configurable path), timeout + retries
-- [ ] Zero-downtime switch via Traefik. If health fails, keep the old container running
-- [ ] Image retention: keep the last 3 per project. Prune build cache when disk is above 80%
-- [ ] **Log handling**: stream to UI live, persist to DB (chunked), **mask secret values**
-- [ ] UI: project page (status, URL, deploy button, deployment history), deployment detail with stage timeline + live log viewer (ANSI colors, auto-scroll, search)
+- [x] Prisma: `Deployment` (commit, trigger, status = stage, per-stage timings, failed stage, error summary, image/container, URL, cancel flag), `DeploymentLogChunk` (saved log), `EnvVar` (encrypted value, scope); `Project.serverId` and `healthCheckPath`
+- [x] **Env vars** ([card](../../apps/web/src/components/env-vars/env-vars-card.tsx)): add, reveal, edit, change scope, delete; **Paste .env** with a live preview ([parser](../../packages/shared/src/env/dotenv.ts): comments, quotes, `export`, inline comments, multiline, CRLF, duplicates). Scopes: runtime, build, both. `NEXT_PUBLIC_*`, `VITE_*`, `REACT_APP_*`… are suggested as build-time. Values are envelope-encrypted, bound to project and name
+- [x] **Pipeline** ([`AppDeployer`](../../packages/remote/src/deploy.ts), driven by the worker's [`DeploymentRunner`](../../apps/worker/src/deployments/deployment.runner.ts)): `queued → cloning → building → starting → health_check → switching → live` (or `failed` with the stage, or `cancelled`)
+- [x] Concurrency: one active deployment per project (409, project row locked); builds per server limited by `SERVER_BUILD_CONCURRENCY` (default 1) with an atomic claim under a Postgres advisory lock; busy jobs wait 5 s and retry. **Cancel** kills the running step's process group on the server
+- [x] Clone exactly the commit (resolved from the branch when the deployment is created) with the installation token sent over **stdin** only: never in a command line, file or `.git/config`. Sparse checkout for monorepo folders
+- [x] Build-time variables as `--build-arg NAME`, runtime ones as `-e NAME`, both exported from root-only (`600`) files that are deleted right after (multiline values work; `--env-file` can't)
+- [x] Health check over HTTP on the configurable path (any status below 500), crash detection, 120 s timeout. The old version keeps serving if anything fails before the switch
+- [x] Zero-downtime switch (per-deployment Traefik router, priority, retry, settle). **Verified: 606/606 requests OK during a redeploy**
+- [x] Keep the last 3 images and build folders per app; prune the build cache above 80 % disk
+- [x] **Logs**: live over SSE (Redis Stream), saved to the DB in chunks every 2 s, **secret values and the GitHub token masked** before anything is written
+- [x] Temporary URL per project: `https://<name>-<id>.<ip-with-dashes>.sslip.io` with a real Let's Encrypt certificate (custom domains in M5)
+- [x] Deleting a project (or moving it to another server, after the first success there) removes the app's containers, images and files from the old server
+- [x] UI: project page (live URL, Deploy, server + health path, deployment history, env vars), deployment page (stage timeline with timings, live log with ANSI colours, search, follow/pause, cancel, failure summary)
 
 **What you'll test**
 
-- [ ] Deploy each of your 4 test repos. All go live (temporary URL: `http://<ip>:<port>` or the Traefik default host until M5)
+- [ ] Deploy your test repos. All go live at their sslip.io URL (verified 2026-10-16 with Yhomi/Portfolio, vanillawebprojects/breakout-game, Github-Finder)
 - [ ] Add an env var, redeploy, and the app sees it. Paste a 10-line `.env` and it parses correctly
 - [ ] Break a build on purpose. Deployment fails at "building" and the previous version stays live
-- [ ] Secret values never show in logs
+- [ ] Cancel a deployment while it builds: it stops within seconds, the previous version stays live
+- [ ] Secret values never show in logs (a build that echoes one shows `••••••`)
+- [ ] Delete a project: its app disappears from the server
 
 ---
 

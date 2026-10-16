@@ -1,28 +1,36 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Queue } from 'bullmq';
 import type { GithubInstallation, Prisma } from '@selfship/db';
 import { detectProject, fallbackSettings } from '@selfship/adapters';
 import { githubRepoSnapshot, RootDirectoryNotFoundError } from '@selfship/github';
 import {
+  ACTIVE_DEPLOYMENT_STATUSES,
   type CreateProjectInput,
+  DeploymentErrorCode,
+  DeploymentQueueJob,
   type DetectProjectInput,
   type DetectProjectResponse,
   ErrorCode,
   ProjectErrorCode,
   type ProjectDto,
   type ProjectSettings,
+  QueueName,
+  type TeardownJobData,
   type UpdateProjectInput,
 } from '@selfship/shared';
+import { DEPLOYMENT_INCLUDE, toDeploymentDto } from '../deployments/deployment.mapper';
 import { isUniqueViolation } from '../common/prisma-errors';
 import { GithubAppService } from '../github/github-app.service';
 import { toGithubId } from '../github/github.constants';
 import { GithubInstallationsService } from '../github/github-installations.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { type ProjectWithInstallation, toProjectDto } from './project.mapper';
+import { PROJECT_INCLUDE, type ProjectWithRelations, toProjectDto } from './project.mapper';
 
 /** 404 used whenever a project doesn't exist or belongs to someone else. */
 const PROJECT_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Project not found.' };
@@ -43,6 +51,7 @@ export class ProjectsService {
     private readonly prisma: PrismaService,
     private readonly github: GithubAppService,
     private readonly installations: GithubInstallationsService,
+    @InjectQueue(QueueName.DEPLOYMENTS) private readonly deploymentsQueue: Queue<TeardownJobData>,
   ) {}
 
   /**
@@ -122,9 +131,9 @@ export class ProjectsService {
           rootDirectory: input.source.rootDirectory,
           ...settingsData(input.settings),
         },
-        include: { githubInstallation: true },
+        include: PROJECT_INCLUDE,
       });
-      return toProjectDto(project);
+      return toProjectDto(project, { live: null, latest: null });
     } catch (error) {
       throw isUniqueViolation(error) ? nameTaken(input.name) : error;
     }
@@ -139,10 +148,10 @@ export class ProjectsService {
   async list(userId: string): Promise<ProjectDto[]> {
     const projects = await this.prisma.project.findMany({
       where: { userId },
-      include: { githubInstallation: true },
+      include: PROJECT_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
-    return projects.map(toProjectDto);
+    return this.withDeployments(projects);
   }
 
   /**
@@ -154,12 +163,16 @@ export class ProjectsService {
    * @throws {NotFoundException} If missing or owned by someone else
    */
   async get(userId: string, projectId: string): Promise<ProjectDto> {
-    return toProjectDto(await this.findOwned(userId, projectId));
+    const [dto] = await this.withDeployments([await this.findOwned(userId, projectId)]);
+    if (!dto) throw new NotFoundException(PROJECT_NOT_FOUND);
+    return dto;
   }
 
   /**
-   * Updates name, branch, folder and/or build settings. Branch and folder
-   * changes are verified against GitHub first.
+   * Updates name, branch, folder, build settings, server and/or health check
+   * path. Branch and folder changes are verified against GitHub first.
+   * Moving to another server leaves the app running on the old one until a
+   * deployment on the new server succeeds (then the worker removes it).
    *
    * @param userId - Signed-in user
    * @param projectId - Project ID
@@ -167,7 +180,7 @@ export class ProjectsService {
    * @returns The updated project
    * @throws {NotFoundException} If missing or owned by someone else
    * @throws {ConflictException} `PROJECT_NAME_TAKEN`, or if GitHub access was removed
-   * @throws {BadRequestException} `BRANCH_NOT_FOUND` / `ROOT_DIRECTORY_NOT_FOUND`
+   * @throws {BadRequestException} `BRANCH_NOT_FOUND` / `ROOT_DIRECTORY_NOT_FOUND` / unknown server
    */
   async update(userId: string, projectId: string, input: UpdateProjectInput): Promise<ProjectDto> {
     const project = await this.findOwned(userId, projectId);
@@ -189,42 +202,110 @@ export class ProjectsService {
       );
     }
 
-    const data: Prisma.ProjectUpdateInput = {
+    if (input.serverId) await this.assertServerOwned(userId, input.serverId);
+
+    const data: Prisma.ProjectUncheckedUpdateInput = {
       ...(input.name !== undefined ? { name: input.name } : {}),
       branch,
       rootDirectory,
       ...(input.settings ? settingsData(input.settings) : {}),
+      ...(input.serverId !== undefined ? { serverId: input.serverId } : {}),
+      ...(input.healthCheckPath !== undefined ? { healthCheckPath: input.healthCheckPath } : {}),
     };
 
     try {
       const updated = await this.prisma.project.update({
         where: { id: project.id },
         data,
-        include: { githubInstallation: true },
+        include: PROJECT_INCLUDE,
       });
-      return toProjectDto(updated);
+      const [dto] = await this.withDeployments([updated]);
+      if (!dto) throw new NotFoundException(PROJECT_NOT_FOUND);
+      return dto;
     } catch (error) {
       throw isUniqueViolation(error) ? nameTaken(input.name ?? project.name) : error;
     }
   }
 
   /**
-   * Deletes a project. (Nothing is deployed yet, so there is nothing to tear down.)
+   * Deletes a project and removes its app from every server it ran on
+   * (containers, images and files; a worker job does that over SSH).
    *
    * @param userId - Signed-in user
    * @param projectId - Project ID
    * @throws {NotFoundException} If missing or owned by someone else
+   * @throws {ConflictException} `DEPLOYMENT_IN_PROGRESS` while a deployment runs
    */
   async remove(userId: string, projectId: string): Promise<void> {
-    const { count } = await this.prisma.project.deleteMany({ where: { id: projectId, userId } });
-    if (count === 0) throw new NotFoundException(PROJECT_NOT_FOUND);
+    const project = await this.findOwned(userId, projectId);
+    const active = await this.prisma.deployment.count({
+      where: { projectId, status: { in: [...ACTIVE_DEPLOYMENT_STATUSES] } },
+    });
+    if (active > 0) {
+      throw new ConflictException({
+        code: DeploymentErrorCode.DEPLOYMENT_IN_PROGRESS,
+        message: 'Cancel the running deployment (or wait for it) before deleting the project.',
+      });
+    }
+    const servers = await this.prisma.deployment.findMany({
+      // Any deployment that started may have left images or files behind.
+      where: { projectId, serverId: { not: null }, startedAt: { not: null } },
+      distinct: ['serverId'],
+      select: { serverId: true },
+    });
+    await this.prisma.project.delete({ where: { id: project.id } });
+    for (const { serverId } of servers) {
+      if (!serverId) continue;
+      await this.deploymentsQueue.add(
+        DeploymentQueueJob.TEARDOWN,
+        { projectId, serverId },
+        { jobId: `teardown-${projectId}-${serverId}` },
+      );
+    }
+  }
+
+  /** Adds the live and latest deployment to each project (two queries for any number). */
+  private async withDeployments(projects: ProjectWithRelations[]): Promise<ProjectDto[]> {
+    const ids = projects.map((project) => project.id);
+    const [live, latest] = await Promise.all([
+      this.prisma.deployment.findMany({
+        where: { projectId: { in: ids }, status: 'live' },
+        include: DEPLOYMENT_INCLUDE,
+      }),
+      this.prisma.deployment.findMany({
+        where: { projectId: { in: ids } },
+        orderBy: { createdAt: 'desc' },
+        distinct: ['projectId'],
+        include: DEPLOYMENT_INCLUDE,
+      }),
+    ]);
+    const liveBy = new Map(live.map((d) => [d.projectId, toDeploymentDto(d)]));
+    const latestBy = new Map(latest.map((d) => [d.projectId, toDeploymentDto(d)]));
+    return projects.map((project) =>
+      toProjectDto(project, {
+        live: liveBy.get(project.id) ?? null,
+        latest: latestBy.get(project.id) ?? null,
+      }),
+    );
+  }
+
+  /** 400 unless the server exists and belongs to the user. */
+  private async assertServerOwned(userId: string, serverId: string): Promise<void> {
+    const count = await this.prisma.server.count({ where: { id: serverId, userId } });
+    if (count === 0) {
+      throw new BadRequestException({
+        code: ErrorCode.NOT_FOUND,
+        message: 'Server not found.',
+        fieldErrors: { serverId: ['Choose one of your servers.'] },
+      });
+    }
   }
 
   /** Loads a project owned by the user, or throws 404 (never 403, to avoid leaking IDs). */
-  private async findOwned(userId: string, projectId: string): Promise<ProjectWithInstallation> {
+  private async findOwned(userId: string, projectId: string): Promise<ProjectWithRelations> {
     const project = await this.prisma.project.findFirst({
       where: { id: projectId, userId },
-      include: { githubInstallation: true },
+      include: PROJECT_INCLUDE,
     });
     if (!project) throw new NotFoundException(PROJECT_NOT_FOUND);
     return project;

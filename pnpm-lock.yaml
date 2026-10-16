@@ -256,6 +256,9 @@ importers:
       '@selfship/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@selfship/github':
+        specifier: workspace:*
+        version: link:../../packages/github
       '@selfship/remote':
         specifier: workspace:*
         version: link:../../packages/remote
@@ -341,6 +344,9 @@ importers:
       '@selfship/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@selfship/shared':
+        specifier: workspace:*
+        version: link:../shared
       ssh2:
         specifier: ^1.17.0
         version: 1.17.0

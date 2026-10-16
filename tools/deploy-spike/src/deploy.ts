@@ -1,3 +1,5 @@
+// Spike version, kept to reproduce docs/spike-results.md. The product engine is
+// packages/remote/src/deploy.ts (AppDeployer); change that one, not this.
 import { randomBytes } from 'node:crypto';
 import { detectProject, getAdapter, type DetectResult } from '@selfship/adapters';
 import { remoteSnapshot, type SshConnection, sh } from '@selfship/remote';

@@ -1,12 +1,21 @@
 'use client';
 
-import { ArrowLeft, ExternalLink, GitBranch, Rocket, Trash2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, GitBranch, Globe, Loader2, Rocket, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ADAPTER_LABELS, type ProjectDto } from '@selfship/shared';
+import {
+  ACTIVE_DEPLOYMENT_STATUSES,
+  ADAPTER_LABELS,
+  type DeploymentDto,
+  type ProjectDto,
+} from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
+import { DeployTargetCard } from '@/components/deployments/deploy-target-card';
+import { DeploymentStatusBadge } from '@/components/deployments/deployment-status-badge';
+import { DeploymentsList } from '@/components/deployments/deployments-list';
+import { EnvVarsCard } from '@/components/env-vars/env-vars-card';
 import { GithubStateBadge } from '@/components/projects/github-state-badge';
 import { ProjectForm } from '@/components/projects/project-form';
 import {
@@ -24,10 +33,14 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiRequestError } from '@/lib/api-client';
+import { deploymentsApi } from '@/lib/deployments-api';
 import { githubApi } from '@/lib/github-api';
 import { projectsApi } from '@/lib/projects-api';
 
-/** Project overview: source, build settings (editable) and deletion. */
+/**
+ * Project overview: live URL, deploy button, where it deploys, deployments,
+ * environment variables, build settings and deletion.
+ */
 export function ProjectDetail(): React.ReactNode {
   const params = useParams<{ id: string }>();
   const projectId = typeof params.id === 'string' ? params.id : '';
@@ -35,20 +48,57 @@ export function ProjectDetail(): React.ReactNode {
   const [project, setProject] = useState<ProjectDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deployments, setDeployments] = useState<DeploymentDto[]>([]);
+  const [isDeploying, setIsDeploying] = useState(false);
+
+  /** Loads the project and its deployments. */
+  const load = useCallback(
+    (): Promise<void> =>
+      Promise.all([projectsApi.get(projectId), deploymentsApi.list(projectId)]).then(
+        ([loaded, list]) => {
+          setProject(loaded);
+          setDeployments(list);
+        },
+        (caught: unknown) => {
+          setError(
+            caught instanceof ApiRequestError && caught.status === 404
+              ? "This project doesn't exist or you don't have access to it."
+              : 'Could not load the project.',
+          );
+        },
+      ),
+    [projectId],
+  );
 
   useEffect(() => {
-    if (!projectId) return;
-    projectsApi
-      .get(projectId)
-      .then(setProject)
-      .catch((caught: unknown) => {
-        setError(
-          caught instanceof ApiRequestError && caught.status === 404
-            ? "This project doesn't exist or you don't have access to it."
-            : 'Could not load the project.',
-        );
-      });
-  }, [projectId]);
+    if (projectId) void load();
+  }, [projectId, load]);
+
+  // While a deployment runs, refresh every few seconds so status stays current.
+  const active = project?.latestDeployment
+    ? ACTIVE_DEPLOYMENT_STATUSES.includes(project.latestDeployment.status)
+    : false;
+  useEffect(() => {
+    if (!active) return;
+    const timer = setInterval(() => void load(), 4000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [active, load]);
+
+  const deploy = async (): Promise<void> => {
+    if (!project) return;
+    setIsDeploying(true);
+    try {
+      const deployment = await deploymentsApi.create(project.id);
+      router.push(`/dashboard/projects/${project.id}/deployments/${deployment.id}`);
+    } catch (caught) {
+      toast.error(
+        caught instanceof ApiRequestError ? caught.message : 'Could not start the deployment.',
+      );
+      setIsDeploying(false);
+    }
+  };
 
   const remove = async (): Promise<void> => {
     if (!project) return;
@@ -78,6 +128,17 @@ export function ProjectDetail(): React.ReactNode {
   if (!project) return <Skeleton className="mx-auto h-96 w-full max-w-3xl" />;
 
   const githubAvailable = project.github.state === 'connected';
+  const latest = project.latestDeployment;
+  const live = project.liveDeployment;
+  const deployBlocked = !githubAvailable
+    ? 'Reconnect GitHub first'
+    : !project.server
+      ? 'Choose a server below first'
+      : project.server.status !== 'ready'
+        ? `${project.server.name} isn't ready yet`
+        : active
+          ? 'A deployment is in progress'
+          : null;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -112,12 +173,51 @@ export function ProjectDetail(): React.ReactNode {
               <span>{ADAPTER_LABELS[project.settings.adapter].split(' (')[0]}</span>
             </p>
           </div>
-          <Button disabled title="Deployments arrive with server support">
-            <Rocket />
+          <Button
+            disabled={deployBlocked !== null || isDeploying}
+            title={deployBlocked ?? undefined}
+            onClick={() => void deploy()}
+          >
+            {isDeploying ? <Loader2 className="animate-spin" /> : <Rocket />}
             Deploy
           </Button>
         </div>
       </div>
+
+      {live?.url ? (
+        <a
+          href={live.url}
+          target="_blank"
+          rel="noreferrer"
+          className="hover:bg-muted/40 flex items-center gap-3 rounded-xl border p-4"
+        >
+          <Globe className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-medium">
+              {live.url.replace(/^https:\/\//, '')}
+            </span>
+            <span className="text-muted-foreground block truncate text-sm">
+              {live.commit.sha.slice(0, 7)} · {live.commit.message} · on{' '}
+              {live.server?.name ?? 'a removed server'}
+            </span>
+          </span>
+          <ExternalLink className="text-muted-foreground size-4" />
+        </a>
+      ) : null}
+
+      {latest && latest.id !== live?.id ? (
+        <Link
+          href={`/dashboard/projects/${project.id}/deployments/${latest.id}`}
+          className="hover:bg-muted/40 flex items-center gap-3 rounded-xl border p-4 text-sm"
+        >
+          <DeploymentStatusBadge status={latest.status} />
+          <span className="min-w-0 flex-1 truncate">
+            {active ? 'Deploying' : 'Last deployment'} {latest.commit.sha.slice(0, 7)}:{' '}
+            {latest.commit.message}
+          </span>
+          <span className="font-medium">View log</span>
+        </Link>
+      ) : null}
 
       {!githubAvailable ? (
         <div className="flex flex-col gap-3">
@@ -138,6 +238,24 @@ export function ProjectDetail(): React.ReactNode {
           ) : null}
         </div>
       ) : null}
+
+      <DeployTargetCard
+        project={project}
+        onSaved={(updated) => {
+          setProject(updated);
+        }}
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Deployments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DeploymentsList projectId={project.id} deployments={deployments} />
+        </CardContent>
+      </Card>
+
+      <EnvVarsCard projectId={project.id} />
 
       <Card>
         <CardHeader>
@@ -177,7 +295,8 @@ export function ProjectDetail(): React.ReactNode {
         <CardHeader>
           <CardTitle>Delete project</CardTitle>
           <CardDescription>
-            Removes the project from Selfship. Your repository on GitHub is not touched.
+            Removes the project from Selfship and stops its app on the server. Your repository on
+            GitHub is not touched.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -190,7 +309,8 @@ export function ProjectDetail(): React.ReactNode {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete {project.name}?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This can&apos;t be undone. Your GitHub repository stays as it is.
+                  This can&apos;t be undone. The app is stopped and removed from its server (with
+                  its images and files); your GitHub repository stays as it is.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

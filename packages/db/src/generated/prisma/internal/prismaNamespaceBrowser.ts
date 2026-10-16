@@ -59,7 +59,10 @@ export const ModelName = {
   GithubInstallationMember: 'GithubInstallationMember',
   Project: 'Project',
   Server: 'Server',
-  ServerJob: 'ServerJob'
+  ServerJob: 'ServerJob',
+  EnvVar: 'EnvVar',
+  Deployment: 'Deployment',
+  DeploymentLogChunk: 'DeploymentLogChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -174,7 +177,9 @@ export const ProjectScalarFieldEnum = {
   port: 'port',
   nodeVersion: 'nodeVersion',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  serverId: 'serverId',
+  healthCheckPath: 'healthCheckPath'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -229,12 +234,69 @@ export const ServerJobScalarFieldEnum = {
 export type ServerJobScalarFieldEnum = (typeof ServerJobScalarFieldEnum)[keyof typeof ServerJobScalarFieldEnum]
 
 
+export const EnvVarScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  key: 'key',
+  encryptedValue: 'encryptedValue',
+  scope: 'scope',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EnvVarScalarFieldEnum = (typeof EnvVarScalarFieldEnum)[keyof typeof EnvVarScalarFieldEnum]
+
+
+export const DeploymentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  serverId: 'serverId',
+  triggeredById: 'triggeredById',
+  trigger: 'trigger',
+  status: 'status',
+  branch: 'branch',
+  commitSha: 'commitSha',
+  commitMessage: 'commitMessage',
+  commitAuthor: 'commitAuthor',
+  stages: 'stages',
+  failedStage: 'failedStage',
+  errorSummary: 'errorSummary',
+  imageTag: 'imageTag',
+  containerName: 'containerName',
+  url: 'url',
+  cancelRequestedAt: 'cancelRequestedAt',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum]
+
+
+export const DeploymentLogChunkScalarFieldEnum = {
+  id: 'id',
+  deploymentId: 'deploymentId',
+  seq: 'seq',
+  content: 'content',
+  createdAt: 'createdAt'
+} as const
+
+export type DeploymentLogChunkScalarFieldEnum = (typeof DeploymentLogChunkScalarFieldEnum)[keyof typeof DeploymentLogChunkScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -251,4 +313,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

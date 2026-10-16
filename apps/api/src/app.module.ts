@@ -7,12 +7,15 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { CryptoModule } from './crypto/crypto.module';
+import { DeploymentsModule } from './deployments/deployments.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppConfigModule } from './config/app-config.module';
 import { AppConfigService } from './config/app-config.service';
 import { DiagnosticsModule } from './diagnostics/diagnostics.module';
+import { EnvVarsModule } from './env-vars/env-vars.module';
 import { GithubModule } from './github/github.module';
 import { HealthModule } from './health/health.module';
+import { LogsModule } from './logs/logs.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -64,6 +67,9 @@ function requestId(req: IncomingMessage): string {
     GithubModule,
     ProjectsModule,
     ServersModule,
+    LogsModule,
+    EnvVarsModule,
+    DeploymentsModule,
     HealthModule,
     DiagnosticsModule,
   ],

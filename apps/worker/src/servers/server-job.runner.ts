@@ -1,21 +1,24 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import type { Server, ServerJob } from '@selfship/db';
-import { DecryptionError, EnvelopeCipher } from '@selfship/crypto';
+import { DecryptionError } from '@selfship/crypto';
 import {
-  assertPublicHost,
   bootstrapServer,
   ForbiddenHostError,
   HostKeyMismatchError,
   preflight,
   type PreflightReport,
   RemoteCommandError,
-  SshConnection,
+  type SshConnection,
 } from '@selfship/remote';
+import { type ServerJobEvent, serverJobStreamKey } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
-import { JobLog } from './job-log';
+import { LiveLog } from '../logs/live-log';
+import { ServerConnector } from './server-connector';
+
+type JobLog = LiveLog<ServerJobEvent>;
 
 /** Jobs still "running" after this long were interrupted (bootstrap times out at 20 min). */
 const STALE_JOB_MS = 30 * 60 * 1000;
@@ -24,16 +27,6 @@ const STALE_JOB_MS = 30 * 60 * 1000;
 interface Failure {
   status: 'awaiting_key' | 'unreachable' | 'setup_failed' | 'needs_attention';
   message: string;
-}
-
-/**
- * Must match the API's `sshKeyContext` (apps/api/src/servers/servers.service.ts).
- *
- * @param serverId - Server ID
- * @returns Encryption context of the server's private key
- */
-export function sshKeyContext(serverId: string): string {
-  return `server:${serverId}:ssh-key`;
 }
 
 /**
@@ -119,7 +112,7 @@ export class ServerJobRunner implements OnModuleInit {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cipher: EnvelopeCipher,
+    private readonly connector: ServerConnector,
     private readonly config: AppConfigService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
@@ -172,32 +165,20 @@ export class ServerJobRunner implements OnModuleInit {
       where: { id: job.id },
       data: { status: 'running', startedAt: new Date() },
     });
-    const log = new JobLog(this.redis, job.id);
+    const log: JobLog = new LiveLog(this.redis, serverJobStreamKey(job.id));
     const { server } = job;
     let ssh: SshConnection | null = null;
     let phase: 'connect' | 'setup' = 'connect';
 
     try {
       log.line(`→ Connecting to ${server.sshUser}@${server.host}:${server.port}`);
-      await assertPublicHost(server.host, {
-        allowPrivate: this.config.get('ALLOW_PRIVATE_SERVER_HOSTS'),
-      });
-      ssh = await SshConnection.connect({
-        host: server.host,
-        port: server.port,
-        username: server.sshUser,
-        privateKey: this.cipher.decrypt(server.encryptedPrivateKey, sshKeyContext(server.id)),
-        expectedFingerprint: server.hostKeyFingerprint,
-      });
-      if (!server.hostKeyFingerprint) {
-        await this.prisma.server.update({
-          where: { id: server.id },
-          data: { hostKeyFingerprint: ssh.fingerprint },
-        });
-        log.line(`✓ Connected. Server identity pinned: ${ssh.fingerprint}`);
-      } else {
-        log.line(`✓ Connected. Server identity verified: ${ssh.fingerprint}`);
-      }
+      const connection = await this.connector.connect(server);
+      ssh = connection.ssh;
+      log.line(
+        connection.pinnedNow
+          ? `✓ Connected. Server identity pinned: ${ssh.fingerprint}`
+          : `✓ Connected. Server identity verified: ${ssh.fingerprint}`,
+      );
 
       log.line('→ Checking the server');
       const report = await preflight(ssh);
@@ -313,6 +294,6 @@ export class ServerJobRunner implements OnModuleInit {
       }),
       this.prisma.server.updateMany({ where: { id: job.serverId }, data: server }),
     ]);
-    await log.end(status, error);
+    await log.end({ type: 'end', status, error });
   }
 }

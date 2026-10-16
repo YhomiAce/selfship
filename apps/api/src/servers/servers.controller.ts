@@ -25,9 +25,10 @@ import {
   type ServerJobEvent,
   type ServerJobListResponse,
   type ServerListResponse,
+  serverJobStreamKey,
 } from '@selfship/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { ServerJobStreamService } from './server-job-stream.service';
+import { LogStreamService } from '../logs/log-stream.service';
 import { ServersService } from './servers.service';
 
 /** Servers of the signed-in user: add, inspect, set up, remove, watch logs. */
@@ -35,7 +36,7 @@ import { ServersService } from './servers.service';
 export class ServersController {
   constructor(
     private readonly servers: ServersService,
-    private readonly streams: ServerJobStreamService,
+    private readonly streams: LogStreamService,
   ) {}
 
   /**
@@ -148,46 +149,22 @@ export class ServersController {
     @Res() res: Response,
   ): Promise<void> {
     const job = await this.servers.findOwnedJob(user.id, id, jobId);
-
-    res.status(200).set({
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      // no-transform: proxies must not compress/buffer; X-Accel-Buffering: same for nginx.
-      'Cache-Control': 'no-cache, no-transform',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
+    await this.streams.relay(req, res, {
+      key: serverJobStreamKey(jobId),
+      finished: job.status === 'succeeded' || job.status === 'failed',
+      replay: () => {
+        const events: ServerJobEvent[] = job.log
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => ({ type: 'line', line }));
+        events.push({
+          type: 'end',
+          status: job.status === 'succeeded' ? 'succeeded' : 'failed',
+          error: job.error,
+        });
+        return Promise.resolve(events.map((event) => JSON.stringify(event)));
+      },
     });
-    res.flushHeaders();
-    const send = (event: ServerJobEvent, eventId?: string): void => {
-      res.write(`${eventId ? `id: ${eventId}\n` : ''}data: ${JSON.stringify(event)}\n\n`);
-    };
-
-    const finished = job.status === 'succeeded' || job.status === 'failed';
-    if (finished && !(await this.streams.exists(jobId))) {
-      // The live stream expired: replay the saved log once.
-      for (const line of job.log.split('\n')) if (line) send({ type: 'line', line });
-      send({
-        type: 'end',
-        status: job.status === 'succeeded' ? 'succeeded' : 'failed',
-        error: job.error,
-      });
-      res.end();
-      return;
-    }
-
-    const controller = new AbortController();
-    req.on('close', () => {
-      controller.abort();
-    });
-    const lastEventId = req.get('last-event-id') ?? '0';
-
-    for await (const entry of this.streams.read(jobId, lastEventId, controller.signal)) {
-      if (entry === 'heartbeat') {
-        res.write(': keep-alive\n\n');
-        continue;
-      }
-      send(entry.event, entry.id);
-    }
-    res.end();
   }
 
   /**

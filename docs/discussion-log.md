@@ -102,3 +102,10 @@
 - Built servers end to end: API (add with 3 methods, check/setup jobs, SSE log stream, remove), worker jobs (pinning, pre-flight, setup), and the UI. Departed from the plan on Socket.IO (SSE instead, #44) and the `deployer` user (deferred, #46).
 - Verified on AWS: all three methods, live setup log (~7–12 s on a prepared server), host-key mismatch refused, SSRF guard, ciphertext-only DB, password not stored anywhere, revoke command removes our key.
 - Browser walkthrough found one UX bug (connect before adding the key hid the command), fixed (#51).
+
+## Session 10 — 2026-10-16 — M4 deploy engine
+
+- Built env vars (encrypted, scopes, paste .env), deployments (API, worker pipeline, live and saved logs with masking, cancel, teardown) and the project/deployment UI.
+- Tested live on the AWS 2 GB server with real repos of the founder's GitHub account: a static site, a static sub-folder of a multi-project repo (sparse checkout), and a 2020 Create React App. A real Let's Encrypt certificate was issued for the sslip.io URL.
+- The live test found three bugs, all fixed: the per-server build limit raced (#57), `ENV CI=true` blocked the user's `CI=false` (#58), and teardown skipped servers with only failed deployments. It also showed the old CRA needs `NODE_OPTIONS=--openssl-legacy-provider` and `CI=false`, both good examples for the Build Doctor (M6).
+- Verified: zero downtime (606/606 requests during a redeploy), a broken build and a cancelled build leave the live version serving, secrets show as `••••••` in logs, an app that crashes on start (missing MongoDB) fails at the health check with its output, and deleting projects removes them from the server.

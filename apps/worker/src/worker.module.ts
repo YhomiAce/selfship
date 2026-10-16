@@ -4,7 +4,11 @@ import { LoggerModule } from 'nestjs-pino';
 import { redisConnectionFromUrl } from '@selfship/shared';
 import { AppConfigModule } from './config/app-config.module';
 import { AppConfigService } from './config/app-config.service';
+import { CryptoModule } from './crypto/crypto.module';
 import { EmailModule } from './email/email.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { RedisModule } from './redis/redis.module';
+import { ServersModule } from './servers/servers.module';
 import { SystemModule } from './system/system.module';
 
 @Module({
@@ -26,10 +30,15 @@ import { SystemModule } from './system/system.module';
       inject: [AppConfigService],
       useFactory: (config: AppConfigService) => ({
         connection: redisConnectionFromUrl(config.get('REDIS_URL')),
+        prefix: config.get('QUEUE_PREFIX'),
       }),
     }),
+    PrismaModule,
+    RedisModule,
+    CryptoModule,
     SystemModule,
     EmailModule,
+    ServersModule,
   ],
 })
 export class WorkerModule {}

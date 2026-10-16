@@ -33,3 +33,53 @@ export const Adapter = {
 } as const
 
 export type Adapter = (typeof Adapter)[keyof typeof Adapter]
+
+
+export const ServerStatus = {
+  awaiting_key: 'awaiting_key',
+  checking: 'checking',
+  checked: 'checked',
+  needs_attention: 'needs_attention',
+  setting_up: 'setting_up',
+  setup_failed: 'setup_failed',
+  ready: 'ready',
+  unreachable: 'unreachable'
+} as const
+
+export type ServerStatus = (typeof ServerStatus)[keyof typeof ServerStatus]
+
+
+export const ServerKeySource = {
+  generated: 'generated',
+  pasted: 'pasted',
+  password: 'password'
+} as const
+
+export type ServerKeySource = (typeof ServerKeySource)[keyof typeof ServerKeySource]
+
+
+export const CapabilityTier = {
+  static_only: 'static_only',
+  standard: 'standard',
+  recommended: 'recommended'
+} as const
+
+export type CapabilityTier = (typeof CapabilityTier)[keyof typeof CapabilityTier]
+
+
+export const ServerJobType = {
+  check: 'check',
+  setup: 'setup'
+} as const
+
+export type ServerJobType = (typeof ServerJobType)[keyof typeof ServerJobType]
+
+
+export const JobStatus = {
+  queued: 'queued',
+  running: 'running',
+  succeeded: 'succeeded',
+  failed: 'failed'
+} as const
+
+export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus]

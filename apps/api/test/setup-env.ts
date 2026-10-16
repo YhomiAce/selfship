@@ -18,5 +18,9 @@ for (const key of INFRA_KEYS) {
 }
 
 process.env.NODE_ENV = 'test';
+// Own queue namespace per test run: a locally running worker must never pick up test jobs.
+process.env.QUEUE_PREFIX = `test-${process.pid}`;
+// A throwaway master key for tests (never the developer's real one).
+process.env.ENCRYPTION_KEY ??= Buffer.alloc(32, 7).toString('base64');
 // Keep test output readable: only warnings and errors (set TEST_LOG_LEVEL to debug).
 process.env.LOG_LEVEL = process.env.TEST_LOG_LEVEL ?? 'warn';

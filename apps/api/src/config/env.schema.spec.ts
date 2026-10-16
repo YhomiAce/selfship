@@ -1,7 +1,7 @@
 import { validateEnv } from './env.schema';
 
 describe('validateEnv', () => {
-  const base = { DATABASE_URL: 'postgresql://u:p@localhost:5432/db' };
+  const base = { DATABASE_URL: 'postgresql://u:p@localhost:5432/db', ENCRYPTION_KEY: 'test' };
 
   it('applies defaults', () => {
     const env = validateEnv(base);
@@ -22,7 +22,7 @@ describe('validateEnv', () => {
 });
 
 describe('validateEnv: GitHub App settings', () => {
-  const base = { DATABASE_URL: 'postgresql://u:p@localhost:5432/db' };
+  const base = { DATABASE_URL: 'postgresql://u:p@localhost:5432/db', ENCRYPTION_KEY: 'test' };
   const app = {
     GITHUB_APP_ID: '1',
     GITHUB_APP_SLUG: 'selfship',

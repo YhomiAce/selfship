@@ -68,6 +68,20 @@ describe('parsePreflight', () => {
   });
 });
 
+describe('swap warning', () => {
+  it('says swap will be added when there is none', () => {
+    expect(parsePreflight(output({ RAM_MB: '909', SWAP_MB: '0' })).warnings[0]).toContain(
+      'will be added',
+    );
+  });
+
+  it('says swap is in place when it already exists', () => {
+    expect(parsePreflight(output({ RAM_MB: '909', SWAP_MB: '2047' })).warnings[0]).toContain(
+      '2047 MB swap in place',
+    );
+  });
+});
+
 describe('capabilityTier', () => {
   it.each([
     [512, 'static_only'],

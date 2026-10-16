@@ -118,10 +118,13 @@ export function parsePreflight(stdout: string): PreflightReport {
 
   if (report.tier === 'static_only')
     report.warnings.push('Under 1 GB of RAM: only static sites will run reliably.');
-  else if (report.tier === 'standard')
+  else if (report.tier === 'standard') {
     report.warnings.push(
-      'Under 2 GB of RAM: 2 GB of swap will be added; large builds (e.g. Next.js) will be slower.',
+      report.swapMb >= 1024
+        ? `Under 2 GB of RAM (${report.swapMb} MB swap in place): large builds (e.g. Next.js) will be slower.`
+        : 'Under 2 GB of RAM: 2 GB of swap will be added; large builds (e.g. Next.js) will be slower.',
     );
+  }
   if (report.dockerVersion && Number(report.dockerVersion.split('.')[0]) < 23) {
     report.warnings.push(`Docker ${report.dockerVersion} is old; setup will upgrade it.`);
   }

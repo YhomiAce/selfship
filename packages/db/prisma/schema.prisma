@@ -29,6 +29,7 @@ model User {
   oauthAccounts       OAuthAccount[]
   githubInstallations GithubInstallationMember[]
   projects            Project[]
+  servers             Server[]
 
   @@map("users")
 }
@@ -182,4 +183,135 @@ model Project {
   @@index([githubInstallationId])
   @@index([repoId])
   @@map("projects")
+}
+
+/// Lifecycle of a server, as shown in the dashboard.
+enum ServerStatus {
+  /// Generated key: waiting for the user to add our public key on the server.
+  awaiting_key
+  /// A check or setup job is connecting / running pre-flight.
+  checking
+  /// Connected and checked, but not set up yet.
+  checked
+  /// Pre-flight found blocking problems (wrong OS, ports in use, no sudo…).
+  needs_attention
+  /// Bootstrap is running.
+  setting_up
+  /// Bootstrap failed (see the job log).
+  setup_failed
+  /// Set up and ready for deployments.
+  ready
+  /// Could not connect or log in, or the host key changed.
+  unreachable
+
+  @@map("server_status")
+}
+
+/// How Selfship got the SSH key for a server.
+enum ServerKeySource {
+  /// We generated the key pair; the user added our public key.
+  generated
+  /// The user pasted their own private key.
+  pasted
+  /// We generated a key and installed it using a one-time password.
+  password
+
+  @@map("server_key_source")
+}
+
+/// What a server can run, from its memory (see packages/remote preflight.ts).
+enum CapabilityTier {
+  static_only
+  standard
+  recommended
+
+  @@map("capability_tier")
+}
+
+/// A server (VPS) Selfship deploys to over SSH.
+model Server {
+  id                  String          @id @db.Uuid
+  userId              String          @map("user_id") @db.Uuid
+  /// Unique per user.
+  name                String
+  host                String
+  port                Int             @default(22)
+  sshUser             String          @map("ssh_user")
+  keySource           ServerKeySource @map("key_source")
+  /// Envelope-encrypted private key (packages/crypto), context "server:<id>:ssh-key".
+  encryptedPrivateKey String          @map("encrypted_private_key")
+  /// authorized_keys line for the key above.
+  publicKey           String          @map("public_key")
+  /// Comment on our key line (for revoking: selfship-<short id>).
+  keyComment          String          @map("key_comment")
+  /// Pinned on first successful connection; any change is refused.
+  hostKeyFingerprint  String?         @map("host_key_fingerprint")
+  status              ServerStatus    @default(awaiting_key)
+  /// Human-readable detail for the current status (e.g. why it's unreachable).
+  statusMessage       String?         @map("status_message")
+
+  // Facts from the last pre-flight.
+  os            String?
+  osVersion     String?         @map("os_version")
+  arch          String?
+  cpus          Int?
+  ramMb         Int?            @map("ram_mb")
+  swapMb        Int?            @map("swap_mb")
+  diskFreeGb    Int?            @map("disk_free_gb")
+  dockerVersion String?         @map("docker_version")
+  tier          CapabilityTier?
+  problems      String[]        @default([])
+  warnings      String[]        @default([])
+  lastCheckedAt DateTime?       @map("last_checked_at")
+  readyAt       DateTime?       @map("ready_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs ServerJob[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("servers")
+}
+
+/// What a server job does.
+enum ServerJobType {
+  /// Pre-flight only: connect and inspect, change nothing.
+  check
+  /// Pre-flight, then bootstrap (Docker, firewall, swap, Traefik…).
+  setup
+
+  @@map("server_job_type")
+}
+
+/// State of a background job.
+enum JobStatus {
+  queued
+  running
+  succeeded
+  failed
+
+  @@map("job_status")
+}
+
+/// One run of a check or setup on a server, with its full log.
+model ServerJob {
+  id         String        @id @default(uuid()) @db.Uuid
+  serverId   String        @map("server_id") @db.Uuid
+  type       ServerJobType
+  status     JobStatus     @default(queued)
+  /// Complete output, saved when the job ends (live lines stream via Redis).
+  log        String        @default("")
+  /// Short failure reason for the dashboard.
+  error      String?
+  createdAt  DateTime      @default(now()) @map("created_at")
+  startedAt  DateTime?     @map("started_at")
+  finishedAt DateTime?     @map("finished_at")
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, createdAt])
+  @@map("server_jobs")
 }

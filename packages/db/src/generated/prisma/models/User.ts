@@ -211,6 +211,7 @@ export type UserWhereInput = {
   oauthAccounts?: Prisma.OAuthAccountListRelationFilter
   githubInstallations?: Prisma.GithubInstallationMemberListRelationFilter
   projects?: Prisma.ProjectListRelationFilter
+  servers?: Prisma.ServerListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -227,6 +228,7 @@ export type UserOrderByWithRelationInput = {
   oauthAccounts?: Prisma.OAuthAccountOrderByRelationAggregateInput
   githubInstallations?: Prisma.GithubInstallationMemberOrderByRelationAggregateInput
   projects?: Prisma.ProjectOrderByRelationAggregateInput
+  servers?: Prisma.ServerOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -246,6 +248,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   oauthAccounts?: Prisma.OAuthAccountListRelationFilter
   githubInstallations?: Prisma.GithubInstallationMemberListRelationFilter
   projects?: Prisma.ProjectListRelationFilter
+  servers?: Prisma.ServerListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -290,6 +293,7 @@ export type UserCreateInput = {
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -306,6 +310,7 @@ export type UserUncheckedCreateInput = {
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -322,6 +327,7 @@ export type UserUpdateInput = {
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -338,6 +344,7 @@ export type UserUncheckedUpdateInput = {
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -497,6 +504,20 @@ export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProjectsInput, Prisma.UserUpdateWithoutProjectsInput>, Prisma.UserUncheckedUpdateWithoutProjectsInput>
 }
 
+export type UserCreateNestedOneWithoutServersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutServersInput, Prisma.UserUncheckedCreateWithoutServersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutServersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutServersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutServersInput, Prisma.UserUncheckedCreateWithoutServersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutServersInput
+  upsert?: Prisma.UserUpsertWithoutServersInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutServersInput, Prisma.UserUpdateWithoutServersInput>, Prisma.UserUncheckedUpdateWithoutServersInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   email: string
@@ -510,6 +531,7 @@ export type UserCreateWithoutSessionsInput = {
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -525,6 +547,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -556,6 +579,7 @@ export type UserUpdateWithoutSessionsInput = {
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -571,6 +595,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTokensInput = {
@@ -586,6 +611,7 @@ export type UserCreateWithoutTokensInput = {
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTokensInput = {
@@ -601,6 +627,7 @@ export type UserUncheckedCreateWithoutTokensInput = {
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTokensInput = {
@@ -632,6 +659,7 @@ export type UserUpdateWithoutTokensInput = {
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTokensInput = {
@@ -647,6 +675,7 @@ export type UserUncheckedUpdateWithoutTokensInput = {
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOauthAccountsInput = {
@@ -662,6 +691,7 @@ export type UserCreateWithoutOauthAccountsInput = {
   tokens?: Prisma.VerificationTokenCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOauthAccountsInput = {
@@ -677,6 +707,7 @@ export type UserUncheckedCreateWithoutOauthAccountsInput = {
   tokens?: Prisma.VerificationTokenUncheckedCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOauthAccountsInput = {
@@ -708,6 +739,7 @@ export type UserUpdateWithoutOauthAccountsInput = {
   tokens?: Prisma.VerificationTokenUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOauthAccountsInput = {
@@ -723,6 +755,7 @@ export type UserUncheckedUpdateWithoutOauthAccountsInput = {
   tokens?: Prisma.VerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutGithubInstallationsInput = {
@@ -738,6 +771,7 @@ export type UserCreateWithoutGithubInstallationsInput = {
   tokens?: Prisma.VerificationTokenCreateNestedManyWithoutUserInput
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGithubInstallationsInput = {
@@ -753,6 +787,7 @@ export type UserUncheckedCreateWithoutGithubInstallationsInput = {
   tokens?: Prisma.VerificationTokenUncheckedCreateNestedManyWithoutUserInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutUserInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGithubInstallationsInput = {
@@ -784,6 +819,7 @@ export type UserUpdateWithoutGithubInstallationsInput = {
   tokens?: Prisma.VerificationTokenUpdateManyWithoutUserNestedInput
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGithubInstallationsInput = {
@@ -799,6 +835,7 @@ export type UserUncheckedUpdateWithoutGithubInstallationsInput = {
   tokens?: Prisma.VerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutUserNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProjectsInput = {
@@ -814,6 +851,7 @@ export type UserCreateWithoutProjectsInput = {
   tokens?: Prisma.VerificationTokenCreateNestedManyWithoutUserInput
   oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProjectsInput = {
@@ -829,6 +867,7 @@ export type UserUncheckedCreateWithoutProjectsInput = {
   tokens?: Prisma.VerificationTokenUncheckedCreateNestedManyWithoutUserInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutUserInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedCreateNestedManyWithoutUserInput
+  servers?: Prisma.ServerUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProjectsInput = {
@@ -860,6 +899,7 @@ export type UserUpdateWithoutProjectsInput = {
   tokens?: Prisma.VerificationTokenUpdateManyWithoutUserNestedInput
   oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -875,6 +915,87 @@ export type UserUncheckedUpdateWithoutProjectsInput = {
   tokens?: Prisma.VerificationTokenUncheckedUpdateManyWithoutUserNestedInput
   oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutUserNestedInput
   githubInstallations?: Prisma.GithubInstallationMemberUncheckedUpdateManyWithoutUserNestedInput
+  servers?: Prisma.ServerUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutServersInput = {
+  id?: string
+  email: string
+  name: string
+  passwordHash?: string | null
+  emailVerifiedAt?: Date | string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  tokens?: Prisma.VerificationTokenCreateNestedManyWithoutUserInput
+  oauthAccounts?: Prisma.OAuthAccountCreateNestedManyWithoutUserInput
+  githubInstallations?: Prisma.GithubInstallationMemberCreateNestedManyWithoutUserInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutServersInput = {
+  id?: string
+  email: string
+  name: string
+  passwordHash?: string | null
+  emailVerifiedAt?: Date | string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  tokens?: Prisma.VerificationTokenUncheckedCreateNestedManyWithoutUserInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedCreateNestedManyWithoutUserInput
+  githubInstallations?: Prisma.GithubInstallationMemberUncheckedCreateNestedManyWithoutUserInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutServersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutServersInput, Prisma.UserUncheckedCreateWithoutServersInput>
+}
+
+export type UserUpsertWithoutServersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutServersInput, Prisma.UserUncheckedUpdateWithoutServersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutServersInput, Prisma.UserUncheckedCreateWithoutServersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutServersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutServersInput, Prisma.UserUncheckedUpdateWithoutServersInput>
+}
+
+export type UserUpdateWithoutServersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  tokens?: Prisma.VerificationTokenUpdateManyWithoutUserNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUpdateManyWithoutUserNestedInput
+  githubInstallations?: Prisma.GithubInstallationMemberUpdateManyWithoutUserNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutServersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  tokens?: Prisma.VerificationTokenUncheckedUpdateManyWithoutUserNestedInput
+  oauthAccounts?: Prisma.OAuthAccountUncheckedUpdateManyWithoutUserNestedInput
+  githubInstallations?: Prisma.GithubInstallationMemberUncheckedUpdateManyWithoutUserNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -888,6 +1009,7 @@ export type UserCountOutputType = {
   oauthAccounts: number
   githubInstallations: number
   projects: number
+  servers: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -896,6 +1018,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   oauthAccounts?: boolean | UserCountOutputTypeCountOauthAccountsArgs
   githubInstallations?: boolean | UserCountOutputTypeCountGithubInstallationsArgs
   projects?: boolean | UserCountOutputTypeCountProjectsArgs
+  servers?: boolean | UserCountOutputTypeCountServersArgs
 }
 
 /**
@@ -943,6 +1066,13 @@ export type UserCountOutputTypeCountProjectsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.ProjectWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountServersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ServerWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -958,6 +1088,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   oauthAccounts?: boolean | Prisma.User$oauthAccountsArgs<ExtArgs>
   githubInstallations?: boolean | Prisma.User$githubInstallationsArgs<ExtArgs>
   projects?: boolean | Prisma.User$projectsArgs<ExtArgs>
+  servers?: boolean | Prisma.User$serversArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1001,6 +1132,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   oauthAccounts?: boolean | Prisma.User$oauthAccountsArgs<ExtArgs>
   githubInstallations?: boolean | Prisma.User$githubInstallationsArgs<ExtArgs>
   projects?: boolean | Prisma.User$projectsArgs<ExtArgs>
+  servers?: boolean | Prisma.User$serversArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1014,6 +1146,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     oauthAccounts: Prisma.$OAuthAccountPayload<ExtArgs>[]
     githubInstallations: Prisma.$GithubInstallationMemberPayload<ExtArgs>[]
     projects: Prisma.$ProjectPayload<ExtArgs>[]
+    servers: Prisma.$ServerPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1429,6 +1562,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   oauthAccounts<T extends Prisma.User$oauthAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$oauthAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OAuthAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   githubInstallations<T extends Prisma.User$githubInstallationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$githubInstallationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GithubInstallationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   projects<T extends Prisma.User$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  servers<T extends Prisma.User$serversArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$serversArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ServerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1976,6 +2110,30 @@ export type User$projectsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.ProjectScalarFieldEnum | Prisma.ProjectScalarFieldEnum[]
+}
+
+/**
+ * User.servers
+ */
+export type User$serversArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Server
+   */
+  select?: Prisma.ServerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Server
+   */
+  omit?: Prisma.ServerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ServerInclude<ExtArgs> | null
+  where?: Prisma.ServerWhereInput
+  orderBy?: Prisma.ServerOrderByWithRelationInput | Prisma.ServerOrderByWithRelationInput[]
+  cursor?: Prisma.ServerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ServerScalarFieldEnum | Prisma.ServerScalarFieldEnum[]
 }
 
 /**

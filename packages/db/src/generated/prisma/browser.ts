@@ -54,3 +54,13 @@ export type GithubInstallationMember = Prisma.GithubInstallationMemberModel
  * An app deployed from a GitHub repository.
  */
 export type Project = Prisma.ProjectModel
+/**
+ * Model Server
+ * A server (VPS) Selfship deploys to over SSH.
+ */
+export type Server = Prisma.ServerModel
+/**
+ * Model ServerJob
+ * One run of a check or setup on a server, with its full log.
+ */
+export type ServerJob = Prisma.ServerJobModel

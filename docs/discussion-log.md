@@ -93,3 +93,12 @@
 - **Deploy spike done** on both test servers. Key results: Next.js builds on 1 GB + swap (100 s) and 2 GB (73 s); static/SPA sites use < 1 MB each when running; idle baseline ~500 MB on AWS Ubuntu.
 - Found and fixed a zero-downtime gap: Traefik routed to new containers before they were ready (1 × 502). Docker health checks fixed it (0 failures in 92 requests).
 - Pending: Cloudflare DNS for `spike.selfship.dev` so real Let's Encrypt certificates can be verified.
+
+## Session 9 — 2026-10-16 — M3 servers in the product
+
+- Founder asked for a full code walkthrough of M2/M3 (written: [walkthrough](walkthroughs/m2-m3-github-projects-and-deploy.md)). Test servers left running for now (stop vs destroy: still to decide).
+- Extracted the spike's SSH, pre-flight and bootstrap code into `packages/remote`; added `packages/crypto` (envelope encryption).
+- Fixed the remaining zero-downtime gap found by a server-side probe: per-deployment Traefik routers + retry + settle delay (decision #48).
+- Built servers end to end: API (add with 3 methods, check/setup jobs, SSE log stream, remove), worker jobs (pinning, pre-flight, setup), and the UI. Departed from the plan on Socket.IO (SSE instead, #44) and the `deployer` user (deferred, #46).
+- Verified on AWS: all three methods, live setup log (~7–12 s on a prepared server), host-key mismatch refused, SSRF guard, ciphertext-only DB, password not stored anywhere, revoke command removes our key.
+- Browser walkthrough found one UX bug (connect before adding the key hid the command), fixed (#51).

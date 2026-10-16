@@ -12,7 +12,7 @@
 | Database                | **PostgreSQL + Prisma**                                                     | Relational data (users → servers → apps → deployments). Prisma is easy to learn       |
 | Queue / cache / pub-sub | **Redis** (BullMQ jobs, live log streaming)                                 | Standard choice, simple to run                                                        |
 | SSH                     | **`ssh2`** (npm)                                                            | Mature library. Exec commands, stream output, SFTP                                    |
-| Live logs               | **WebSockets (Socket.IO via `@nestjs/websockets`)** or SSE                  | Users watch the build in real time                                                    |
+| Live logs               | **Server-Sent Events** from Redis Streams (decision log #44)                | Users watch the build in real time                                                    |
 | Auth                    | Email/password (argon2) + **GitHub login**, session/JWT in httpOnly cookies | Keep it in-house. It's simple and you learn it properly                               |
 | GitHub integration      | **GitHub App** (not an OAuth App)                                           | Per-repo permissions, short-lived tokens, push webhooks. See [02](02-architecture.md) |
 | Secrets encryption      | **libsodium / AES-256-GCM** with a master key (later: AWS KMS / Vault)      | SSH keys and env vars are encrypted at rest                                           |

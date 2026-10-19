@@ -77,6 +77,9 @@ importers:
       '@selfship/adapters':
         specifier: workspace:*
         version: link:../../packages/adapters
+      '@selfship/cloudflare':
+        specifier: workspace:*
+        version: link:../../packages/cloudflare
       '@selfship/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
@@ -250,6 +253,9 @@ importers:
       '@nestjs/core':
         specifier: ^11.2.7
         version: 11.2.7(@nestjs/common@11.2.7(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@11.2.7)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@selfship/cloudflare':
+        specifier: workspace:*
+        version: link:../../packages/cloudflare
       '@selfship/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
@@ -311,6 +317,12 @@ importers:
       '@selfship/shared':
         specifier: workspace:*
         version: link:../shared
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+
+  packages/cloudflare:
+    dependencies:
       zod:
         specifier: ^4.6.7
         version: 4.6.7

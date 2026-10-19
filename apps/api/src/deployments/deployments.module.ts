@@ -9,6 +9,6 @@ import { DeploymentsService } from './deployments.service';
   imports: [GithubModule],
   controllers: [DeploymentsController],
   providers: [DeploymentsService, AutoDeployService],
-  exports: [AutoDeployService],
+  exports: [AutoDeployService, DeploymentsService],
 })
 export class DeploymentsModule {}

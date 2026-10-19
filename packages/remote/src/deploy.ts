@@ -23,6 +23,14 @@ export interface ImageSource {
   imageTag: string;
 }
 
+/** Which hostnames reach the app. */
+export interface Routing {
+  /** Served by the app (at least one). */
+  hosts: string[];
+  /** Answered with a permanent redirect to another hostname (e.g. www → apex). */
+  redirects: { from: string; to: string }[];
+}
+
 /** Everything needed to deploy one commit. Built by the worker from the database. */
 export interface DeployPlan {
   /** DNS-safe app ID, stable per project (container/Traefik names, server folder). */
@@ -32,8 +40,8 @@ export interface DeployPlan {
   /** What to deploy. */
   source: GitSource | ImageSource;
   settings: ProjectSettings;
-  /** Hostname Traefik routes to the app. */
-  host: string;
+  /** Hostnames Traefik routes to the app, and redirects between them. */
+  routing: Routing;
   /** Path checked before traffic moves (any status < 500 passes). */
   healthCheckPath: string;
   /** Variables by when they're needed. A `both` variable appears in each. */
@@ -147,7 +155,11 @@ export class AppDeployer {
     private readonly timings: DeployTimings = DEFAULT_TIMINGS,
   ) {
     if (!APP_ID.test(plan.app)) throw new Error(`Invalid app ID: ${plan.app}`);
-    if (!HOST.test(plan.host)) throw new Error(`Invalid host: ${plan.host}`);
+    const { hosts, redirects } = plan.routing;
+    if (hosts.length === 0) throw new Error('At least one host is required');
+    for (const host of [...hosts, ...redirects.flatMap((r) => [r.from, r.to])]) {
+      if (!HOST.test(host)) throw new Error(`Invalid host: ${host}`);
+    }
     if (plan.source.kind === 'git' && !/^[0-9a-f]{40}$/.test(plan.source.sha)) {
       throw new Error('Invalid commit SHA');
     }
@@ -358,9 +370,10 @@ export class AppDeployer {
     // priority, so Traefik moves all traffic once it's healthy. Shared router
     // names with differing labels make Traefik drop the route (404s).
     const priority = String(Math.floor(Date.now() / 1000) - 1_700_000_000);
+    const rule = (names: string[]): string => names.map((name) => `Host(\`${name}\`)`).join(' || ');
     const labels = [
       'traefik.enable=true',
-      `traefik.http.routers.${route}.rule=Host(\`${this.plan.host}\`)`,
+      `traefik.http.routers.${route}.rule=${rule(this.plan.routing.hosts)}`,
       `traefik.http.routers.${route}.priority=${priority}`,
       `traefik.http.routers.${route}.entrypoints=websecure`,
       `traefik.http.routers.${route}.tls.certresolver=le`,
@@ -371,6 +384,21 @@ export class AppDeployer {
       `traefik.http.services.${route}.loadbalancer.server.port=${port}`,
       `selfship.app=${app}`,
       `selfship.deployment=${this.plan.deploymentId}`,
+      // Redirect hostnames get their own router that only redirects (with its own certificate).
+      ...this.plan.routing.redirects.flatMap(({ from, to }, index) => {
+        const name = `${route}-redirect${index}`;
+        return [
+          `traefik.http.routers.${name}.rule=${rule([from])}`,
+          `traefik.http.routers.${name}.priority=${priority}`,
+          `traefik.http.routers.${name}.entrypoints=websecure`,
+          `traefik.http.routers.${name}.tls.certresolver=le`,
+          `traefik.http.routers.${name}.service=${route}`,
+          `traefik.http.routers.${name}.middlewares=${name}`,
+          `traefik.http.middlewares.${name}.redirectregex.regex=^https?://[^/]+(.*)`,
+          `traefik.http.middlewares.${name}.redirectregex.replacement=https://${to}\${1}`,
+          `traefik.http.middlewares.${name}.redirectregex.permanent=true`,
+        ];
+      }),
     ];
     // Traefik only routes to containers whose Docker health check passes.
     // Generated images are Alpine-based (busybox nc); custom Dockerfiles keep

@@ -12,6 +12,7 @@ import {
 import type { Deployment } from '@selfship/db';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/configure-app';
+import { CLOUDFLARE_CLIENT } from '../src/domains/cloudflare.provider';
 import { GITHUB_CLIENT } from '../src/github/github.constants';
 import { MailService } from '../src/mail/mail.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -60,6 +61,14 @@ describe('Env vars and deployments (e2e)', () => {
   let prisma: PrismaService;
   let queue: Queue;
   const github = new FakeGithubClient();
+  /** Records the Cloudflare records the API deletes. */
+  const cloudflare = {
+    deleted: [] as string[],
+    delete(id: string): Promise<void> {
+      this.deleted.push(id);
+      return Promise.resolve();
+    },
+  };
   let ada = '';
   let bob = '';
   let adaId = '';
@@ -107,6 +116,8 @@ describe('Env vars and deployments (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(GITHUB_CLIENT)
       .useValue(github)
+      .overrideProvider(CLOUDFLARE_CLIENT)
+      .useValue(cloudflare)
       .overrideProvider(MailService)
       .useValue({ send: () => Promise.resolve() })
       .compile();
@@ -626,11 +637,111 @@ describe('Env vars and deployments (e2e)', () => {
       });
     });
 
+    describe('domains', () => {
+      const domains = (): string => `/projects/${projectId}/domains`;
+      const host = `shop-${runId}.example.test`;
+
+      it('adds a custom domain with www and explains the DNS record to create', async () => {
+        const res = await http()
+          .post(domains())
+          .set('Cookie', ada)
+          .send({ hostname: `HTTPS://${host.toUpperCase()}/`, withWww: true })
+          .expect(201);
+        const items = res.body.items as {
+          hostname: string;
+          status: string;
+          redirectTo: string | null;
+          statusMessage: string | null;
+          dnsRecords: { type: string; name: string; value: string }[];
+        }[];
+        expect(items.map((d) => [d.hostname, d.redirectTo])).toEqual([
+          [host, null],
+          [`www.${host}`, host],
+        ]);
+        expect(items[0]).toMatchObject({
+          status: 'pending_dns',
+          dnsRecords: [{ type: 'A', name: host, value: '13.50.208.142' }],
+        });
+        expect(items[0]?.statusMessage).toContain('No A record found');
+      });
+
+      it('refuses Selfship domains and domains used elsewhere', async () => {
+        const reserved = await http()
+          .post(domains())
+          .set('Cookie', ada)
+          .send({ hostname: 'mine.selfship.app' })
+          .expect(400);
+        expect(reserved.body.code).toBe('DOMAIN_RESERVED');
+        await http()
+          .post(domains())
+          .set('Cookie', ada)
+          .send({ hostname: 'x.sslip.io' })
+          .expect(400);
+        const taken = await http()
+          .post(domains())
+          .set('Cookie', ada)
+          .send({ hostname: host })
+          .expect(409);
+        expect(taken.body.code).toBe('DOMAIN_TAKEN');
+        await http().post(domains()).set('Cookie', ada).send({ hostname: '10.0.0.1' }).expect(400);
+      });
+
+      it('keeps the free subdomain and removes custom domains with their redirects', async () => {
+        const platform = await prisma.domain.create({
+          data: {
+            projectId,
+            hostname: `web-${runId}.selfship.test`,
+            kind: 'platform',
+            status: 'active',
+            dnsRecordId: `rec-${runId}`,
+          },
+        });
+        const locked = await http()
+          .delete(`${domains()}/${platform.id}`)
+          .set('Cookie', ada)
+          .expect(409);
+        expect(locked.body.code).toBe('PLATFORM_DOMAIN_LOCKED');
+
+        // Pretend the custom domain was verified and routed: removing it re-runs the live image.
+        const main = await prisma.domain.findUniqueOrThrow({ where: { hostname: host } });
+        await prisma.domain.update({ where: { id: main.id }, data: { status: 'active' } });
+        await http().delete(`${domains()}/${main.id}`).set('Cookie', ada).expect(204);
+        expect(
+          await prisma.domain.count({ where: { hostname: { in: [host, `www.${host}`] } } }),
+        ).toBe(0);
+        const redeploy = await prisma.deployment.findFirst({
+          where: { projectId, trigger: 'config' },
+          orderBy: { createdAt: 'desc' },
+        });
+        expect(redeploy).toMatchObject({ status: 'queued' });
+        expect(await queue.getJob(redeploy?.id ?? '')).toBeDefined();
+        await prisma.deployment.update({
+          where: { id: redeploy?.id ?? '' },
+          data: { status: 'cancelled' },
+        });
+      });
+
+      it('shows the free subdomain as the project URL', async () => {
+        const res = await http().get(`/projects/${projectId}`).set('Cookie', ada).expect(200);
+        expect(res.body.url).toBe(`https://web-${runId}.selfship.test`);
+      });
+
+      it("hides other users' domains", async () => {
+        await http().get(domains()).set('Cookie', bob).expect(404);
+        await http()
+          .post(domains())
+          .set('Cookie', bob)
+          .send({ hostname: 'bob.example.test' })
+          .expect(404);
+      });
+    });
+
     it('removes the app from its servers when the project is deleted', async () => {
       await http().delete(`/projects/${projectId}`).set('Cookie', ada).expect(204);
       const job = await queue.getJob(`teardown-${projectId}-${serverId}`);
       expect(job?.name).toBe(DeploymentQueueJob.TEARDOWN);
       expect(job?.data).toEqual({ projectId, serverId });
+      expect(cloudflare.deleted).toEqual([`rec-${runId}`]);
     });
   });
 });

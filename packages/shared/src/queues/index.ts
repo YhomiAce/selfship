@@ -17,6 +17,8 @@ export const QueueName = {
   SERVERS: 'servers',
   /** Deployments: clone, build and run apps on servers. */
   DEPLOYMENTS: 'deployments',
+  /** Domain checks: DNS verification, routing and certificates. */
+  DOMAINS: 'domains',
 } as const;
 
 export type QueueName = (typeof QueueName)[keyof typeof QueueName];
@@ -123,3 +125,9 @@ export type TeardownJobData = z.infer<typeof TeardownJobDataSchema>;
 export function deploymentStreamKey(deploymentId: string): string {
   return `selfship:deployment:${deploymentId}:log`;
 }
+
+/** Job names on the `domains` queue. */
+export const DomainQueueJob = {
+  /** Repeating: verify DNS of pending domains, route verified ones, confirm certificates. */
+  CHECK: 'check',
+} as const;

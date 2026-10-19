@@ -145,6 +145,43 @@ export class DeploymentsService {
   }
 
   /**
+   * Re-runs the live image with today's settings (e.g. after a domain was
+   * removed). Skipped when a deployment is already queued or running (it
+   * picks up the settings itself) or nothing is live.
+   *
+   * @param projectId - Project ID
+   * @returns True if a redeploy was queued
+   */
+  async queueConfigRedeploy(projectId: string): Promise<boolean> {
+    const created = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM projects WHERE id = ${projectId}::uuid FOR UPDATE`;
+      const active = await tx.deployment.count({ where: { projectId, status: { in: ACTIVE } } });
+      if (active > 0) return null;
+      const live = await tx.deployment.findFirst({ where: { projectId, status: 'live' } });
+      if (!live?.imageTag) return null;
+      return tx.deployment.create({
+        data: {
+          projectId,
+          serverId: live.serverId,
+          trigger: 'config',
+          sourceDeploymentId: live.id,
+          branch: live.branch,
+          commitSha: live.commitSha,
+          commitMessage: live.commitMessage,
+          commitAuthor: live.commitAuthor,
+        },
+      });
+    });
+    if (!created) return false;
+    await this.queue.add(
+      DeploymentQueueJob.RUN,
+      { deploymentId: created.id },
+      { jobId: created.id, attempts: 1 },
+    );
+    return true;
+  }
+
+  /**
    * Recent deployments of a project.
    *
    * @param userId - Signed-in user

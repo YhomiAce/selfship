@@ -15,6 +15,7 @@ import { FormAlert } from '@/components/auth/form-alert';
 import { DeployTargetCard } from '@/components/deployments/deploy-target-card';
 import { DeploymentStatusBadge } from '@/components/deployments/deployment-status-badge';
 import { DeploymentsList } from '@/components/deployments/deployments-list';
+import { DomainsCard } from '@/components/domains/domains-card';
 import { EnvVarsCard } from '@/components/env-vars/env-vars-card';
 import { GithubStateBadge } from '@/components/projects/github-state-badge';
 import { ProjectForm } from '@/components/projects/project-form';
@@ -184,9 +185,9 @@ export function ProjectDetail(): React.ReactNode {
         </div>
       </div>
 
-      {live?.url ? (
+      {live && project.url ? (
         <a
-          href={live.url}
+          href={project.url}
           target="_blank"
           rel="noreferrer"
           className="hover:bg-muted/40 flex items-center gap-3 rounded-xl border p-4"
@@ -194,7 +195,7 @@ export function ProjectDetail(): React.ReactNode {
           <Globe className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span className="min-w-0 flex-1">
             <span className="block truncate font-medium">
-              {live.url.replace(/^https:\/\//, '')}
+              {project.url.replace(/^https:\/\//, '')}
             </span>
             <span className="text-muted-foreground block truncate text-sm">
               {live.commit.sha.slice(0, 7)} · {live.commit.message} · on{' '}
@@ -245,6 +246,8 @@ export function ProjectDetail(): React.ReactNode {
           setProject(updated);
         }}
       />
+
+      <DomainsCard projectId={project.id} hasServer={project.server !== null} />
 
       <Card>
         <CardHeader>

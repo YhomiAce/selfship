@@ -15,7 +15,12 @@ export type {
   DeployTimings,
   GitSource,
   ImageSource,
+  Routing,
 } from './deploy';
+export { checkDomainDns, publicDns, resolveIpv4 } from './dns-check';
+export { probeCertificate } from './tls-probe';
+export type { CertificateProbe } from './tls-probe';
+export type { DnsCheckResult, DnsLookups } from './dns-check';
 export { assertPublicHost, ForbiddenHostError, isBlockedAddress } from './host';
 export { authorizeKeyCommand, installKeyWithPassword, revokeKeyCommand } from './install-key';
 export type { InstallKeyOptions } from './install-key';

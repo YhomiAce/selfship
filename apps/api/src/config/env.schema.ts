@@ -78,11 +78,35 @@ export const EnvSchema = z
     /** Override for GitHub Enterprise Server (or a local mock). */
     GITHUB_API_URL: z.url().default('https://api.github.com'),
     GITHUB_WEB_URL: z.url().default('https://github.com'),
+    /**
+     * Free subdomains `<project>.<PLATFORM_APPS_DOMAIN>` via Cloudflare DNS
+     * (same values as the worker). All three or none.
+     */
+    PLATFORM_APPS_DOMAIN: optionalString,
+    CLOUDFLARE_API_TOKEN: optionalString,
+    CLOUDFLARE_ZONE_ID: optionalString,
+    /** Wildcard DNS service for temporary URLs (same as the worker). */
+    PREVIEW_DOMAIN: z.string().default('sslip.io'),
+    /** Domains users can't add as custom domains (ours), comma-separated. */
+    RESERVED_DOMAINS: z.string().default('selfship.dev,selfship.app'),
   })
   .refine((env) => Boolean(env.GITHUB_CLIENT_ID) === Boolean(env.GITHUB_CLIENT_SECRET), {
     message: 'Set both GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET, or neither.',
     path: ['GITHUB_CLIENT_SECRET'],
   })
+  .refine(
+    (env) =>
+      new Set([
+        Boolean(env.PLATFORM_APPS_DOMAIN),
+        Boolean(env.CLOUDFLARE_API_TOKEN),
+        Boolean(env.CLOUDFLARE_ZONE_ID),
+      ]).size === 1,
+    {
+      message:
+        'Set PLATFORM_APPS_DOMAIN, CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID together, or none.',
+      path: ['CLOUDFLARE_API_TOKEN'],
+    },
+  )
   .superRefine((env, ctx) => {
     const set = GITHUB_APP_KEYS.filter((key) => env[key] !== undefined);
     if (set.length > 0 && set.length < GITHUB_APP_KEYS.length) {

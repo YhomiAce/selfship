@@ -85,9 +85,9 @@ export function ProjectsList(): React.ReactNode {
                   <span className="truncate">
                     {ADAPTER_LABELS[project.settings.adapter].split(' (')[0]}
                   </span>
-                  {project.liveDeployment?.url ? (
+                  {project.url ? (
                     <span className="truncate text-emerald-700 dark:text-emerald-400">
-                      {project.liveDeployment.url.replace(/^https:\/\//, '')}
+                      {project.url.replace(/^https:\/\//, '')}
                     </span>
                   ) : null}
                 </CardContent>

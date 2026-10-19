@@ -1,6 +1,6 @@
-import { lookup } from 'node:dns/promises';
-import { isIPv4 } from 'node:net';
 import type { EnvScope } from '@selfship/shared';
+
+export { resolveIpv4 } from '@selfship/remote';
 
 /**
  * Encryption context of an env var value. Binds the ciphertext to its
@@ -44,19 +44,6 @@ export function previewHost(
   previewDomain: string,
 ): string {
   return `${projectName}-${projectId.slice(0, 6)}.${ipv4.replace(/\./g, '-')}.${previewDomain}`;
-}
-
-/**
- * The server's IPv4 address (servers can be added by hostname).
- *
- * @param host - IP or hostname
- * @returns IPv4 address
- * @throws {Error} If the host has no IPv4 address
- */
-export async function resolveIpv4(host: string): Promise<string> {
-  if (isIPv4(host)) return host;
-  const { address } = await lookup(host, { family: 4 });
-  return address;
 }
 
 /**

@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
+import { DomainsModule } from '../domains/domains.module';
 import { GithubModule } from '../github/github.module';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 
 /** Projects: detection, CRUD. */
 @Module({
-  imports: [GithubModule],
+  imports: [GithubModule, DomainsModule],
   controllers: [ProjectsController],
   providers: [ProjectsService],
 })

@@ -204,6 +204,8 @@ export interface ProjectDto {
   server: { id: string; name: string; status: ServerStatus } | null;
   healthCheckPath: string;
   autoDeploy: boolean;
+  /** Main address of the live app: an active custom domain, the free subdomain, or the temporary URL. */
+  url: string | null;
   /** The deployment serving traffic now, if any. */
   liveDeployment: DeploymentDto | null;
   /** The newest deployment (may be in progress or failed). */

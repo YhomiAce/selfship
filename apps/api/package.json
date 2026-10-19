@@ -21,6 +21,7 @@
     "@nestjs/platform-express": "^11.2.7",
     "@nestjs/throttler": "^6.7.1",
     "@selfship/adapters": "workspace:*",
+    "@selfship/cloudflare": "workspace:*",
     "@selfship/crypto": "workspace:*",
     "@selfship/db": "workspace:*",
     "@selfship/github": "workspace:*",

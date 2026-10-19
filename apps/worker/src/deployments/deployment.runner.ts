@@ -28,7 +28,8 @@ import { LiveLog } from '../logs/live-log';
 import { PrismaService } from '../prisma/prisma.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import { ServerConnector } from '../servers/server-connector';
-import { appId, envVarContext, previewHost, resolveIpv4, splitEnv } from './deployment-plan';
+import { DomainRoutingService } from '../domains/domain-routing.service';
+import { appId, envVarContext, resolveIpv4, splitEnv } from './deployment-plan';
 import { StageClock } from './stage-clock';
 
 /** Result of {@link DeploymentRunner.run}. */
@@ -68,6 +69,7 @@ export class DeploymentRunner implements OnModuleInit {
     private readonly cipher: EnvelopeCipher,
     private readonly config: AppConfigService,
     private readonly connector: ServerConnector,
+    private readonly domains: DomainRoutingService,
     @Inject(GITHUB_CLIENT) private readonly github: GithubAppClient | null,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     @InjectQueue(QueueName.DEPLOYMENTS) private readonly queue: Queue<TeardownJobData>,
@@ -214,13 +216,10 @@ export class DeploymentRunner implements OnModuleInit {
         secrets: [...(source.kind === 'git' ? [source.token] : []), ...vars.map((v) => v.value)],
       });
 
-      const host = previewHost(
-        project.name,
-        project.id,
-        await resolveIpv4(server.host),
-        this.config.get('PREVIEW_DOMAIN'),
-      );
-      const url = `https://${host}`;
+      const serverIpv4 = await resolveIpv4(server.host);
+      const { routing, url } = await this.domains.prepare(project, serverIpv4, (line) => {
+        log.line(line);
+      });
       await this.prisma.deployment.update({ where: { id: deployment.id }, data: { url } });
 
       log.line(
@@ -254,7 +253,7 @@ export class DeploymentRunner implements OnModuleInit {
             port: project.port,
             nodeVersion: project.nodeVersion,
           },
-          host,
+          routing,
           healthCheckPath: project.healthCheckPath,
           env: splitEnv(vars),
         },
@@ -277,6 +276,7 @@ export class DeploymentRunner implements OnModuleInit {
       const now = new Date();
       clock.stop(now);
       log.line(`✓ Live at ${url}`);
+      await this.domains.afterLive(project.id, serverIpv4);
       // If the project moved here from another server, remove it there.
       const elsewhere = await this.prisma.deployment.findMany({
         where: { projectId: project.id, status: 'live', serverId: { not: server.id } },

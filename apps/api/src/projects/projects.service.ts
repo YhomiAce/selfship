@@ -26,6 +26,7 @@ import {
 } from '@selfship/shared';
 import { DEPLOYMENT_INCLUDE, toDeploymentDto } from '../deployments/deployment.mapper';
 import { isUniqueViolation } from '../common/prisma-errors';
+import { DomainsService } from '../domains/domains.service';
 import { GithubAppService } from '../github/github-app.service';
 import { toGithubId } from '../github/github.constants';
 import { GithubInstallationsService } from '../github/github-installations.service';
@@ -51,6 +52,7 @@ export class ProjectsService {
     private readonly prisma: PrismaService,
     private readonly github: GithubAppService,
     private readonly installations: GithubInstallationsService,
+    private readonly domains: DomainsService,
     @InjectQueue(QueueName.DEPLOYMENTS) private readonly deploymentsQueue: Queue<TeardownJobData>,
   ) {}
 
@@ -133,7 +135,7 @@ export class ProjectsService {
         },
         include: PROJECT_INCLUDE,
       });
-      return toProjectDto(project, { live: null, latest: null });
+      return toProjectDto(project, { live: null, latest: null, url: null });
     } catch (error) {
       throw isUniqueViolation(error) ? nameTaken(input.name) : error;
     }
@@ -254,6 +256,7 @@ export class ProjectsService {
       distinct: ['serverId'],
       select: { serverId: true },
     });
+    await this.domains.removeDnsRecords(project.id);
     await this.prisma.project.delete({ where: { id: project.id } });
     for (const { serverId } of servers) {
       if (!serverId) continue;
@@ -268,7 +271,7 @@ export class ProjectsService {
   /** Adds the live and latest deployment to each project (two queries for any number). */
   private async withDeployments(projects: ProjectWithRelations[]): Promise<ProjectDto[]> {
     const ids = projects.map((project) => project.id);
-    const [live, latest] = await Promise.all([
+    const [live, latest, domains] = await Promise.all([
       this.prisma.deployment.findMany({
         where: { projectId: { in: ids }, status: 'live' },
         include: DEPLOYMENT_INCLUDE,
@@ -279,13 +282,32 @@ export class ProjectsService {
         distinct: ['projectId'],
         include: DEPLOYMENT_INCLUDE,
       }),
+      this.prisma.domain.findMany({
+        where: {
+          projectId: { in: ids },
+          OR: [
+            { kind: 'platform', status: { in: ['issuing', 'active'] } },
+            { kind: 'custom', status: 'active', redirectToId: null },
+          ],
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
     ]);
     const liveBy = new Map(live.map((d) => [d.projectId, toDeploymentDto(d)]));
+    /** Main URL: an active custom domain, else the free subdomain, else the live deployment's URL. */
+    const urlOf = (projectId: string): string | null => {
+      const liveDeployment = liveBy.get(projectId);
+      if (!liveDeployment) return null;
+      const own = domains.filter((d) => d.projectId === projectId);
+      const best = own.find((d) => d.kind === 'custom') ?? own.find((d) => d.kind === 'platform');
+      return best ? `https://${best.hostname}` : liveDeployment.url;
+    };
     const latestBy = new Map(latest.map((d) => [d.projectId, toDeploymentDto(d)]));
     return projects.map((project) =>
       toProjectDto(project, {
         live: liveBy.get(project.id) ?? null,
         latest: latestBy.get(project.id) ?? null,
+        url: urlOf(project.id),
       }),
     );
   }

@@ -2,6 +2,7 @@ export * from './auth/auth.schemas';
 export * from './common/api-error';
 export * from './common/health';
 export * from './deployments';
+export * from './domains';
 export * from './env';
 export * from './github/github.schemas';
 export * from './projects/project.schemas';

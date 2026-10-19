@@ -6,6 +6,7 @@ import { AppConfigModule } from './config/app-config.module';
 import { AppConfigService } from './config/app-config.service';
 import { CryptoModule } from './crypto/crypto.module';
 import { DeploymentsModule } from './deployments/deployments.module';
+import { CloudflareModule } from './domains/cloudflare.module';
 import { EmailModule } from './email/email.module';
 import { GithubModule } from './github/github.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -42,6 +43,7 @@ import { SystemModule } from './system/system.module';
     EmailModule,
     ServersModule,
     GithubModule,
+    CloudflareModule,
     DeploymentsModule,
   ],
 })

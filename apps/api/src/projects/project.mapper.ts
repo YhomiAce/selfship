@@ -17,6 +17,8 @@ export const PROJECT_INCLUDE = {
 export interface ProjectDeployments {
   live: DeploymentDto | null;
   latest: DeploymentDto | null;
+  /** Main address of the live app. */
+  url: string | null;
 }
 
 /**
@@ -67,6 +69,7 @@ export function toProjectDto(
       : null,
     healthCheckPath: project.healthCheckPath,
     autoDeploy: project.autoDeploy,
+    url: deployments.url,
     liveDeployment: deployments.live,
     latestDeployment: deployments.latest,
     createdAt: project.createdAt.toISOString(),

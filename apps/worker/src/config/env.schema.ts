@@ -56,6 +56,23 @@ export const EnvSchema = z
       .string()
       .optional()
       .transform((value) => value || undefined),
+    /**
+     * Free subdomains (`<project>.<PLATFORM_APPS_DOMAIN>`), managed through
+     * Cloudflare DNS. All three or none; without them apps keep the sslip.io URL.
+     */
+    PLATFORM_APPS_DOMAIN: z
+      .string()
+      .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/)
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    CLOUDFLARE_API_TOKEN: z
+      .string()
+      .optional()
+      .transform((value) => value || undefined),
+    CLOUDFLARE_ZONE_ID: z
+      .string()
+      .optional()
+      .transform((value) => value || undefined),
     GITHUB_API_URL: z.url().default('https://api.github.com'),
     GITHUB_WEB_URL: z.url().default('https://github.com'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
@@ -74,7 +91,20 @@ export const EnvSchema = z
   .refine((env) => Boolean(env.GITHUB_APP_ID) === Boolean(env.GITHUB_APP_PRIVATE_KEY), {
     message: 'Set both GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY, or neither.',
     path: ['GITHUB_APP_PRIVATE_KEY'],
-  });
+  })
+  .refine(
+    (env) =>
+      new Set([
+        Boolean(env.PLATFORM_APPS_DOMAIN),
+        Boolean(env.CLOUDFLARE_API_TOKEN),
+        Boolean(env.CLOUDFLARE_ZONE_ID),
+      ]).size === 1,
+    {
+      message:
+        'Set PLATFORM_APPS_DOMAIN, CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID together, or none.',
+      path: ['CLOUDFLARE_API_TOKEN'],
+    },
+  );
 
 export type Env = z.infer<typeof EnvSchema>;
 

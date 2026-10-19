@@ -36,7 +36,7 @@ function plan(overrides: Partial<DeployPlan> = {}): DeployPlan {
       port: 3000,
       nodeVersion: 22,
     },
-    host: 'web-0123ab.13-50-208-142.sslip.io',
+    routing: { hosts: ['web-0123ab.13-50-208-142.sslip.io'], redirects: [] },
     healthCheckPath: '/health',
     env: { build: { NEXT_PUBLIC_API: 'https://api' }, runtime: { DB_PASSWORD } },
     ...overrides,
@@ -239,6 +239,27 @@ describe('AppDeployer', () => {
     expect(server.commandText).not.toContain('docker run');
   });
 
+  it('routes several hostnames and redirects www to the apex', async () => {
+    const server = new FakeServer();
+    const { deployer } = makeDeployer(server, {
+      routing: {
+        hosts: ['example.com', 'shop.selfship.app'],
+        redirects: [{ from: 'www.example.com', to: 'example.com' }],
+      },
+    });
+    await deployer.run();
+    const run = server.calls.find((c) => c.command.includes('docker run'))?.command ?? '';
+    const route = deployer.containerName;
+    expect(run).toContain(
+      `routers.${route}.rule=Host(\`example.com\`) || Host(\`shop.selfship.app\`)`,
+    );
+    expect(run).toContain(`routers.${route}-redirect0.rule=Host(\`www.example.com\`)`);
+    expect(run).toContain(
+      `middlewares.${route}-redirect0.redirectregex.replacement=https://example.com\${1}`,
+    );
+    expect(run).toContain(`routers.${route}-redirect0.tls.certresolver=le`);
+  });
+
   it('rolls back to an existing image without cloning or building', async () => {
     const server = new FakeServer();
     const imageTag = 'selfship/p-0123456789ab:abcdef1-aaaaaa';
@@ -277,7 +298,12 @@ describe('AppDeployer', () => {
   it('refuses unsafe plans', () => {
     const server = new FakeServer();
     expect(() => makeDeployer(server, { app: 'Bad App' })).toThrow('Invalid app ID');
-    expect(() => makeDeployer(server, { host: 'x`) || Host(`evil.com' })).toThrow('Invalid host');
+    expect(() =>
+      makeDeployer(server, { routing: { hosts: ['x`) || Host(`evil.com'], redirects: [] } }),
+    ).toThrow('Invalid host');
+    expect(() => makeDeployer(server, { routing: { hosts: [], redirects: [] } })).toThrow(
+      'At least one host',
+    );
     expect(() =>
       makeDeployer(server, { env: { build: {}, runtime: { 'BAD-NAME': 'x' } } }),
     ).toThrow('Invalid variable name');

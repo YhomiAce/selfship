@@ -12,6 +12,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppConfigModule } from './config/app-config.module';
 import { AppConfigService } from './config/app-config.service';
 import { DiagnosticsModule } from './diagnostics/diagnostics.module';
+import { DomainsModule } from './domains/domains.module';
 import { EnvVarsModule } from './env-vars/env-vars.module';
 import { GithubModule } from './github/github.module';
 import { HealthModule } from './health/health.module';
@@ -72,6 +73,7 @@ function requestId(req: IncomingMessage): string {
     EnvVarsModule,
     DeploymentsModule,
     WebhooksModule,
+    DomainsModule,
     HealthModule,
     DiagnosticsModule,
   ],

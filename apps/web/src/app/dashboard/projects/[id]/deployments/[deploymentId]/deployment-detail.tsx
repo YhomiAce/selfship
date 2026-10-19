@@ -219,7 +219,7 @@ export function DeploymentDetail(): React.ReactNode {
             {deployment.failedStage
               ? ` at “${DEPLOYMENT_STAGE_LABELS[deployment.failedStage]}”`
               : ''}
-            . The previous version is still live.
+            . Nothing was changed on the server: what was live before is still live.
           </AlertTitle>
           <AlertDescription className="font-mono text-xs whitespace-pre-wrap">
             {deployment.errorSummary}

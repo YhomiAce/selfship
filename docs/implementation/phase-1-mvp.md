@@ -141,19 +141,21 @@
 
 ## M5 — Domains, SSL, auto-deploy, rollback, friendly errors
 
-- [ ] `CloudflareModule`: create/delete DNS records for `<project>-<rand>.<platform-domain>` pointing to the server IP
-- [ ] Every project gets a **free HTTPS subdomain** automatically
-- [ ] Custom domains: add domain, show the exact DNS record to create, poll DNS (verify A/AAAA matches server IP), attach to Traefik router, track SSL status
-- [ ] `www` ↔ apex redirect option
-- [ ] **Auto-deploy on push** (webhook → matching projects/branch → enqueue), with a toggle per project
-- [ ] **Rollback**: redeploy a previous image tag instantly (no rebuild)
-- [ ] **Rule-based error explainer** (no AI yet): pattern table for OOM/exit 137, port not listening, missing lockfile, `npm ERR! ERESOLVE`, missing build script, disk full, DNS mismatch, Let's Encrypt rate limit, SSH auth failure, Docker not running
+- [x] **Cloudflare DNS** ([`packages/cloudflare`](../../packages/cloudflare/src/client.ts)): A records for free subdomains, DNS only (not proxied) so Let's Encrypt reaches the server
+- [x] **Free HTTPS subdomain** per project: `<name>.<PLATFORM_APPS_DOMAIN>` (or `<name>-<id>` if taken or reserved), created at the first deployment, moved when the project changes server (after the first success there), deleted with the project. The sslip.io URL stays as a fallback. _Needs a Cloudflare token to try live (see below)._
+- [x] **Custom domains**: add → exact DNS record shown → checked through public resolvers (explains missing records, wrong IPs, extra A records, stray AAAA, Cloudflare's orange cloud) → re-run of the live image with the new route → certificate confirmed with a TLS probe → ✅. Stuck certificates are explained from Traefik's log (rate limit, DNS, firewall, CAA). A worker job runs the checks every minute; "Check now" runs them immediately
+- [x] **www ↔ apex redirect** (permanent, path and query kept)
+- [x] **Auto-deploy on push** with a per-project switch: matching repo + branch + installation, newest push wins over waiting deployments, redeliveries and `[skip deploy]`/`[skip ci]` ignored
+- [x] **Rollback** to any of the last 3 images, no rebuild (current runtime env vars). Plus **Redeploy this commit** (rebuild an older commit)
+- [x] **Rule-based error explainer** ([`explain.ts`](../../packages/shared/src/deployments/explain.ts)): out of memory, JS heap, disk full, missing/outdated lockfile, ERESOLVE, missing script, private package, Node version, module not found (case-sensitivity), missing Dockerfile, wrong output folder, database unreachable, wrong port, EADDRINUSE, crash on start, Docker not running, SSH key removed, server unreachable, force-pushed commit, lost repo access, old webpack/OpenSSL, CRA warnings with CI=true
+
+**Verified live (2026-10-19, test-2gb):** push webhook deployed in 38 s (redelivery and skip marker ignored); rollback live in 29 s with 576/576 requests OK during the switch; a custom domain and its www twin went from "added" to ✅ with Let's Encrypt certificates in 45 s; www → apex 301 kept path and query; wrong-IP domain explained; removing a domain dropped its route; the old-webpack failure got its hint.
 
 **What you'll test**
 
-- [ ] New project gets `https://xyz.<platform-domain>` with a valid cert
+- [ ] Set the Cloudflare token (`.env`: `PLATFORM_APPS_DOMAIN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`), deploy: the project gets `https://<name>.selfship.app` with a valid certificate
 - [ ] Add your real domain. The UI guides you, then it turns ✅ with HTTPS
-- [ ] Push a commit and it auto-deploys. Roll back and the old version is live within seconds
+- [ ] Push a commit and it auto-deploys (needs the smee relay locally, see the GitHub App guide). Roll back and the old version is live within seconds
 - [ ] Trigger an OOM / wrong port and see a human-readable explanation
 
 ---

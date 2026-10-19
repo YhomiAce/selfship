@@ -66,6 +66,7 @@ export function toProjectDto(
       ? { id: project.server.id, name: project.server.name, status: project.server.status }
       : null,
     healthCheckPath: project.healthCheckPath,
+    autoDeploy: project.autoDeploy,
     liveDeployment: deployments.live,
     latestDeployment: deployments.latest,
     createdAt: project.createdAt.toISOString(),

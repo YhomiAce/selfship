@@ -53,11 +53,22 @@ export const InstallationRepositoriesEventSchema = z.object({
 });
 export type InstallationRepositoriesEvent = z.infer<typeof InstallationRepositoriesEventSchema>;
 
-/** `push` event (only the fields we use; auto-deploy arrives in M5). */
+/** `push` event (only the fields auto-deploy uses). */
 export const PushEventSchema = z.object({
+  /** e.g. `refs/heads/main` (tags are `refs/tags/…`). */
   ref: z.string(),
+  /** SHA the ref points to now (all zeros when the branch was deleted). */
   after: z.string(),
+  deleted: z.boolean().optional(),
   repository: z.object({ id: z.number(), full_name: z.string() }),
   installation: z.object({ id: z.number() }).optional(),
+  head_commit: z
+    .object({
+      id: z.string(),
+      message: z.string(),
+      author: z.object({ name: z.string().optional(), username: z.string().optional() }).optional(),
+    })
+    .nullable()
+    .optional(),
 });
 export type PushEvent = z.infer<typeof PushEventSchema>;

@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -11,9 +12,11 @@ import {
 } from '@nestjs/common';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
+import { createZodDto } from 'nestjs-zod';
 import type { User } from '@selfship/db';
 import {
   ACTIVE_DEPLOYMENT_STATUSES,
+  CreateDeploymentSchema,
   type DeploymentDto,
   type DeploymentListResponse,
   deploymentStreamKey,
@@ -22,7 +25,10 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { LogStreamService } from '../logs/log-stream.service';
 import { DeploymentsService } from './deployments.service';
 
-/** Deployments of a project: start, list, cancel, watch. */
+/** Body of `POST /projects/:projectId/deployments`. */
+class CreateDeploymentDto extends createZodDto(CreateDeploymentSchema) {}
+
+/** Deployments of a project: start, list, cancel, roll back, watch. */
 @Controller('projects/:projectId/deployments')
 export class DeploymentsController {
   constructor(
@@ -31,9 +37,10 @@ export class DeploymentsController {
   ) {}
 
   /**
-   * Deploys the latest commit of the project's branch.
+   * Deploys the latest commit of the project's branch, or the given commit.
    *
    * @param projectId - Project ID
+   * @param body - Optional `commitSha` to redeploy
    * @returns The queued deployment
    */
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
@@ -42,8 +49,27 @@ export class DeploymentsController {
   create(
     @CurrentUser() user: User,
     @Param('projectId', ParseUUIDPipe) projectId: string,
+    @Body() body: CreateDeploymentDto,
   ): Promise<DeploymentDto> {
-    return this.deployments.create(user.id, projectId);
+    return this.deployments.create(user.id, projectId, body);
+  }
+
+  /**
+   * Puts an earlier deployment live again using its image (no rebuild).
+   *
+   * @param projectId - Project ID
+   * @param id - Deployment to go back to
+   * @returns The queued rollback
+   */
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Post(':id/rollback')
+  @HttpCode(HttpStatus.ACCEPTED)
+  rollback(
+    @CurrentUser() user: User,
+    @Param('projectId', ParseUUIDPipe) projectId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<DeploymentDto> {
+    return this.deployments.rollback(user.id, projectId, id);
   }
 
   /**

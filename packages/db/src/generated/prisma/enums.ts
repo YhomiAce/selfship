@@ -113,7 +113,26 @@ export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof Deployment
 export const DeploymentTrigger = {
   manual: 'manual',
   push: 'push',
-  rollback: 'rollback'
+  rollback: 'rollback',
+  config: 'config'
 } as const
 
 export type DeploymentTrigger = (typeof DeploymentTrigger)[keyof typeof DeploymentTrigger]
+
+
+export const DomainKind = {
+  platform: 'platform',
+  custom: 'custom'
+} as const
+
+export type DomainKind = (typeof DomainKind)[keyof typeof DomainKind]
+
+
+export const DomainStatus = {
+  pending_dns: 'pending_dns',
+  issuing: 'issuing',
+  active: 'active',
+  error: 'error'
+} as const
+
+export type DomainStatus = (typeof DomainStatus)[keyof typeof DomainStatus]

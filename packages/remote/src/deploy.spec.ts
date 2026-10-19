@@ -20,7 +20,8 @@ function plan(overrides: Partial<DeployPlan> = {}): DeployPlan {
   return {
     app: 'p-0123456789ab',
     deploymentId: '11111111-2222-3333-4444-555555555555',
-    repo: {
+    source: {
+      kind: 'git',
       cloneUrl: 'https://github.com/acme/web.git',
       sha: SHA,
       rootDirectory: '',
@@ -57,6 +58,8 @@ class FakeServer implements CommandRunner {
   httpCode = '200';
   existing = 'p-0123456789ab-20260101000000-aaaaaa';
   fail: RegExp | null = null;
+  /** Whether `docker image inspect` finds the image (rollbacks). */
+  imagePresent = true;
   /** Called when a command matches `onCommand.pattern` (e.g. to cancel mid-build). */
   onCommand: { pattern: RegExp; run: () => Promise<void> } | null = null;
 
@@ -74,6 +77,9 @@ class FakeServer implements CommandRunner {
     if (command.startsWith('ls -A1')) return ok('package.json\npackage-lock.json\n');
     if (command.includes('cat ') && command.includes('package.json')) {
       return ok(JSON.stringify({ name: 'web', scripts: { start: 'node index.js' } }));
+    }
+    if (command.startsWith('docker image inspect')) {
+      return this.imagePresent ? ok('') : { code: 1, stdout: '', stderr: '' };
     }
     if (command.startsWith('docker inspect -f')) return ok(this.health);
     if (command.includes('curl -s')) return ok(this.httpCode);
@@ -169,7 +175,13 @@ describe('AppDeployer', () => {
   it('clones only the project folder of a monorepo', async () => {
     const server = new FakeServer();
     await makeDeployer(server, {
-      repo: { ...plan().repo, rootDirectory: 'apps/web' },
+      source: {
+        kind: 'git',
+        cloneUrl: 'https://github.com/acme/web.git',
+        sha: SHA,
+        rootDirectory: 'apps/web',
+        token: TOKEN,
+      },
     }).deployer.run();
     const clone = server.calls.find((c) => c.command.includes('git fetch'))?.command ?? '';
     expect(clone).toContain('sparse-checkout set');
@@ -225,6 +237,41 @@ describe('AppDeployer', () => {
     await expect(deployer.run()).rejects.toBeInstanceOf(DeployCancelledError);
     expect(server.commandText).toMatch(/kill -TERM -- -"\$\(cat '.*\/pid'\)"/);
     expect(server.commandText).not.toContain('docker run');
+  });
+
+  it('rolls back to an existing image without cloning or building', async () => {
+    const server = new FakeServer();
+    const imageTag = 'selfship/p-0123456789ab:abcdef1-aaaaaa';
+    const { deployer, stages } = makeDeployer(server, { source: { kind: 'image', imageTag } });
+
+    const outcome = await deployer.run();
+
+    expect(stages).toEqual(['starting', 'health_check', 'switching']);
+    expect(outcome.imageTag).toBe(imageTag);
+    expect(server.commandText).not.toContain('git fetch');
+    expect(server.commandText).not.toContain('docker build');
+    const run = server.calls.find((c) => c.command.includes('docker run'))?.command ?? '';
+    expect(run).toContain(`'${imageTag}'`);
+    expect(run).toContain('-e DB_PASSWORD'); // current runtime variables
+  });
+
+  it('explains a rollback whose image was cleaned up', async () => {
+    const server = new FakeServer();
+    server.imagePresent = false;
+    const { deployer } = makeDeployer(server, {
+      source: { kind: 'image', imageTag: 'selfship/p-0123456789ab:abcdef1-aaaaaa' },
+    });
+    await expect(deployer.run()).rejects.toMatchObject({
+      stage: 'starting',
+      message: expect.stringContaining('Redeploy its commit instead'),
+    });
+    expect(server.commandText).not.toContain('docker run');
+  });
+
+  it("refuses to roll back to another app's image", () => {
+    expect(() =>
+      makeDeployer(new FakeServer(), { source: { kind: 'image', imageTag: 'selfship/p-other:x' } }),
+    ).toThrow("this app's own images");
   });
 
   it('refuses unsafe plans', () => {

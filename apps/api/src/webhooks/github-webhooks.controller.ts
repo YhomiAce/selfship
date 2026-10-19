@@ -21,11 +21,14 @@ import {
 import { ErrorCode, GithubErrorCode } from '@selfship/shared';
 import { Public } from '../auth/decorators/public.decorator';
 import { AppConfigService } from '../config/app-config.service';
-import { GithubInstallationsService } from './github-installations.service';
+import { AutoDeployService } from '../deployments/auto-deploy.service';
+import { GithubInstallationsService } from '../github/github-installations.service';
 
 /** Acknowledgement returned to GitHub. */
 export interface WebhookAck {
   received: true;
+  /** For pushes: how many deployments were queued. */
+  deployments?: number;
   /** What we did with it, for debugging in GitHub's delivery log. */
   handled:
     'installation' | 'installation_repositories' | 'push' | 'ping' | 'ignored' | 'invalid_payload';
@@ -46,6 +49,7 @@ export class GithubWebhooksController {
   constructor(
     private readonly config: AppConfigService,
     private readonly installations: GithubInstallationsService,
+    private readonly autoDeploy: AutoDeployService,
   ) {}
 
   /**
@@ -106,9 +110,8 @@ export class GithubWebhooksController {
       case 'push': {
         const parsed = PushEventSchema.safeParse(body);
         if (!parsed.success) return this.invalid(label);
-        // Auto-deploy on push is wired up in M5; for now we only acknowledge it.
-        this.logger.debug(`Push to ${parsed.data.repository.full_name} ${parsed.data.ref}`);
-        return { received: true, handled: 'push' };
+        const result = await this.autoDeploy.handlePush(parsed.data);
+        return { received: true, handled: 'push', deployments: result.queued };
       }
 
       default:

@@ -62,7 +62,8 @@ export const ModelName = {
   ServerJob: 'ServerJob',
   EnvVar: 'EnvVar',
   Deployment: 'Deployment',
-  DeploymentLogChunk: 'DeploymentLogChunk'
+  DeploymentLogChunk: 'DeploymentLogChunk',
+  Domain: 'Domain'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -179,7 +180,8 @@ export const ProjectScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   serverId: 'serverId',
-  healthCheckPath: 'healthCheckPath'
+  healthCheckPath: 'healthCheckPath',
+  autoDeploy: 'autoDeploy'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -265,6 +267,9 @@ export const DeploymentScalarFieldEnum = {
   containerName: 'containerName',
   url: 'url',
   cancelRequestedAt: 'cancelRequestedAt',
+  sourceDeploymentId: 'sourceDeploymentId',
+  hintTitle: 'hintTitle',
+  hintAdvice: 'hintAdvice',
   createdAt: 'createdAt',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt'
@@ -282,6 +287,25 @@ export const DeploymentLogChunkScalarFieldEnum = {
 } as const
 
 export type DeploymentLogChunkScalarFieldEnum = (typeof DeploymentLogChunkScalarFieldEnum)[keyof typeof DeploymentLogChunkScalarFieldEnum]
+
+
+export const DomainScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  hostname: 'hostname',
+  kind: 'kind',
+  status: 'status',
+  statusMessage: 'statusMessage',
+  redirectToId: 'redirectToId',
+  dnsRecordId: 'dnsRecordId',
+  dnsTarget: 'dnsTarget',
+  verifiedAt: 'verifiedAt',
+  lastCheckedAt: 'lastCheckedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DomainScalarFieldEnum = (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum]
 
 
 export const SortOrder = {

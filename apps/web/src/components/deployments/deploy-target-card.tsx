@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { FieldGroup } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Switch } from '@/components/ui/switch';
 import { ApiRequestError } from '@/lib/api-client';
 import { projectsApi } from '@/lib/projects-api';
 import { serversApi } from '@/lib/servers-api';
@@ -39,6 +40,7 @@ export function DeployTargetCard({
   const [path, setPath] = useState(project.healthCheckPath);
   const [pathError, setPathError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [autoDeploy, setAutoDeploy] = useState(project.autoDeploy);
 
   useEffect(() => {
     serversApi
@@ -48,6 +50,18 @@ export function DeployTargetCard({
         setServers([]);
       });
   }, []);
+
+  /** Saves the auto-deploy switch right away (no Save button needed). */
+  const toggleAutoDeploy = async (enabled: boolean): Promise<void> => {
+    setAutoDeploy(enabled);
+    try {
+      onSaved(await projectsApi.update(project.id, { autoDeploy: enabled }));
+      toast.success(enabled ? 'Auto-deploy on' : 'Auto-deploy off');
+    } catch (error) {
+      setAutoDeploy(!enabled);
+      toast.error(error instanceof ApiRequestError ? error.message : 'Could not save.');
+    }
+  };
 
   const dirty = serverId !== (project.server?.id ?? '') || path !== project.healthCheckPath;
   const save = async (): Promise<void> => {
@@ -126,6 +140,20 @@ export function DeployTargetCard({
                 }}
               />
             </FormField>
+            <label className="flex items-start gap-3 rounded-lg border p-3">
+              <Switch
+                checked={autoDeploy}
+                onCheckedChange={(checked) => void toggleAutoDeploy(checked)}
+                aria-label="Deploy on every push"
+                className="mt-0.5"
+              />
+              <span className="text-sm">
+                <span className="block font-medium">Deploy on every push to {project.branch}</span>
+                <span className="text-muted-foreground block">
+                  Add [skip deploy] to a commit message to skip one push.
+                </span>
+              </span>
+            </label>
             <Button className="self-start" disabled={!dirty || saving} onClick={() => void save()}>
               {saving ? <Loader2 className="animate-spin" /> : null}
               Save

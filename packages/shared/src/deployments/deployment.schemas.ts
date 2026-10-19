@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 /**
  * Lifecycle of a deployment. The in-progress states are also the pipeline's
  * stages, in order, so the UI can show where it is and where it failed.
@@ -51,8 +53,39 @@ export const DEPLOYMENT_STAGE_LABELS: Record<DeploymentStage, string> = {
   switching: 'Switch traffic',
 };
 
-/** What started a deployment (`push` and `rollback` arrive in M5). */
-export type DeploymentTrigger = 'manual' | 'push' | 'rollback';
+/**
+ * What started a deployment: a click, a push to the branch, a rollback to an
+ * earlier image, or a settings change that re-runs the live image (`config`).
+ */
+export type DeploymentTrigger = 'manual' | 'push' | 'rollback' | 'config';
+
+/** Labels for the UI. */
+export const DEPLOYMENT_TRIGGER_LABELS: Record<DeploymentTrigger, string> = {
+  manual: 'Manual',
+  push: 'Push',
+  rollback: 'Rollback',
+  config: 'Settings change',
+};
+
+/**
+ * Body of `POST /projects/:id/deployments`: optionally an older commit to
+ * redeploy. The body itself is optional (a plain POST deploys the branch head).
+ */
+export const CreateDeploymentSchema = z
+  .object({
+    commitSha: z
+      .string()
+      .regex(/^[0-9a-f]{40}$/, 'Use a full 40-character commit SHA.')
+      .optional(),
+  })
+  .default({});
+export type CreateDeploymentInput = z.infer<typeof CreateDeploymentSchema>;
+
+/** A failure explained in plain language. */
+export interface DeploymentHint {
+  title: string;
+  advice: string;
+}
 
 /** Start/end times of one stage (ISO strings). */
 export interface StageTiming {
@@ -75,7 +108,13 @@ export interface DeploymentDto {
   /** Stage that failed, if any. */
   failedStage: DeploymentStage | null;
   errorSummary: string | null;
+  /** Rule-based explanation of a failure, when one matched. */
+  hint: DeploymentHint | null;
   cancelRequested: boolean;
+  /** Rollbacks and config redeploys: the deployment whose image was reused. */
+  sourceDeploymentId: string | null;
+  /** Whether this deployment's image can be put live again without rebuilding. */
+  rollbackAvailable: boolean;
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
@@ -98,4 +137,5 @@ export const DeploymentErrorCode = {
   SERVER_NOT_READY: 'SERVER_NOT_READY',
   DEPLOYMENT_IN_PROGRESS: 'DEPLOYMENT_IN_PROGRESS',
   NOT_CANCELLABLE: 'NOT_CANCELLABLE',
+  ROLLBACK_UNAVAILABLE: 'ROLLBACK_UNAVAILABLE',
 } as const;

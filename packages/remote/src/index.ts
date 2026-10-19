@@ -8,7 +8,14 @@ export {
   exportLines,
   teardownApp,
 } from './deploy';
-export type { DeployHooks, DeployOutcome, DeployPlan, DeployTimings } from './deploy';
+export type {
+  DeployHooks,
+  DeployOutcome,
+  DeployPlan,
+  DeployTimings,
+  GitSource,
+  ImageSource,
+} from './deploy';
 export { assertPublicHost, ForbiddenHostError, isBlockedAddress } from './host';
 export { authorizeKeyCommand, installKeyWithPassword, revokeKeyCommand } from './install-key';
 export type { InstallKeyOptions } from './install-key';

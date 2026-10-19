@@ -95,9 +95,13 @@ export class FakeGithubClient {
 
   getCommit(id: number, fullName: string, ref: string): Promise<GithubCommit> {
     const found = this.find(id, fullName);
-    if (!found?.branches.includes(ref)) return Promise.reject(new GithubApiError('not found', 404));
+    // Every branch points at one fake commit, which can also be looked up by SHA.
+    const sha = found ? String(found.repo.id).padEnd(40, 'c').slice(0, 40) : '';
+    if (!found || (!found.branches.includes(ref) && ref !== sha)) {
+      return Promise.reject(new GithubApiError('not found', 404));
+    }
     return Promise.resolve({
-      sha: String(found.repo.id).padEnd(40, 'c').slice(0, 40),
+      sha,
       message: `Latest commit on ${ref}`,
       author: 'ada',
     });

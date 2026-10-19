@@ -211,6 +211,7 @@ export class ProjectsService {
       ...(input.settings ? settingsData(input.settings) : {}),
       ...(input.serverId !== undefined ? { serverId: input.serverId } : {}),
       ...(input.healthCheckPath !== undefined ? { healthCheckPath: input.healthCheckPath } : {}),
+      ...(input.autoDeploy !== undefined ? { autoDeploy: input.autoDeploy } : {}),
     };
 
     try {

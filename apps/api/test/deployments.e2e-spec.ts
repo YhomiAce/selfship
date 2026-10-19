@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { Queue } from 'bullmq';
@@ -9,6 +9,7 @@ import {
   redisConnectionFromUrl,
   DeploymentQueueJob,
 } from '@selfship/shared';
+import type { Deployment } from '@selfship/db';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/configure-app';
 import { GITHUB_CLIENT } from '../src/github/github.constants';
@@ -441,6 +442,188 @@ describe('Env vars and deployments (e2e)', () => {
         .set('Cookie', bob)
         .expect(404);
       await http().post(`/projects/${projectId}/deployments`).set('Cookie', bob).expect(404);
+    });
+
+    describe('redeploy and rollback', () => {
+      /** Inserts a finished deployment that built an image. */
+      const finished = (
+        status: 'live' | 'replaced',
+        imageTag: string,
+        minutesAgo: number,
+      ): Promise<{ id: string }> =>
+        prisma.deployment.create({
+          data: {
+            projectId,
+            serverId,
+            branch: 'main',
+            commitSha: imageTag.slice(-1).repeat(40),
+            commitMessage: `build ${imageTag}`,
+            status,
+            imageTag,
+            startedAt: new Date(Date.now() - minutesAgo * 60_000),
+            finishedAt: new Date(Date.now() - minutesAgo * 60_000),
+          },
+        });
+
+      it('redeploys a specific commit', async () => {
+        const sha = String(REPO_ID).padEnd(40, 'c').slice(0, 40);
+        const res = await http()
+          .post(`/projects/${projectId}/deployments`)
+          .set('Cookie', ada)
+          .send({ commitSha: sha })
+          .expect(202);
+        expect(res.body).toMatchObject({ trigger: 'manual', commit: { sha } });
+        await http()
+          .post(`/projects/${projectId}/deployments/${res.body.id}/cancel`)
+          .set('Cookie', ada)
+          .expect(202);
+        await http()
+          .post(`/projects/${projectId}/deployments`)
+          .set('Cookie', ada)
+          .send({ commitSha: 'not-a-sha' })
+          .expect(400);
+      });
+
+      it('offers rollback only for replaced deployments whose image is still kept', async () => {
+        // Newest first: live (a), then replaced b, c, d. Only 3 images are kept: a, b, c.
+        await finished('replaced', 'selfship/p-x:d', 40);
+        await finished('replaced', 'selfship/p-x:c', 30);
+        const b = await finished('replaced', 'selfship/p-x:b', 20);
+        await finished('live', 'selfship/p-x:a', 10);
+
+        const list = await http()
+          .get(`/projects/${projectId}/deployments`)
+          .set('Cookie', ada)
+          .expect(200);
+        const available = (
+          list.body.items as { commit: { message: string }; rollbackAvailable: boolean }[]
+        )
+          .filter((d) => d.rollbackAvailable)
+          .map((d) => d.commit.message);
+        expect(available.sort()).toEqual(['build selfship/p-x:b', 'build selfship/p-x:c']);
+
+        const res = await http()
+          .post(`/projects/${projectId}/deployments/${b.id}/rollback`)
+          .set('Cookie', ada)
+          .expect(202);
+        expect(res.body).toMatchObject({
+          trigger: 'rollback',
+          status: 'queued',
+          sourceDeploymentId: b.id,
+          commit: { sha: 'b'.repeat(40) },
+        });
+        const job = await queue.getJob(res.body.id);
+        expect(job?.data).toEqual({ deploymentId: res.body.id });
+        await prisma.deployment.update({
+          where: { id: res.body.id },
+          data: { status: 'cancelled' },
+        });
+      });
+
+      it('refuses rolling back to a live deployment or a cleaned-up image', async () => {
+        const items = (await http().get(`/projects/${projectId}/deployments`).set('Cookie', ada))
+          .body.items as { id: string; status: string; commit: { message: string } }[];
+        const live = items.find((d) => d.status === 'live');
+        const old = items.find((d) => d.commit.message === 'build selfship/p-x:d');
+        for (const target of [live, old]) {
+          const res = await http()
+            .post(`/projects/${projectId}/deployments/${target?.id ?? ''}/rollback`)
+            .set('Cookie', ada)
+            .expect(409);
+          expect(res.body.code).toBe('ROLLBACK_UNAVAILABLE');
+        }
+      });
+    });
+
+    describe('auto-deploy on push', () => {
+      /** Sends a signed push webhook. */
+      const push = (payload: object): request.Test => {
+        const body = JSON.stringify(payload);
+        const signature = `sha256=${createHmac('sha256', 'test-webhook-secret').update(body).digest('hex')}`;
+        return http()
+          .post('/webhooks/github')
+          .set('Content-Type', 'application/json')
+          .set('X-GitHub-Event', 'push')
+          .set('X-Hub-Signature-256', signature)
+          .send(body);
+      };
+      const event = (sha: string, overrides: Record<string, unknown> = {}): object => ({
+        ref: 'refs/heads/main',
+        after: sha,
+        repository: { id: REPO_ID, full_name: 'acme/web' },
+        installation: { id: INSTALL },
+        head_commit: { id: sha, message: 'Fix header\n\nDetails', author: { username: 'ada' } },
+        ...overrides,
+      });
+      const pushDeployments = (): Promise<Deployment[]> =>
+        prisma.deployment.findMany({
+          where: { projectId, trigger: 'push' },
+          orderBy: { createdAt: 'asc' },
+        });
+
+      it('deploys the pushed commit', async () => {
+        const res = await push(event('1'.repeat(40))).expect(202);
+        expect(res.body).toEqual({ received: true, handled: 'push', deployments: 1 });
+        const [deployment] = await pushDeployments();
+        expect(deployment).toMatchObject({
+          status: 'queued',
+          commitSha: '1'.repeat(40),
+          commitMessage: 'Fix header',
+          commitAuthor: 'ada',
+          triggeredById: null,
+        });
+        expect(await queue.getJob(deployment?.id ?? '')).toBeDefined();
+      });
+
+      it('ignores a redelivery of the same push', async () => {
+        const res = await push(event('1'.repeat(40))).expect(202);
+        expect(res.body.deployments).toBe(0);
+        expect(await pushDeployments()).toHaveLength(1);
+      });
+
+      it('lets the newest push replace one that is still waiting', async () => {
+        await push(event('2'.repeat(40))).expect(202);
+        const [first, second] = await pushDeployments();
+        expect(first?.status).toBe('cancelled');
+        expect(second).toMatchObject({ status: 'queued', commitSha: '2'.repeat(40) });
+        expect(await queue.getJob(first?.id ?? '')).toBeUndefined();
+      });
+
+      it('ignores other branches, deleted branches, tags, skip markers and other installations', async () => {
+        const cases = [
+          event('3'.repeat(40), { ref: 'refs/heads/develop' }),
+          event('0'.repeat(40), { deleted: true, head_commit: null }),
+          event('4'.repeat(40), { ref: 'refs/tags/v1.0.0' }),
+          event('5'.repeat(40), {
+            head_commit: { id: '5'.repeat(40), message: 'Docs only [skip deploy]' },
+          }),
+          event('6'.repeat(40), { installation: { id: INSTALL + 1 } }),
+        ];
+        for (const payload of cases) {
+          const res = await push(payload).expect(202);
+          expect(res.body.deployments).toBe(0);
+        }
+        expect(await pushDeployments()).toHaveLength(2);
+      });
+
+      it('respects the per-project toggle', async () => {
+        const res = await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ autoDeploy: false })
+          .expect(200);
+        expect(res.body.autoDeploy).toBe(false);
+        expect((await push(event('7'.repeat(40))).expect(202)).body.deployments).toBe(0);
+        await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ autoDeploy: true })
+          .expect(200);
+        await prisma.deployment.updateMany({
+          where: { projectId, status: 'queued' },
+          data: { status: 'cancelled' },
+        });
+      });
     });
 
     it('removes the app from its servers when the project is deleted', async () => {

@@ -79,3 +79,8 @@ export type Deployment = Prisma.DeploymentModel
  * The saved log of a deployment, written in chunks while it runs (secrets already masked).
  */
 export type DeploymentLogChunk = Prisma.DeploymentLogChunkModel
+/**
+ * Model Domain
+ * A hostname routed to a project's app.
+ */
+export type Domain = Prisma.DomainModel

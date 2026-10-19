@@ -251,7 +251,7 @@ export function ProjectDetail(): React.ReactNode {
           <CardTitle>Deployments</CardTitle>
         </CardHeader>
         <CardContent>
-          <DeploymentsList projectId={project.id} deployments={deployments} />
+          <DeploymentsList projectId={project.id} deployments={deployments} canDeploy={!active} />
         </CardContent>
       </Card>
 

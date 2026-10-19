@@ -1,4 +1,4 @@
-import { Check, Circle, Loader2, X } from 'lucide-react';
+import { Check, Circle, Loader2, Minus, X } from 'lucide-react';
 import {
   DEPLOYMENT_STAGE_LABELS,
   DEPLOYMENT_STAGES,
@@ -15,11 +15,18 @@ export function duration(from: string, to: string | null, now = Date.now()): str
   return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, '0')}s`;
 }
 
-type StageState = 'done' | 'running' | 'failed' | 'pending';
+type StageState = 'done' | 'running' | 'failed' | 'pending' | 'skipped';
 
 /** Where each stage stands, from the deployment's status and timings. */
 function stageState(deployment: DeploymentDto, stage: DeploymentStage): StageState {
   const timing = deployment.stages[stage];
+  // Rollbacks and config redeploys reuse an image: nothing to clone or build.
+  if (
+    (deployment.trigger === 'rollback' || deployment.trigger === 'config') &&
+    (stage === 'cloning' || stage === 'building')
+  ) {
+    return 'skipped';
+  }
   if (deployment.failedStage === stage) return 'failed';
   if (!timing) return 'pending';
   if (timing.finishedAt) return 'done';
@@ -31,6 +38,7 @@ const ICONS: Record<StageState, React.ReactNode> = {
   running: <Loader2 className="size-3.5 animate-spin text-sky-600 dark:text-sky-400" />,
   failed: <X className="size-3.5 text-red-600 dark:text-red-400" />,
   pending: <Circle className="text-muted-foreground size-3" />,
+  skipped: <Minus className="text-muted-foreground size-3.5" />,
 };
 
 /**
@@ -52,7 +60,7 @@ export function StageTimeline({ deployment }: { deployment: DeploymentDto }): Re
               'flex flex-col gap-0.5 rounded-lg border px-3 py-2 text-sm',
               state === 'running' && 'border-sky-500/60',
               state === 'failed' && 'border-red-500/60',
-              state === 'pending' && 'opacity-60',
+              (state === 'pending' || state === 'skipped') && 'opacity-60',
             )}
           >
             <span className="flex items-center gap-1.5 font-medium">
@@ -60,7 +68,11 @@ export function StageTimeline({ deployment }: { deployment: DeploymentDto }): Re
               {DEPLOYMENT_STAGE_LABELS[stage]}
             </span>
             <span className="text-muted-foreground text-xs tabular-nums">
-              {timing ? duration(timing.startedAt, timing.finishedAt) : '—'}
+              {state === 'skipped'
+                ? 'Skipped'
+                : timing
+                  ? duration(timing.startedAt, timing.finishedAt)
+                  : '—'}
             </span>
           </li>
         );

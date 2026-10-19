@@ -408,7 +408,8 @@ export const ModelName = {
   ServerJob: 'ServerJob',
   EnvVar: 'EnvVar',
   Deployment: 'Deployment',
-  DeploymentLogChunk: 'DeploymentLogChunk'
+  DeploymentLogChunk: 'DeploymentLogChunk',
+  Domain: 'Domain'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob" | "envVar" | "deployment" | "deploymentLogChunk"
+    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob" | "envVar" | "deployment" | "deploymentLogChunk" | "domain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1316,6 +1317,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Domain: {
+      payload: Prisma.$DomainPayload<ExtArgs>
+      fields: Prisma.DomainFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DomainFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DomainFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>
+        }
+        findFirst: {
+          args: Prisma.DomainFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DomainFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>
+        }
+        findMany: {
+          args: Prisma.DomainFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>[]
+        }
+        create: {
+          args: Prisma.DomainCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>
+        }
+        createMany: {
+          args: Prisma.DomainCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DomainCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>[]
+        }
+        delete: {
+          args: Prisma.DomainDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>
+        }
+        update: {
+          args: Prisma.DomainUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>
+        }
+        deleteMany: {
+          args: Prisma.DomainDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DomainUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DomainUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>[]
+        }
+        upsert: {
+          args: Prisma.DomainUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DomainPayload>
+        }
+        aggregate: {
+          args: Prisma.DomainAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDomain>
+        }
+        groupBy: {
+          args: Prisma.DomainGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DomainGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DomainCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DomainCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1453,7 +1528,8 @@ export const ProjectScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   serverId: 'serverId',
-  healthCheckPath: 'healthCheckPath'
+  healthCheckPath: 'healthCheckPath',
+  autoDeploy: 'autoDeploy'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -1539,6 +1615,9 @@ export const DeploymentScalarFieldEnum = {
   containerName: 'containerName',
   url: 'url',
   cancelRequestedAt: 'cancelRequestedAt',
+  sourceDeploymentId: 'sourceDeploymentId',
+  hintTitle: 'hintTitle',
+  hintAdvice: 'hintAdvice',
   createdAt: 'createdAt',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt'
@@ -1556,6 +1635,25 @@ export const DeploymentLogChunkScalarFieldEnum = {
 } as const
 
 export type DeploymentLogChunkScalarFieldEnum = (typeof DeploymentLogChunkScalarFieldEnum)[keyof typeof DeploymentLogChunkScalarFieldEnum]
+
+
+export const DomainScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  hostname: 'hostname',
+  kind: 'kind',
+  status: 'status',
+  statusMessage: 'statusMessage',
+  redirectToId: 'redirectToId',
+  dnsRecordId: 'dnsRecordId',
+  dnsTarget: 'dnsTarget',
+  verifiedAt: 'verifiedAt',
+  lastCheckedAt: 'lastCheckedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DomainScalarFieldEnum = (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1703,6 +1801,13 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'ServerKeySource'
  */
 export type EnumServerKeySourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServerKeySource'>
@@ -1825,6 +1930,34 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'DomainKind'
+ */
+export type EnumDomainKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainKind'>
+    
+
+
+/**
+ * Reference to a field of type 'DomainKind[]'
+ */
+export type ListEnumDomainKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DomainStatus'
+ */
+export type EnumDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DomainStatus[]'
+ */
+export type ListEnumDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainStatus[]'>
     
 
 
@@ -2004,6 +2137,7 @@ export type GlobalOmitConfig = {
   envVar?: Prisma.EnvVarOmit
   deployment?: Prisma.DeploymentOmit
   deploymentLogChunk?: Prisma.DeploymentLogChunkOmit
+  domain?: Prisma.DomainOmit
 }
 
 /* Types for Logging */

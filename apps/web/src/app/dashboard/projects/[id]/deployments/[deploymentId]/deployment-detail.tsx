@@ -1,13 +1,25 @@
 'use client';
 
-import { AlertTriangle, ArrowLeft, ExternalLink, GitCommit, Server, Square } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ExternalLink,
+  GitCommit,
+  Lightbulb,
+  Loader2,
+  RotateCw,
+  Server,
+  Square,
+  Undo2,
+} from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   ACTIVE_DEPLOYMENT_STATUSES,
   DEPLOYMENT_STAGE_LABELS,
+  DEPLOYMENT_TRIGGER_LABELS,
   type DeploymentDto,
 } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
@@ -28,6 +40,8 @@ export function DeploymentDetail(): React.ReactNode {
   const [deployment, setDeployment] = useState<DeploymentDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [starting, setStarting] = useState<'redeploy' | 'rollback' | null>(null);
+  const router = useRouter();
   const [, setTick] = useState(0);
 
   const refresh = useCallback(
@@ -70,6 +84,22 @@ export function DeploymentDetail(): React.ReactNode {
     }
   };
 
+  /** Redeploys this commit (rebuild) or rolls back to this image. */
+  const again = async (kind: 'redeploy' | 'rollback'): Promise<void> => {
+    if (!deployment) return;
+    setStarting(kind);
+    try {
+      const started =
+        kind === 'rollback'
+          ? await deploymentsApi.rollback(projectId, deployment.id)
+          : await deploymentsApi.create(projectId, { commitSha: deployment.commit.sha });
+      router.push(`/dashboard/projects/${projectId}/deployments/${started.id}`);
+    } catch (caught) {
+      toast.error(caught instanceof ApiRequestError ? caught.message : 'Could not start it.');
+      setStarting(null);
+    }
+  };
+
   if (error) {
     return (
       <div className="mx-auto flex max-w-5xl flex-col gap-4">
@@ -107,6 +137,9 @@ export function DeploymentDetail(): React.ReactNode {
                 <span className="font-mono">{deployment.commit.sha.slice(0, 7)}</span> on{' '}
                 {deployment.branch}
                 {deployment.commit.author ? ` by ${deployment.commit.author}` : ''}
+                {deployment.trigger !== 'manual'
+                  ? ` · ${DEPLOYMENT_TRIGGER_LABELS[deployment.trigger]}`
+                  : ''}
               </span>
               <span className="inline-flex items-center gap-1">
                 <Server className="size-3.5" />
@@ -132,6 +165,28 @@ export function DeploymentDetail(): React.ReactNode {
                 <ExternalLink className="size-3.5" />
               </a>
             ) : null}
+            {deployment.rollbackAvailable ? (
+              <Button
+                variant="outline"
+                disabled={starting !== null}
+                title="Put this version live again, without rebuilding"
+                onClick={() => void again('rollback')}
+              >
+                {starting === 'rollback' ? <Loader2 className="animate-spin" /> : <Undo2 />}
+                Roll back to this
+              </Button>
+            ) : null}
+            {!active && deployment.status !== 'live' ? (
+              <Button
+                variant="outline"
+                disabled={starting !== null}
+                title="Build and deploy this commit again"
+                onClick={() => void again('redeploy')}
+              >
+                {starting === 'redeploy' ? <Loader2 className="animate-spin" /> : <RotateCw />}
+                Redeploy this commit
+              </Button>
+            ) : null}
             {active ? (
               <Button
                 variant="outline"
@@ -147,6 +202,14 @@ export function DeploymentDetail(): React.ReactNode {
           </div>
         </div>
       </div>
+
+      {deployment.hint ? (
+        <Alert>
+          <Lightbulb />
+          <AlertTitle>{deployment.hint.title}</AlertTitle>
+          <AlertDescription>{deployment.hint.advice}</AlertDescription>
+        </Alert>
+      ) : null}
 
       {deployment.status === 'failed' && deployment.errorSummary ? (
         <Alert variant="destructive">

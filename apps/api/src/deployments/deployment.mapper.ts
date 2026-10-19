@@ -27,9 +27,13 @@ function asStage(value: string | null): DeploymentStage | null {
  * Converts a deployment record to the public DTO.
  *
  * @param deployment - Deployment with its server
+ * @param options - Facts that need other queries (default: no rollback)
  * @returns DTO for the API
  */
-export function toDeploymentDto(deployment: DeploymentWithServer): DeploymentDto {
+export function toDeploymentDto(
+  deployment: DeploymentWithServer,
+  options: { rollbackAvailable?: boolean } = {},
+): DeploymentDto {
   return {
     id: deployment.id,
     projectId: deployment.projectId,
@@ -46,7 +50,13 @@ export function toDeploymentDto(deployment: DeploymentWithServer): DeploymentDto
     stages: StagesSchema.parse(deployment.stages),
     failedStage: asStage(deployment.failedStage),
     errorSummary: deployment.errorSummary,
+    hint:
+      deployment.hintTitle && deployment.hintAdvice
+        ? { title: deployment.hintTitle, advice: deployment.hintAdvice }
+        : null,
     cancelRequested: deployment.cancelRequestedAt !== null,
+    sourceDeploymentId: deployment.sourceDeploymentId,
+    rollbackAvailable: options.rollbackAvailable ?? false,
     createdAt: deployment.createdAt.toISOString(),
     startedAt: deployment.startedAt?.toISOString() ?? null,
     finishedAt: deployment.finishedAt?.toISOString() ?? null,

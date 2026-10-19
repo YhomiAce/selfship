@@ -3,22 +3,34 @@ import type { DeploymentStage, ProjectSettings } from '@selfship/shared';
 import { remoteSnapshot } from './remote-snapshot';
 import { type CommandRunner, RemoteCommandError, sh } from './ssh';
 
+/** Build a commit from GitHub. */
+export interface GitSource {
+  kind: 'git';
+  /** HTTPS clone URL without credentials. */
+  cloneUrl: string;
+  /** Full commit SHA to deploy. */
+  sha: string;
+  /** Project folder inside the repository ('' = root). */
+  rootDirectory: string;
+  /** Short-lived GitHub installation token, sent over stdin only. */
+  token: string;
+}
+
+/** Run an image an earlier deployment built (rollback): no clone, no build. */
+export interface ImageSource {
+  kind: 'image';
+  /** Image tag of the earlier deployment, e.g. `selfship/p-…:abc1234-123456`. */
+  imageTag: string;
+}
+
 /** Everything needed to deploy one commit. Built by the worker from the database. */
 export interface DeployPlan {
   /** DNS-safe app ID, stable per project (container/Traefik names, server folder). */
   app: string;
   /** Deployment ID (labels, build folder). */
   deploymentId: string;
-  repo: {
-    /** HTTPS clone URL without credentials. */
-    cloneUrl: string;
-    /** Full commit SHA to deploy. */
-    sha: string;
-    /** Project folder inside the repository ('' = root). */
-    rootDirectory: string;
-    /** Short-lived GitHub installation token, sent over stdin only. */
-    token: string;
-  };
+  /** What to deploy. */
+  source: GitSource | ImageSource;
   settings: ProjectSettings;
   /** Hostname Traefik routes to the app. */
   host: string;
@@ -136,7 +148,12 @@ export class AppDeployer {
   ) {
     if (!APP_ID.test(plan.app)) throw new Error(`Invalid app ID: ${plan.app}`);
     if (!HOST.test(plan.host)) throw new Error(`Invalid host: ${plan.host}`);
-    if (!/^[0-9a-f]{40}$/.test(plan.repo.sha)) throw new Error('Invalid commit SHA');
+    if (plan.source.kind === 'git' && !/^[0-9a-f]{40}$/.test(plan.source.sha)) {
+      throw new Error('Invalid commit SHA');
+    }
+    if (plan.source.kind === 'image' && !plan.source.imageTag.startsWith(`selfship/${plan.app}:`)) {
+      throw new Error("Can only roll back to this app's own images");
+    }
     for (const key of [...Object.keys(plan.env.build), ...Object.keys(plan.env.runtime)]) {
       if (!ENV_KEY.test(key)) throw new Error(`Invalid variable name: ${key}`);
     }
@@ -144,9 +161,8 @@ export class AppDeployer {
     this.buildId = `${stamp}-${plan.deploymentId.replace(/-/g, '').slice(0, 6)}`;
     this.buildDir = `${APPS_DIR}/${plan.app}/builds/${this.buildId}`;
     this.srcDir = `${this.buildDir}/src`;
-    this.contextDir = plan.repo.rootDirectory
-      ? `${this.srcDir}/${plan.repo.rootDirectory}`
-      : this.srcDir;
+    const rootDirectory = plan.source.kind === 'git' ? plan.source.rootDirectory : '';
+    this.contextDir = rootDirectory ? `${this.srcDir}/${rootDirectory}` : this.srcDir;
     this.pidFile = `${this.buildDir}/pid`;
   }
 
@@ -165,14 +181,21 @@ export class AppDeployer {
   async run(): Promise<DeployOutcome> {
     let containerStarted = false;
     let stage: DeploymentStage = 'cloning';
+    const { source } = this.plan;
     try {
-      await this.enter((stage = 'cloning'));
-      await this.clone();
+      let imageTag: string;
+      if (source.kind === 'git') {
+        await this.enter((stage = 'cloning'));
+        await this.clone(source);
 
-      await this.enter((stage = 'building'));
-      const imageTag = await this.build();
+        await this.enter((stage = 'building'));
+        imageTag = await this.build(source);
+      } else {
+        imageTag = source.imageTag;
+      }
 
       await this.enter((stage = 'starting'));
+      if (source.kind === 'image') await this.assertImageExists(imageTag);
       await this.start(imageTag);
       containerStarted = true;
 
@@ -220,8 +243,8 @@ export class AppDeployer {
    * git's environment (readable by root only): it's never in a command line
    * (`ps`), a file, or `.git/config`.
    */
-  private async clone(): Promise<void> {
-    const { cloneUrl, sha, rootDirectory } = this.plan.repo;
+  private async clone(source: GitSource): Promise<void> {
+    const { cloneUrl, sha, rootDirectory } = source;
     this.hooks.log(`→ Fetching ${sha.slice(0, 7)}${rootDirectory ? ` (${rootDirectory}/)` : ''}`);
     const sparse = rootDirectory
       ? `git sparse-checkout init --cone && git sparse-checkout set ${sh(rootDirectory)}`
@@ -242,7 +265,7 @@ export class AppDeployer {
           ? `[ -d ${sh(this.contextDir)} ] || { echo "Folder ${rootDirectory} not found in this commit" >&2; exit 3; }`
           : 'true',
       ].join('\n'),
-      { stdin: `${this.plan.repo.token}\n`, timeoutMs: CLONE_TIMEOUT_MS },
+      { stdin: `${source.token}\n`, timeoutMs: CLONE_TIMEOUT_MS },
     );
     this.hooks.log('✓ Source fetched');
   }
@@ -251,9 +274,10 @@ export class AppDeployer {
    * Builds the image. Build-time variables are exported from a root-only
    * file and passed with `--build-arg NAME` (no value on the command line).
    *
+   * @param source - The commit being built
    * @returns Image tag
    */
-  private async build(): Promise<string> {
+  private async build(source: GitSource): Promise<string> {
     const { settings } = this.plan;
     const buildArgNames = Object.keys(this.plan.env.build);
     const files = getAdapter(settings.adapter).buildFiles({
@@ -272,7 +296,7 @@ export class AppDeployer {
       this.hooks.log("→ Using the repository's Dockerfile");
     }
 
-    const imageTag = `selfship/${this.plan.app}:${this.plan.repo.sha.slice(0, 7)}-${this.buildId.slice(-6)}`;
+    const imageTag = `selfship/${this.plan.app}:${source.sha.slice(0, 7)}-${this.buildId.slice(-6)}`;
     const envFile = `${this.buildDir}/build-env.sh`;
     await this.writeFile(envFile, exportLines(this.plan.env.build), '600');
     if (buildArgNames.length > 0) {
@@ -296,6 +320,28 @@ export class AppDeployer {
     await this.removeSources();
     this.hooks.log('✓ Image built');
     return imageTag;
+  }
+
+  /**
+   * Checks a rollback's image is still on the server (only the newest few are kept).
+   *
+   * @throws {DeployError} If it was cleaned up
+   */
+  private async assertImageExists(imageTag: string): Promise<void> {
+    this.hooks.log(`→ Using the existing image ${imageTag} (no rebuild)`);
+    const { code } = await this.runner.exec(
+      `docker image inspect ${sh(imageTag)} >/dev/null 2>&1`,
+      {
+        sudo: true,
+        check: false,
+      },
+    );
+    if (code !== 0) {
+      throw new DeployError(
+        'starting',
+        `The image of that deployment is no longer on the server (only the last ${KEEP_IMAGES} are kept). Redeploy its commit instead.`,
+      );
+    }
   }
 
   /**

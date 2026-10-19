@@ -6,7 +6,6 @@ import { GITHUB_CLIENT } from './github.constants';
 import { GithubController } from './github.controller';
 import { GithubInstallationsService } from './github-installations.service';
 import { GithubRepositoriesService } from './github-repositories.service';
-import { GithubWebhooksController } from './github-webhooks.controller';
 
 /**
  * Builds the GitHub App client from config, or null when the app isn't
@@ -45,9 +44,9 @@ export function createGithubClient(config: AppConfigService): GithubAppClient | 
   }
 }
 
-/** GitHub App integration: connecting accounts, listing repositories, webhooks. */
+/** GitHub App integration: connecting accounts, listing repositories. */
 @Module({
-  controllers: [GithubController, GithubWebhooksController],
+  controllers: [GithubController],
   providers: [
     { provide: GITHUB_CLIENT, inject: [AppConfigService], useFactory: createGithubClient },
     GithubAppService,

@@ -8,9 +8,10 @@ import {
 } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import type { Redis } from 'ioredis';
-import type { DeploymentStatus } from '@selfship/db';
+import type { DeploymentStatus, GithubInstallation, Prisma, Project, Server } from '@selfship/db';
 import {
   ACTIVE_DEPLOYMENT_STATUSES,
+  type CreateDeploymentInput,
   type DeploymentDto,
   DeploymentErrorCode,
   type DeploymentEvent,
@@ -30,6 +31,9 @@ import {
   toDeploymentDto,
 } from './deployment.mapper';
 
+/** A project whose server is set and ready. */
+type ReadyProject = Project & { githubInstallation: GithubInstallation; server: Server };
+
 const PROJECT_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Project not found.' };
 const DEPLOYMENT_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Deployment not found.' };
 const ACTIVE = [...ACTIVE_DEPLOYMENT_STATUSES] as DeploymentStatus[];
@@ -48,34 +52,24 @@ export class DeploymentsService {
   ) {}
 
   /**
-   * Deploys the head of the project's branch to its server.
+   * Deploys the head of the project's branch, or a given commit of it, to
+   * the project's server.
    *
    * @param userId - Signed-in user
    * @param projectId - Project ID
+   * @param input - Optional commit SHA (redeploy an older commit)
    * @returns The queued deployment
    * @throws {NotFoundException} If the project isn't the user's
    * @throws {BadRequestException} `NO_SERVER` / `SERVER_NOT_READY`
    * @throws {ConflictException} `DEPLOYMENT_IN_PROGRESS`, or GitHub access removed
    */
-  async create(userId: string, projectId: string): Promise<DeploymentDto> {
-    const project = await this.prisma.project.findFirst({
-      where: { id: projectId, userId },
-      include: { githubInstallation: true, server: true },
-    });
-    if (!project) throw new NotFoundException(PROJECT_NOT_FOUND);
-    const { server, githubInstallation: installation } = project;
-    if (!server) {
-      throw new BadRequestException({
-        code: DeploymentErrorCode.NO_SERVER,
-        message: 'Choose a server for this project first.',
-      });
-    }
-    if (server.status !== 'ready') {
-      throw new BadRequestException({
-        code: DeploymentErrorCode.SERVER_NOT_READY,
-        message: `${server.name} isn't ready yet. Open the server and finish its setup.`,
-      });
-    }
+  async create(
+    userId: string,
+    projectId: string,
+    input: CreateDeploymentInput = {},
+  ): Promise<DeploymentDto> {
+    const project = await this.readyProject(userId, projectId);
+    const installation = project.githubInstallation;
     if (installation.deletedAt || installation.suspendedAt) {
       throw new ConflictException({
         code: GithubErrorCode.INSTALLATION_SUSPENDED,
@@ -84,45 +78,70 @@ export class DeploymentsService {
     }
     await this.assertNoneActive(this.prisma, projectId);
 
+    const ref = input.commitSha ?? project.branch;
     let commit;
     try {
       commit = await this.github.client.getCommit(
         toGithubId(installation.githubInstallationId),
         project.repoFullName,
-        project.branch,
+        ref,
       );
     } catch (error) {
-      throw this.github.toHttpError(error, {
-        code: 'BRANCH_NOT_FOUND',
-        message: `Branch "${project.branch}" wasn't found in ${project.repoFullName}.`,
-      });
+      throw this.github.toHttpError(
+        error,
+        input.commitSha
+          ? { code: ErrorCode.NOT_FOUND, message: `Commit ${ref.slice(0, 7)} wasn't found.` }
+          : {
+              code: 'BRANCH_NOT_FOUND',
+              message: `Branch "${project.branch}" wasn't found in ${project.repoFullName}.`,
+            },
+      );
     }
 
-    const deployment = await this.prisma.$transaction(async (tx) => {
-      // Lock the project row so two clicks can't both start a deployment.
-      await tx.$executeRaw`SELECT 1 FROM projects WHERE id = ${projectId}::uuid FOR UPDATE`;
-      await this.assertNoneActive(tx, projectId);
-      return tx.deployment.create({
-        data: {
-          projectId,
-          serverId: server.id,
-          triggeredById: userId,
-          trigger: 'manual',
-          branch: project.branch,
-          commitSha: commit.sha,
-          commitMessage: commit.message,
-          commitAuthor: commit.author,
-        },
-        include: DEPLOYMENT_INCLUDE,
-      });
+    return this.launch(projectId, {
+      serverId: project.server.id,
+      triggeredById: userId,
+      trigger: 'manual',
+      branch: project.branch,
+      commitSha: commit.sha,
+      commitMessage: commit.message,
+      commitAuthor: commit.author,
     });
-    // No automatic retries: a failed deployment is shown, and the user redeploys.
-    await this.queue.add(
-      DeploymentQueueJob.RUN,
-      { deploymentId: deployment.id },
-      { jobId: deployment.id, attempts: 1 },
-    );
-    return toDeploymentDto(deployment);
+  }
+
+  /**
+   * Puts an earlier deployment's image live again, without rebuilding.
+   * Runtime env vars are today's; build-time values are those of that build.
+   *
+   * @param userId - Signed-in user
+   * @param projectId - Project ID
+   * @param deploymentId - Deployment to go back to
+   * @returns The queued rollback
+   * @throws {ConflictException} `ROLLBACK_UNAVAILABLE` / `DEPLOYMENT_IN_PROGRESS`
+   */
+  async rollback(userId: string, projectId: string, deploymentId: string): Promise<DeploymentDto> {
+    const target = await this.findOwned(userId, projectId, deploymentId);
+    const project = await this.readyProject(userId, projectId);
+    const available = await this.rollbackImages(projectId, project.server.id);
+    if (target.status !== 'replaced' || !target.imageTag || !available.has(target.imageTag)) {
+      throw new ConflictException({
+        code: DeploymentErrorCode.ROLLBACK_UNAVAILABLE,
+        message:
+          target.status === 'live'
+            ? 'This deployment is already live.'
+            : "This deployment's image is no longer kept on the server. Redeploy its commit instead.",
+      });
+    }
+    return this.launch(projectId, {
+      serverId: project.server.id,
+      triggeredById: userId,
+      trigger: 'rollback',
+      sourceDeploymentId: target.id,
+      branch: target.branch,
+      commitSha: target.commitSha,
+      commitMessage: target.commitMessage,
+      commitAuthor: target.commitAuthor,
+    });
   }
 
   /**
@@ -133,14 +152,19 @@ export class DeploymentsService {
    * @returns Up to 30, newest first
    */
   async list(userId: string, projectId: string): Promise<DeploymentDto[]> {
-    await this.assertProject(userId, projectId);
-    const deployments = await this.prisma.deployment.findMany({
-      where: { projectId },
-      orderBy: { createdAt: 'desc' },
-      take: 30,
-      include: DEPLOYMENT_INCLUDE,
-    });
-    return deployments.map(toDeploymentDto);
+    const project = await this.assertProject(userId, projectId);
+    const [deployments, images] = await Promise.all([
+      this.prisma.deployment.findMany({
+        where: { projectId },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+        include: DEPLOYMENT_INCLUDE,
+      }),
+      project.serverId ? this.rollbackImages(projectId, project.serverId) : new Set<string>(),
+    ]);
+    return deployments.map((d) =>
+      toDeploymentDto(d, { rollbackAvailable: canRollback(d, images) }),
+    );
   }
 
   /**
@@ -152,7 +176,11 @@ export class DeploymentsService {
    * @returns The deployment
    */
   async get(userId: string, projectId: string, deploymentId: string): Promise<DeploymentDto> {
-    return toDeploymentDto(await this.findOwned(userId, projectId, deploymentId));
+    const deployment = await this.findOwned(userId, projectId, deploymentId);
+    const images = deployment.serverId
+      ? await this.rollbackImages(projectId, deployment.serverId)
+      : new Set<string>();
+    return toDeploymentDto(deployment, { rollbackAvailable: canRollback(deployment, images) });
   }
 
   /**
@@ -256,8 +284,94 @@ export class DeploymentsService {
     }
   }
 
-  private async assertProject(userId: string, projectId: string): Promise<void> {
-    const count = await this.prisma.project.count({ where: { id: projectId, userId } });
-    if (count === 0) throw new NotFoundException(PROJECT_NOT_FOUND);
+  /** The project (404 unless it's the user's). */
+  private async assertProject(
+    userId: string,
+    projectId: string,
+  ): Promise<{ serverId: string | null }> {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, userId },
+      select: { serverId: true },
+    });
+    if (!project) throw new NotFoundException(PROJECT_NOT_FOUND);
+    return project;
   }
+
+  /**
+   * The project with a server that's ready for deployments.
+   *
+   * @throws {NotFoundException} If the project isn't the user's
+   * @throws {BadRequestException} `NO_SERVER` / `SERVER_NOT_READY`
+   */
+  private async readyProject(userId: string, projectId: string): Promise<ReadyProject> {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, userId },
+      include: { githubInstallation: true, server: true },
+    });
+    if (!project) throw new NotFoundException(PROJECT_NOT_FOUND);
+    const { server } = project;
+    if (!server) {
+      throw new BadRequestException({
+        code: DeploymentErrorCode.NO_SERVER,
+        message: 'Choose a server for this project first.',
+      });
+    }
+    if (server.status !== 'ready') {
+      throw new BadRequestException({
+        code: DeploymentErrorCode.SERVER_NOT_READY,
+        message: `${server.name} isn't ready yet. Open the server and finish its setup.`,
+      });
+    }
+    return { ...project, server };
+  }
+
+  /**
+   * Creates and queues a deployment, one at a time per project (the project
+   * row is locked so two clicks can't both start one).
+   */
+  private async launch(
+    projectId: string,
+    data: Omit<Prisma.DeploymentUncheckedCreateInput, 'projectId'>,
+  ): Promise<DeploymentDto> {
+    const deployment = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM projects WHERE id = ${projectId}::uuid FOR UPDATE`;
+      await this.assertNoneActive(tx, projectId);
+      return tx.deployment.create({ data: { ...data, projectId }, include: DEPLOYMENT_INCLUDE });
+    });
+    // No automatic retries: a failed deployment is shown, and the user redeploys.
+    await this.queue.add(
+      DeploymentQueueJob.RUN,
+      { deploymentId: deployment.id },
+      { jobId: deployment.id, attempts: 1 },
+    );
+    return toDeploymentDto(deployment);
+  }
+
+  /**
+   * Images still on the server (the worker keeps the newest {@link KEPT_IMAGES}
+   * per app), so deployments that used them can be rolled back to.
+   */
+  private async rollbackImages(projectId: string, serverId: string): Promise<Set<string>> {
+    const recent = await this.prisma.deployment.findMany({
+      where: { projectId, serverId, imageTag: { not: null }, status: { in: ['live', 'replaced'] } },
+      orderBy: { finishedAt: 'desc' },
+      take: 30,
+      select: { imageTag: true },
+    });
+    const images = new Set<string>();
+    for (const { imageTag } of recent) {
+      if (imageTag && images.size < KEPT_IMAGES) images.add(imageTag);
+    }
+    return images;
+  }
+}
+
+/** Images the worker keeps per app (see `KEEP_IMAGES` in packages/remote/src/deploy.ts). */
+const KEPT_IMAGES = 3;
+
+/** A replaced deployment whose image is still on the server. */
+function canRollback(deployment: DeploymentWithServer, images: Set<string>): boolean {
+  return (
+    deployment.status === 'replaced' && !!deployment.imageTag && images.has(deployment.imageTag)
+  );
 }

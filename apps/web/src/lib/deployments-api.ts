@@ -1,4 +1,8 @@
-import type { DeploymentDto, DeploymentListResponse } from '@selfship/shared';
+import type {
+  CreateDeploymentInput,
+  DeploymentDto,
+  DeploymentListResponse,
+} from '@selfship/shared';
 import { apiFetch } from '@/lib/api-client';
 
 /** Base path of a project's deployments. */
@@ -7,9 +11,13 @@ const base = (projectId: string): string =>
 
 /** Typed wrappers around the API's deployment endpoints. */
 export const deploymentsApi = {
-  /** Deploys the latest commit of the project's branch. */
-  create: (projectId: string): Promise<DeploymentDto> =>
-    apiFetch(base(projectId), { method: 'POST' }),
+  /** Deploys the latest commit of the project's branch, or the given commit. */
+  create: (projectId: string, input: CreateDeploymentInput = {}): Promise<DeploymentDto> =>
+    apiFetch(base(projectId), { method: 'POST', json: input }),
+
+  /** Puts an earlier deployment's image live again (no rebuild). */
+  rollback: (projectId: string, id: string): Promise<DeploymentDto> =>
+    apiFetch(`${base(projectId)}/${encodeURIComponent(id)}/rollback`, { method: 'POST' }),
 
   /** Recent deployments, newest first. */
   list: async (projectId: string): Promise<DeploymentDto[]> =>

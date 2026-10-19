@@ -2,20 +2,23 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import type { Redis } from 'ioredis';
-import type { Deployment, DeploymentStatus } from '@selfship/db';
+import type { Deployment, DeploymentStatus, GithubInstallation } from '@selfship/db';
 import { EnvelopeCipher } from '@selfship/crypto';
 import type { GithubAppClient } from '@selfship/github';
 import {
   AppDeployer,
   DeployCancelledError,
   DeployError,
+  type GitSource,
   HostKeyMismatchError,
+  type ImageSource,
   type SshConnection,
 } from '@selfship/remote';
 import {
   type DeploymentEvent,
   DeploymentQueueJob,
   deploymentStreamKey,
+  explainFailure,
   QueueName,
   type TeardownJobData,
 } from '@selfship/shared';
@@ -198,27 +201,17 @@ export class DeploymentRunner implements OnModuleInit {
           `${server.name} isn't ready (status: ${server.status}). Open the server and run setup.`,
         );
       }
-      if (!this.github) throw new PrecheckError('GitHub isn’t configured on this Selfship worker.');
-      const installation = project.githubInstallation;
-      if (installation.deletedAt || installation.suspendedAt) {
-        throw new PrecheckError(
-          `The Selfship GitHub app no longer has access to ${installation.accountLogin}. Reconnect GitHub.`,
-        );
-      }
-
       const vars = project.envVars.map((v) => ({
         key: v.key,
         scope: v.scope,
         value: this.cipher.decrypt(v.encryptedValue, envVarContext(project.id, v.key)),
       }));
-      const token = await this.github.getInstallationToken(
-        Number(installation.githubInstallationId),
-      );
+      const source = await this.resolveSource(deployment, project);
       // From here on every secret is masked in the log and in error messages.
       log = new LiveLog(this.redis, deploymentStreamKey(deployment.id), {
         maxEntries: 20_000,
         maxSavedChars: MAX_SAVED_LOG_CHARS,
-        secrets: [token, ...vars.map((v) => v.value)],
+        secrets: [...(source.kind === 'git' ? [source.token] : []), ...vars.map((v) => v.value)],
       });
 
       const host = previewHost(
@@ -231,7 +224,7 @@ export class DeploymentRunner implements OnModuleInit {
       await this.prisma.deployment.update({ where: { id: deployment.id }, data: { url } });
 
       log.line(
-        `→ Deploying ${project.repoFullName}@${deployment.branch} (${deployment.commitSha.slice(0, 7)}: ${deployment.commitMessage}) to ${server.name}`,
+        `→ ${source.kind === 'image' ? (deployment.trigger === 'rollback' ? 'Rolling back to' : 'Re-running') : 'Deploying'} ${project.repoFullName}@${deployment.branch} (${deployment.commitSha.slice(0, 7)}: ${deployment.commitMessage}) on ${server.name}`,
       );
       log.line(`→ Connecting to ${server.sshUser}@${server.host}:${server.port}`);
       try {
@@ -251,12 +244,7 @@ export class DeploymentRunner implements OnModuleInit {
         {
           app: appId(project.id),
           deploymentId: deployment.id,
-          repo: {
-            cloneUrl: this.github.cloneUrl(project.repoFullName),
-            sha: deployment.commitSha,
-            rootDirectory: project.rootDirectory,
-            token,
-          },
+          source,
           settings: {
             adapter: project.adapter,
             installCommand: project.installCommand,
@@ -325,6 +313,10 @@ export class DeploymentRunner implements OnModuleInit {
       clock.stop();
       const cancelled = error instanceof DeployCancelledError;
       const summary = cancelled ? null : log.mask(this.describe(error));
+      const hint = cancelled
+        ? null
+        : explainFailure({ stage: clock.current, log: log.contents, error: summary });
+      if (hint) log.line(`💡 ${hint.title}. ${hint.advice}`);
       if (cancelled) log.line('✗ Cancelled. The previous version is still live.');
       else log.line(`✗ ${summary ?? ''}`);
       if (!cancelled && !(error instanceof DeployError) && !(error instanceof PrecheckError)) {
@@ -336,6 +328,8 @@ export class DeploymentRunner implements OnModuleInit {
           status: cancelled ? 'cancelled' : 'failed',
           failedStage: cancelled ? null : clock.current,
           errorSummary: summary,
+          hintTitle: hint?.title ?? null,
+          hintAdvice: hint?.advice ?? null,
           stages: clock.toJSON(),
           finishedAt: new Date(),
         },
@@ -349,6 +343,49 @@ export class DeploymentRunner implements OnModuleInit {
       clearInterval(ticker);
       ssh?.close();
     }
+  }
+
+  /**
+   * What to deploy: a fresh build of the commit (needs GitHub access), or
+   * for rollbacks and config redeploys the image an earlier deployment built.
+   *
+   * @throws {PrecheckError} If GitHub access or the earlier image is missing
+   */
+  private async resolveSource(
+    deployment: Deployment,
+    project: {
+      id: string;
+      repoFullName: string;
+      rootDirectory: string;
+      githubInstallation: GithubInstallation;
+    },
+  ): Promise<GitSource | ImageSource> {
+    if (deployment.trigger === 'rollback' || deployment.trigger === 'config') {
+      const earlier = deployment.sourceDeploymentId
+        ? await this.prisma.deployment.findFirst({
+            where: { id: deployment.sourceDeploymentId, projectId: project.id },
+          })
+        : null;
+      if (!earlier?.imageTag) {
+        throw new PrecheckError('The deployment to reuse no longer exists. Deploy again instead.');
+      }
+      return { kind: 'image', imageTag: earlier.imageTag };
+    }
+
+    if (!this.github) throw new PrecheckError('GitHub isn’t configured on this Selfship worker.');
+    const installation = project.githubInstallation;
+    if (installation.deletedAt || installation.suspendedAt) {
+      throw new PrecheckError(
+        `The Selfship GitHub app no longer has access to ${installation.accountLogin}. Reconnect GitHub.`,
+      );
+    }
+    return {
+      kind: 'git',
+      cloneUrl: this.github.cloneUrl(project.repoFullName),
+      sha: deployment.commitSha,
+      rootDirectory: project.rootDirectory,
+      token: await this.github.getInstallationToken(Number(installation.githubInstallationId)),
+    };
   }
 
   /** Saves the rest of the log and closes the live stream. */

@@ -181,12 +181,15 @@ model Project {
   serverId        String? @map("server_id") @db.Uuid
   /// Path checked before traffic moves to a new version; any status below 500 passes.
   healthCheckPath String  @default("/") @map("health_check_path")
+  /// Deploy automatically when the branch receives a push.
+  autoDeploy      Boolean @default(true) @map("auto_deploy")
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   githubInstallation GithubInstallation @relation(fields: [githubInstallationId], references: [id], onDelete: Restrict)
   server             Server?            @relation(fields: [serverId], references: [id], onDelete: SetNull)
   envVars            EnvVar[]
   deployments        Deployment[]
+  domains            Domain[]
 
   @@unique([userId, name])
   @@index([serverId])
@@ -373,39 +376,48 @@ enum DeploymentTrigger {
   manual
   push
   rollback
+  /// Re-run of the live image with new settings (e.g. a domain was added).
+  config
 }
 
 /// One attempt to build and run a commit of a project on a server.
 model Deployment {
-  id                String            @id @default(uuid()) @db.Uuid
-  projectId         String            @map("project_id") @db.Uuid
+  id                 String            @id @default(uuid()) @db.Uuid
+  projectId          String            @map("project_id") @db.Uuid
   /// Null if the server was removed later (the history stays).
-  serverId          String?           @map("server_id") @db.Uuid
+  serverId           String?           @map("server_id") @db.Uuid
   /// Who started it (null for automatic deployments, or a deleted user).
-  triggeredById     String?           @map("triggered_by_id") @db.Uuid
-  trigger           DeploymentTrigger @default(manual)
-  status            DeploymentStatus  @default(queued)
-  branch            String
-  commitSha         String            @map("commit_sha")
-  commitMessage     String            @map("commit_message")
-  commitAuthor      String?           @map("commit_author")
+  triggeredById      String?           @map("triggered_by_id") @db.Uuid
+  trigger            DeploymentTrigger @default(manual)
+  status             DeploymentStatus  @default(queued)
+  branch             String
+  commitSha          String            @map("commit_sha")
+  commitMessage      String            @map("commit_message")
+  commitAuthor       String?           @map("commit_author")
   /// Start/end time per stage: { "<stage>": { startedAt, finishedAt } } (ISO strings).
-  stages            Json              @default("{}")
-  failedStage       DeploymentStatus? @map("failed_stage")
-  errorSummary      String?           @map("error_summary")
+  stages             Json              @default("{}")
+  failedStage        DeploymentStatus? @map("failed_stage")
+  errorSummary       String?           @map("error_summary")
   /// Docker image and container on the server (for switching, cleanup and rollback).
-  imageTag          String?           @map("image_tag")
-  containerName     String?           @map("container_name")
-  url               String?
-  cancelRequestedAt DateTime?         @map("cancel_requested_at")
-  createdAt         DateTime          @default(now()) @map("created_at")
-  startedAt         DateTime?         @map("started_at")
-  finishedAt        DateTime?         @map("finished_at")
+  imageTag           String?           @map("image_tag")
+  containerName      String?           @map("container_name")
+  url                String?
+  cancelRequestedAt  DateTime?         @map("cancel_requested_at")
+  /// For rollbacks and config redeploys: the deployment whose image is reused.
+  sourceDeploymentId String?           @map("source_deployment_id") @db.Uuid
+  /// Plain-language explanation of a failure (rule-based), and what to do about it.
+  hintTitle          String?           @map("hint_title")
+  hintAdvice         String?           @map("hint_advice")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  startedAt          DateTime?         @map("started_at")
+  finishedAt         DateTime?         @map("finished_at")
 
   project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
   server      Server?              @relation(fields: [serverId], references: [id], onDelete: SetNull)
   triggeredBy User?                @relation(fields: [triggeredById], references: [id], onDelete: SetNull)
   logChunks   DeploymentLogChunk[]
+  source      Deployment?          @relation("DeploymentSource", fields: [sourceDeploymentId], references: [id], onDelete: SetNull)
+  reusedBy    Deployment[]         @relation("DeploymentSource")
 
   @@index([projectId, createdAt])
   @@index([serverId, status])
@@ -425,4 +437,51 @@ model DeploymentLogChunk {
 
   @@unique([deploymentId, seq])
   @@map("deployment_log_chunks")
+}
+
+// ── Domains (M5) ────────────────────────────────────────────────────────────
+
+/// `platform`: our free subdomain (DNS record managed by us). `custom`: the user's own domain.
+enum DomainKind {
+  platform
+  custom
+}
+
+enum DomainStatus {
+  /// Waiting for the user's DNS record to point at the server.
+  pending_dns
+  /// DNS is right; waiting for the app to be routed and the certificate to be issued.
+  issuing
+  active
+  /// Something needs attention (see statusMessage).
+  error
+}
+
+/// A hostname routed to a project's app.
+model Domain {
+  id            String       @id @default(uuid()) @db.Uuid
+  projectId     String       @map("project_id") @db.Uuid
+  /// Lower-case, unique across Selfship (one hostname serves one app).
+  hostname      String       @unique
+  kind          DomainKind
+  status        DomainStatus @default(pending_dns)
+  statusMessage String?      @map("status_message")
+  /// When set, requests to this hostname redirect to that domain (www ↔ apex).
+  redirectToId  String?      @map("redirect_to_id") @db.Uuid
+  /// Cloudflare DNS record ID (platform domains only).
+  dnsRecordId   String?      @map("dns_record_id")
+  /// IP the platform record points to (to update it when the project moves).
+  dnsTarget     String?      @map("dns_target")
+  verifiedAt    DateTime?    @map("verified_at")
+  lastCheckedAt DateTime?    @map("last_checked_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  redirectTo   Domain?  @relation("DomainRedirect", fields: [redirectToId], references: [id], onDelete: SetNull)
+  redirectedBy Domain[] @relation("DomainRedirect")
+
+  @@index([projectId])
+  @@index([status])
+  @@map("domains")
 }

@@ -58,6 +58,7 @@ export type ProjectMinAggregateOutputType = {
   updatedAt: Date | null
   serverId: string | null
   healthCheckPath: string | null
+  autoDeploy: boolean | null
 }
 
 export type ProjectMaxAggregateOutputType = {
@@ -80,6 +81,7 @@ export type ProjectMaxAggregateOutputType = {
   updatedAt: Date | null
   serverId: string | null
   healthCheckPath: string | null
+  autoDeploy: boolean | null
 }
 
 export type ProjectCountAggregateOutputType = {
@@ -102,6 +104,7 @@ export type ProjectCountAggregateOutputType = {
   updatedAt: number
   serverId: number
   healthCheckPath: number
+  autoDeploy: number
   _all: number
 }
 
@@ -138,6 +141,7 @@ export type ProjectMinAggregateInputType = {
   updatedAt?: true
   serverId?: true
   healthCheckPath?: true
+  autoDeploy?: true
 }
 
 export type ProjectMaxAggregateInputType = {
@@ -160,6 +164,7 @@ export type ProjectMaxAggregateInputType = {
   updatedAt?: true
   serverId?: true
   healthCheckPath?: true
+  autoDeploy?: true
 }
 
 export type ProjectCountAggregateInputType = {
@@ -182,6 +187,7 @@ export type ProjectCountAggregateInputType = {
   updatedAt?: true
   serverId?: true
   healthCheckPath?: true
+  autoDeploy?: true
   _all?: true
 }
 
@@ -291,6 +297,7 @@ export type ProjectGroupByOutputType = {
   updatedAt: Date
   serverId: string | null
   healthCheckPath: string
+  autoDeploy: boolean
   _count: ProjectCountAggregateOutputType | null
   _avg: ProjectAvgAggregateOutputType | null
   _sum: ProjectSumAggregateOutputType | null
@@ -336,11 +343,13 @@ export type ProjectWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   serverId?: Prisma.UuidNullableFilter<"Project"> | string | null
   healthCheckPath?: Prisma.StringFilter<"Project"> | string
+  autoDeploy?: Prisma.BoolFilter<"Project"> | boolean
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   githubInstallation?: Prisma.XOR<Prisma.GithubInstallationScalarRelationFilter, Prisma.GithubInstallationWhereInput>
   server?: Prisma.XOR<Prisma.ServerNullableScalarRelationFilter, Prisma.ServerWhereInput> | null
   envVars?: Prisma.EnvVarListRelationFilter
   deployments?: Prisma.DeploymentListRelationFilter
+  domains?: Prisma.DomainListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -363,11 +372,13 @@ export type ProjectOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   serverId?: Prisma.SortOrderInput | Prisma.SortOrder
   healthCheckPath?: Prisma.SortOrder
+  autoDeploy?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   githubInstallation?: Prisma.GithubInstallationOrderByWithRelationInput
   server?: Prisma.ServerOrderByWithRelationInput
   envVars?: Prisma.EnvVarOrderByRelationAggregateInput
   deployments?: Prisma.DeploymentOrderByRelationAggregateInput
+  domains?: Prisma.DomainOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -394,11 +405,13 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   serverId?: Prisma.UuidNullableFilter<"Project"> | string | null
   healthCheckPath?: Prisma.StringFilter<"Project"> | string
+  autoDeploy?: Prisma.BoolFilter<"Project"> | boolean
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   githubInstallation?: Prisma.XOR<Prisma.GithubInstallationScalarRelationFilter, Prisma.GithubInstallationWhereInput>
   server?: Prisma.XOR<Prisma.ServerNullableScalarRelationFilter, Prisma.ServerWhereInput> | null
   envVars?: Prisma.EnvVarListRelationFilter
   deployments?: Prisma.DeploymentListRelationFilter
+  domains?: Prisma.DomainListRelationFilter
 }, "id" | "userId_name">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -421,6 +434,7 @@ export type ProjectOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   serverId?: Prisma.SortOrderInput | Prisma.SortOrder
   healthCheckPath?: Prisma.SortOrder
+  autoDeploy?: Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
   _avg?: Prisma.ProjectAvgOrderByAggregateInput
   _max?: Prisma.ProjectMaxOrderByAggregateInput
@@ -451,6 +465,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   serverId?: Prisma.UuidNullableWithAggregatesFilter<"Project"> | string | null
   healthCheckPath?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  autoDeploy?: Prisma.BoolWithAggregatesFilter<"Project"> | boolean
 }
 
 export type ProjectCreateInput = {
@@ -470,11 +485,13 @@ export type ProjectCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
   githubInstallation: Prisma.GithubInstallationCreateNestedOneWithoutProjectsInput
   server?: Prisma.ServerCreateNestedOneWithoutProjectsInput
   envVars?: Prisma.EnvVarCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -497,8 +514,10 @@ export type ProjectUncheckedCreateInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
   envVars?: Prisma.EnvVarUncheckedCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -518,11 +537,13 @@ export type ProjectUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   githubInstallation?: Prisma.GithubInstallationUpdateOneRequiredWithoutProjectsNestedInput
   server?: Prisma.ServerUpdateOneWithoutProjectsNestedInput
   envVars?: Prisma.EnvVarUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -545,8 +566,10 @@ export type ProjectUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   envVars?: Prisma.EnvVarUncheckedUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -569,6 +592,7 @@ export type ProjectCreateManyInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
 }
 
 export type ProjectUpdateManyMutationInput = {
@@ -588,6 +612,7 @@ export type ProjectUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProjectUncheckedUpdateManyInput = {
@@ -610,6 +635,7 @@ export type ProjectUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProjectListRelationFilter = {
@@ -647,6 +673,7 @@ export type ProjectCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   serverId?: Prisma.SortOrder
   healthCheckPath?: Prisma.SortOrder
+  autoDeploy?: Prisma.SortOrder
 }
 
 export type ProjectAvgOrderByAggregateInput = {
@@ -675,6 +702,7 @@ export type ProjectMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   serverId?: Prisma.SortOrder
   healthCheckPath?: Prisma.SortOrder
+  autoDeploy?: Prisma.SortOrder
 }
 
 export type ProjectMinOrderByAggregateInput = {
@@ -697,6 +725,7 @@ export type ProjectMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   serverId?: Prisma.SortOrder
   healthCheckPath?: Prisma.SortOrder
+  autoDeploy?: Prisma.SortOrder
 }
 
 export type ProjectSumOrderByAggregateInput = {
@@ -814,6 +843,10 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type ProjectCreateNestedManyWithoutServerInput = {
   create?: Prisma.XOR<Prisma.ProjectCreateWithoutServerInput, Prisma.ProjectUncheckedCreateWithoutServerInput> | Prisma.ProjectCreateWithoutServerInput[] | Prisma.ProjectUncheckedCreateWithoutServerInput[]
   connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutServerInput | Prisma.ProjectCreateOrConnectWithoutServerInput[]
@@ -884,6 +917,20 @@ export type ProjectUpdateOneRequiredWithoutDeploymentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.ProjectUpdateWithoutDeploymentsInput>, Prisma.ProjectUncheckedUpdateWithoutDeploymentsInput>
 }
 
+export type ProjectCreateNestedOneWithoutDomainsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutDomainsInput, Prisma.ProjectUncheckedCreateWithoutDomainsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutDomainsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutDomainsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutDomainsInput, Prisma.ProjectUncheckedCreateWithoutDomainsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutDomainsInput
+  upsert?: Prisma.ProjectUpsertWithoutDomainsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutDomainsInput, Prisma.ProjectUpdateWithoutDomainsInput>, Prisma.ProjectUncheckedUpdateWithoutDomainsInput>
+}
+
 export type ProjectCreateWithoutUserInput = {
   id?: string
   name: string
@@ -901,10 +948,12 @@ export type ProjectCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   githubInstallation: Prisma.GithubInstallationCreateNestedOneWithoutProjectsInput
   server?: Prisma.ServerCreateNestedOneWithoutProjectsInput
   envVars?: Prisma.EnvVarCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutUserInput = {
@@ -926,8 +975,10 @@ export type ProjectUncheckedCreateWithoutUserInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
   envVars?: Prisma.EnvVarUncheckedCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutUserInput = {
@@ -979,6 +1030,7 @@ export type ProjectScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   serverId?: Prisma.UuidNullableFilter<"Project"> | string | null
   healthCheckPath?: Prisma.StringFilter<"Project"> | string
+  autoDeploy?: Prisma.BoolFilter<"Project"> | boolean
 }
 
 export type ProjectCreateWithoutGithubInstallationInput = {
@@ -998,10 +1050,12 @@ export type ProjectCreateWithoutGithubInstallationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
   server?: Prisma.ServerCreateNestedOneWithoutProjectsInput
   envVars?: Prisma.EnvVarCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutGithubInstallationInput = {
@@ -1023,8 +1077,10 @@ export type ProjectUncheckedCreateWithoutGithubInstallationInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
   envVars?: Prisma.EnvVarUncheckedCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutGithubInstallationInput = {
@@ -1070,10 +1126,12 @@ export type ProjectCreateWithoutServerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
   githubInstallation: Prisma.GithubInstallationCreateNestedOneWithoutProjectsInput
   envVars?: Prisma.EnvVarCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutServerInput = {
@@ -1095,8 +1153,10 @@ export type ProjectUncheckedCreateWithoutServerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   envVars?: Prisma.EnvVarUncheckedCreateNestedManyWithoutProjectInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutServerInput = {
@@ -1142,10 +1202,12 @@ export type ProjectCreateWithoutEnvVarsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
   githubInstallation: Prisma.GithubInstallationCreateNestedOneWithoutProjectsInput
   server?: Prisma.ServerCreateNestedOneWithoutProjectsInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEnvVarsInput = {
@@ -1168,7 +1230,9 @@ export type ProjectUncheckedCreateWithoutEnvVarsInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEnvVarsInput = {
@@ -1204,10 +1268,12 @@ export type ProjectUpdateWithoutEnvVarsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   githubInstallation?: Prisma.GithubInstallationUpdateOneRequiredWithoutProjectsNestedInput
   server?: Prisma.ServerUpdateOneWithoutProjectsNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEnvVarsInput = {
@@ -1230,7 +1296,9 @@ export type ProjectUncheckedUpdateWithoutEnvVarsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutDeploymentsInput = {
@@ -1250,10 +1318,12 @@ export type ProjectCreateWithoutDeploymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
   githubInstallation: Prisma.GithubInstallationCreateNestedOneWithoutProjectsInput
   server?: Prisma.ServerCreateNestedOneWithoutProjectsInput
   envVars?: Prisma.EnvVarCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutDeploymentsInput = {
@@ -1276,7 +1346,9 @@ export type ProjectUncheckedCreateWithoutDeploymentsInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
   envVars?: Prisma.EnvVarUncheckedCreateNestedManyWithoutProjectInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutDeploymentsInput = {
@@ -1312,10 +1384,12 @@ export type ProjectUpdateWithoutDeploymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   githubInstallation?: Prisma.GithubInstallationUpdateOneRequiredWithoutProjectsNestedInput
   server?: Prisma.ServerUpdateOneWithoutProjectsNestedInput
   envVars?: Prisma.EnvVarUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutDeploymentsInput = {
@@ -1338,7 +1412,125 @@ export type ProjectUncheckedUpdateWithoutDeploymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   envVars?: Prisma.EnvVarUncheckedUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutDomainsInput = {
+  id?: string
+  name: string
+  repoId: bigint | number
+  repoFullName: string
+  branch: string
+  rootDirectory?: string
+  adapter: $Enums.Adapter
+  installCommand?: string | null
+  buildCommand?: string | null
+  startCommand?: string | null
+  outputDirectory?: string | null
+  port: number
+  nodeVersion?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  healthCheckPath?: string
+  autoDeploy?: boolean
+  user: Prisma.UserCreateNestedOneWithoutProjectsInput
+  githubInstallation: Prisma.GithubInstallationCreateNestedOneWithoutProjectsInput
+  server?: Prisma.ServerCreateNestedOneWithoutProjectsInput
+  envVars?: Prisma.EnvVarCreateNestedManyWithoutProjectInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutDomainsInput = {
+  id?: string
+  userId: string
+  githubInstallationId: string
+  name: string
+  repoId: bigint | number
+  repoFullName: string
+  branch: string
+  rootDirectory?: string
+  adapter: $Enums.Adapter
+  installCommand?: string | null
+  buildCommand?: string | null
+  startCommand?: string | null
+  outputDirectory?: string | null
+  port: number
+  nodeVersion?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  serverId?: string | null
+  healthCheckPath?: string
+  autoDeploy?: boolean
+  envVars?: Prisma.EnvVarUncheckedCreateNestedManyWithoutProjectInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutDomainsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutDomainsInput, Prisma.ProjectUncheckedCreateWithoutDomainsInput>
+}
+
+export type ProjectUpsertWithoutDomainsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutDomainsInput, Prisma.ProjectUncheckedUpdateWithoutDomainsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutDomainsInput, Prisma.ProjectUncheckedCreateWithoutDomainsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutDomainsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutDomainsInput, Prisma.ProjectUncheckedUpdateWithoutDomainsInput>
+}
+
+export type ProjectUpdateWithoutDomainsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  repoId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
+  branch?: Prisma.StringFieldUpdateOperationsInput | string
+  rootDirectory?: Prisma.StringFieldUpdateOperationsInput | string
+  adapter?: Prisma.EnumAdapterFieldUpdateOperationsInput | $Enums.Adapter
+  installCommand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buildCommand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startCommand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputDirectory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  port?: Prisma.IntFieldUpdateOperationsInput | number
+  nodeVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  githubInstallation?: Prisma.GithubInstallationUpdateOneRequiredWithoutProjectsNestedInput
+  server?: Prisma.ServerUpdateOneWithoutProjectsNestedInput
+  envVars?: Prisma.EnvVarUpdateManyWithoutProjectNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutDomainsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  githubInstallationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  repoId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  repoFullName?: Prisma.StringFieldUpdateOperationsInput | string
+  branch?: Prisma.StringFieldUpdateOperationsInput | string
+  rootDirectory?: Prisma.StringFieldUpdateOperationsInput | string
+  adapter?: Prisma.EnumAdapterFieldUpdateOperationsInput | $Enums.Adapter
+  installCommand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buildCommand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startCommand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputDirectory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  port?: Prisma.IntFieldUpdateOperationsInput | number
+  nodeVersion?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  envVars?: Prisma.EnvVarUncheckedUpdateManyWithoutProjectNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyUserInput = {
@@ -1360,6 +1552,7 @@ export type ProjectCreateManyUserInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
 }
 
 export type ProjectUpdateWithoutUserInput = {
@@ -1379,10 +1572,12 @@ export type ProjectUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   githubInstallation?: Prisma.GithubInstallationUpdateOneRequiredWithoutProjectsNestedInput
   server?: Prisma.ServerUpdateOneWithoutProjectsNestedInput
   envVars?: Prisma.EnvVarUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutUserInput = {
@@ -1404,8 +1599,10 @@ export type ProjectUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   envVars?: Prisma.EnvVarUncheckedUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutUserInput = {
@@ -1427,6 +1624,7 @@ export type ProjectUncheckedUpdateManyWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProjectCreateManyGithubInstallationInput = {
@@ -1448,6 +1646,7 @@ export type ProjectCreateManyGithubInstallationInput = {
   updatedAt?: Date | string
   serverId?: string | null
   healthCheckPath?: string
+  autoDeploy?: boolean
 }
 
 export type ProjectUpdateWithoutGithubInstallationInput = {
@@ -1467,10 +1666,12 @@ export type ProjectUpdateWithoutGithubInstallationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   server?: Prisma.ServerUpdateOneWithoutProjectsNestedInput
   envVars?: Prisma.EnvVarUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutGithubInstallationInput = {
@@ -1492,8 +1693,10 @@ export type ProjectUncheckedUpdateWithoutGithubInstallationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   envVars?: Prisma.EnvVarUncheckedUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutGithubInstallationInput = {
@@ -1515,6 +1718,7 @@ export type ProjectUncheckedUpdateManyWithoutGithubInstallationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProjectCreateManyServerInput = {
@@ -1536,6 +1740,7 @@ export type ProjectCreateManyServerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   healthCheckPath?: string
+  autoDeploy?: boolean
 }
 
 export type ProjectUpdateWithoutServerInput = {
@@ -1555,10 +1760,12 @@ export type ProjectUpdateWithoutServerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   githubInstallation?: Prisma.GithubInstallationUpdateOneRequiredWithoutProjectsNestedInput
   envVars?: Prisma.EnvVarUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutServerInput = {
@@ -1580,8 +1787,10 @@ export type ProjectUncheckedUpdateWithoutServerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
   envVars?: Prisma.EnvVarUncheckedUpdateManyWithoutProjectNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutProjectNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutServerInput = {
@@ -1603,6 +1812,7 @@ export type ProjectUncheckedUpdateManyWithoutServerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   healthCheckPath?: Prisma.StringFieldUpdateOperationsInput | string
+  autoDeploy?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -1613,11 +1823,13 @@ export type ProjectUncheckedUpdateManyWithoutServerInput = {
 export type ProjectCountOutputType = {
   envVars: number
   deployments: number
+  domains: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   envVars?: boolean | ProjectCountOutputTypeCountEnvVarsArgs
   deployments?: boolean | ProjectCountOutputTypeCountDeploymentsArgs
+  domains?: boolean | ProjectCountOutputTypeCountDomainsArgs
 }
 
 /**
@@ -1644,6 +1856,13 @@ export type ProjectCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime.T
   where?: Prisma.DeploymentWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountDomainsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DomainWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1665,11 +1884,13 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   serverId?: boolean
   healthCheckPath?: boolean
+  autoDeploy?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   githubInstallation?: boolean | Prisma.GithubInstallationDefaultArgs<ExtArgs>
   server?: boolean | Prisma.Project$serverArgs<ExtArgs>
   envVars?: boolean | Prisma.Project$envVarsArgs<ExtArgs>
   deployments?: boolean | Prisma.Project$deploymentsArgs<ExtArgs>
+  domains?: boolean | Prisma.Project$domainsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -1693,6 +1914,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updatedAt?: boolean
   serverId?: boolean
   healthCheckPath?: boolean
+  autoDeploy?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   githubInstallation?: boolean | Prisma.GithubInstallationDefaultArgs<ExtArgs>
   server?: boolean | Prisma.Project$serverArgs<ExtArgs>
@@ -1718,6 +1940,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   updatedAt?: boolean
   serverId?: boolean
   healthCheckPath?: boolean
+  autoDeploy?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   githubInstallation?: boolean | Prisma.GithubInstallationDefaultArgs<ExtArgs>
   server?: boolean | Prisma.Project$serverArgs<ExtArgs>
@@ -1743,15 +1966,17 @@ export type ProjectSelectScalar = {
   updatedAt?: boolean
   serverId?: boolean
   healthCheckPath?: boolean
+  autoDeploy?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "githubInstallationId" | "name" | "repoId" | "repoFullName" | "branch" | "rootDirectory" | "adapter" | "installCommand" | "buildCommand" | "startCommand" | "outputDirectory" | "port" | "nodeVersion" | "createdAt" | "updatedAt" | "serverId" | "healthCheckPath", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "githubInstallationId" | "name" | "repoId" | "repoFullName" | "branch" | "rootDirectory" | "adapter" | "installCommand" | "buildCommand" | "startCommand" | "outputDirectory" | "port" | "nodeVersion" | "createdAt" | "updatedAt" | "serverId" | "healthCheckPath" | "autoDeploy", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   githubInstallation?: boolean | Prisma.GithubInstallationDefaultArgs<ExtArgs>
   server?: boolean | Prisma.Project$serverArgs<ExtArgs>
   envVars?: boolean | Prisma.Project$envVarsArgs<ExtArgs>
   deployments?: boolean | Prisma.Project$deploymentsArgs<ExtArgs>
+  domains?: boolean | Prisma.Project$domainsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1773,6 +1998,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     server: Prisma.$ServerPayload<ExtArgs> | null
     envVars: Prisma.$EnvVarPayload<ExtArgs>[]
     deployments: Prisma.$DeploymentPayload<ExtArgs>[]
+    domains: Prisma.$DomainPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1812,6 +2038,10 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
      * Path checked before traffic moves to a new version; any status below 500 passes.
      */
     healthCheckPath: string
+    /**
+     * Deploy automatically when the branch receives a push.
+     */
+    autoDeploy: boolean
   }, ExtArgs["result"]["project"]>
   composites: {}
 }
@@ -2211,6 +2441,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   server<T extends Prisma.Project$serverArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$serverArgs<ExtArgs>>): Prisma.Prisma__ServerClient<runtime.Types.Result.GetResult<Prisma.$ServerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   envVars<T extends Prisma.Project$envVarsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$envVarsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EnvVarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deployments<T extends Prisma.Project$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  domains<T extends Prisma.Project$domainsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$domainsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DomainPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2259,6 +2490,7 @@ export interface ProjectFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly serverId: Prisma.FieldRef<"Project", 'String'>
   readonly healthCheckPath: Prisma.FieldRef<"Project", 'String'>
+  readonly autoDeploy: Prisma.FieldRef<"Project", 'Boolean'>
 }
     
 
@@ -2724,6 +2956,30 @@ export type Project$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.DeploymentScalarFieldEnum | Prisma.DeploymentScalarFieldEnum[]
+}
+
+/**
+ * Project.domains
+ */
+export type Project$domainsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Domain
+   */
+  select?: Prisma.DomainSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Domain
+   */
+  omit?: Prisma.DomainOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DomainInclude<ExtArgs> | null
+  where?: Prisma.DomainWhereInput
+  orderBy?: Prisma.DomainOrderByWithRelationInput | Prisma.DomainOrderByWithRelationInput[]
+  cursor?: Prisma.DomainWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DomainScalarFieldEnum | Prisma.DomainScalarFieldEnum[]
 }
 
 /**

@@ -183,6 +183,8 @@ export const UpdateProjectSchema = z.object({
   /** Server to deploy to (`null` = none yet). */
   serverId: z.uuid().nullable().optional(),
   healthCheckPath: HealthCheckPathSchema.optional(),
+  /** Deploy automatically on every push to the branch. */
+  autoDeploy: z.boolean().optional(),
 });
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
 
@@ -201,6 +203,7 @@ export interface ProjectDto {
   /** Where it deploys to. */
   server: { id: string; name: string; status: ServerStatus } | null;
   healthCheckPath: string;
+  autoDeploy: boolean;
   /** The deployment serving traffic now, if any. */
   liveDeployment: DeploymentDto | null;
   /** The newest deployment (may be in progress or failed). */

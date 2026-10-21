@@ -27,6 +27,7 @@ import { AppConfigService } from '../config/app-config.service';
       { name: QueueName.SYSTEM },
       { name: QueueName.SERVERS },
       { name: QueueName.DEPLOYMENTS },
+      { name: QueueName.BUILD_DOCTOR },
     ),
   ],
   exports: [BullModule],

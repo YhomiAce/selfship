@@ -18,6 +18,7 @@ export type {
   Routing,
 } from './deploy';
 export { checkDomainDns, publicDns, resolveIpv4 } from './dns-check';
+export { ensureSwap, pruneDocker } from './maintenance';
 export { probeCertificate } from './tls-probe';
 export type { CertificateProbe } from './tls-probe';
 export type { DnsCheckResult, DnsLookups } from './dns-check';

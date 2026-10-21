@@ -14,6 +14,6 @@ import { DomainsProcessor } from './domains.processor';
     ServersModule,
   ],
   providers: [DomainRoutingService, DomainChecker, DeploymentLauncher, DomainsProcessor],
-  exports: [DomainRoutingService],
+  exports: [DomainRoutingService, DeploymentLauncher],
 })
 export class DomainsModule {}

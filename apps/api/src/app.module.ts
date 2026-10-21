@@ -6,6 +6,7 @@ import type { IncomingMessage } from 'node:http';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
+import { BuildDoctorModule } from './build-doctor/build-doctor.module';
 import { CryptoModule } from './crypto/crypto.module';
 import { DeploymentsModule } from './deployments/deployments.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -74,6 +75,7 @@ function requestId(req: IncomingMessage): string {
     DeploymentsModule,
     WebhooksModule,
     DomainsModule,
+    BuildDoctorModule,
     HealthModule,
     DiagnosticsModule,
   ],

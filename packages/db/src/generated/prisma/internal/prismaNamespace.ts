@@ -409,7 +409,8 @@ export const ModelName = {
   EnvVar: 'EnvVar',
   Deployment: 'Deployment',
   DeploymentLogChunk: 'DeploymentLogChunk',
-  Domain: 'Domain'
+  Domain: 'Domain',
+  BuildDiagnosis: 'BuildDiagnosis'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob" | "envVar" | "deployment" | "deploymentLogChunk" | "domain"
+    modelProps: "user" | "session" | "verificationToken" | "oAuthAccount" | "githubInstallation" | "githubInstallationMember" | "project" | "server" | "serverJob" | "envVar" | "deployment" | "deploymentLogChunk" | "domain" | "buildDiagnosis"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1391,6 +1392,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BuildDiagnosis: {
+      payload: Prisma.$BuildDiagnosisPayload<ExtArgs>
+      fields: Prisma.BuildDiagnosisFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BuildDiagnosisFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BuildDiagnosisFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>
+        }
+        findFirst: {
+          args: Prisma.BuildDiagnosisFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BuildDiagnosisFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>
+        }
+        findMany: {
+          args: Prisma.BuildDiagnosisFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>[]
+        }
+        create: {
+          args: Prisma.BuildDiagnosisCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>
+        }
+        createMany: {
+          args: Prisma.BuildDiagnosisCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BuildDiagnosisCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>[]
+        }
+        delete: {
+          args: Prisma.BuildDiagnosisDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>
+        }
+        update: {
+          args: Prisma.BuildDiagnosisUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>
+        }
+        deleteMany: {
+          args: Prisma.BuildDiagnosisDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BuildDiagnosisUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BuildDiagnosisUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>[]
+        }
+        upsert: {
+          args: Prisma.BuildDiagnosisUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BuildDiagnosisPayload>
+        }
+        aggregate: {
+          args: Prisma.BuildDiagnosisAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBuildDiagnosis>
+        }
+        groupBy: {
+          args: Prisma.BuildDiagnosisGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BuildDiagnosisGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BuildDiagnosisCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BuildDiagnosisCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1529,7 +1604,9 @@ export const ProjectScalarFieldEnum = {
   updatedAt: 'updatedAt',
   serverId: 'serverId',
   healthCheckPath: 'healthCheckPath',
-  autoDeploy: 'autoDeploy'
+  autoDeploy: 'autoDeploy',
+  buildDoctor: 'buildDoctor',
+  sandboxExpiresAt: 'sandboxExpiresAt'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -1562,6 +1639,7 @@ export const ServerScalarFieldEnum = {
   warnings: 'warnings',
   lastCheckedAt: 'lastCheckedAt',
   readyAt: 'readyAt',
+  isPlatformSandbox: 'isPlatformSandbox',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1618,6 +1696,7 @@ export const DeploymentScalarFieldEnum = {
   sourceDeploymentId: 'sourceDeploymentId',
   hintTitle: 'hintTitle',
   hintAdvice: 'hintAdvice',
+  autoRetry: 'autoRetry',
   createdAt: 'createdAt',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt'
@@ -1656,6 +1735,30 @@ export const DomainScalarFieldEnum = {
 export type DomainScalarFieldEnum = (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum]
 
 
+export const BuildDiagnosisScalarFieldEnum = {
+  id: 'id',
+  deploymentId: 'deploymentId',
+  projectId: 'projectId',
+  userId: 'userId',
+  status: 'status',
+  fingerprint: 'fingerprint',
+  result: 'result',
+  error: 'error',
+  cached: 'cached',
+  model: 'model',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  cacheReadTokens: 'cacheReadTokens',
+  autoRemediation: 'autoRemediation',
+  feedback: 'feedback',
+  feedbackComment: 'feedbackComment',
+  createdAt: 'createdAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type BuildDiagnosisScalarFieldEnum = (typeof BuildDiagnosisScalarFieldEnum)[keyof typeof BuildDiagnosisScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1669,6 +1772,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1962,6 +2073,20 @@ export type ListEnumDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'DiagnosisStatus'
+ */
+export type EnumDiagnosisStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiagnosisStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DiagnosisStatus[]'
+ */
+export type ListEnumDiagnosisStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiagnosisStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2138,6 +2263,7 @@ export type GlobalOmitConfig = {
   deployment?: Prisma.DeploymentOmit
   deploymentLogChunk?: Prisma.DeploymentLogChunkOmit
   domain?: Prisma.DomainOmit
+  buildDiagnosis?: Prisma.BuildDiagnosisOmit
 }
 
 /* Types for Logging */

@@ -1,4 +1,5 @@
 export * from './auth/auth.schemas';
+export * from './build-doctor';
 export * from './common/api-error';
 export * from './common/health';
 export * from './deployments';

@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { QueueName } from '@selfship/shared';
+import { BuildDoctorModule } from '../build-doctor/build-doctor.module';
 import { DomainsModule } from '../domains/domains.module';
 import { ServersModule } from '../servers/servers.module';
 import { DeploymentRunner } from './deployment.runner';
@@ -13,6 +14,7 @@ import { TeardownService } from './teardown.service';
     BullModule.registerQueue({ name: QueueName.DEPLOYMENTS }),
     ServersModule,
     DomainsModule,
+    BuildDoctorModule,
   ],
   providers: [DeploymentsProcessor, DeploymentRunner, TeardownService],
 })

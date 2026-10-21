@@ -41,6 +41,7 @@ export function DeployTargetCard({
   const [pathError, setPathError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [autoDeploy, setAutoDeploy] = useState(project.autoDeploy);
+  const [buildDoctor, setBuildDoctor] = useState(project.buildDoctor);
 
   useEffect(() => {
     serversApi
@@ -59,6 +60,18 @@ export function DeployTargetCard({
       toast.success(enabled ? 'Auto-deploy on' : 'Auto-deploy off');
     } catch (error) {
       setAutoDeploy(!enabled);
+      toast.error(error instanceof ApiRequestError ? error.message : 'Could not save.');
+    }
+  };
+
+  /** Saves the Build Doctor switch right away. */
+  const toggleBuildDoctor = async (enabled: boolean): Promise<void> => {
+    setBuildDoctor(enabled);
+    try {
+      onSaved(await projectsApi.update(project.id, { buildDoctor: enabled }));
+      toast.success(enabled ? 'Build Doctor on' : 'Build Doctor off');
+    } catch (error) {
+      setBuildDoctor(!enabled);
       toast.error(error instanceof ApiRequestError ? error.message : 'Could not save.');
     }
   };
@@ -151,6 +164,21 @@ export function DeployTargetCard({
                 <span className="block font-medium">Deploy on every push to {project.branch}</span>
                 <span className="text-muted-foreground block">
                   Add [skip deploy] to a commit message to skip one push.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 rounded-lg border p-3">
+              <Switch
+                checked={buildDoctor}
+                onCheckedChange={(checked) => void toggleBuildDoctor(checked)}
+                aria-label="Use AI to diagnose failed builds"
+                className="mt-0.5"
+              />
+              <span className="text-sm">
+                <span className="block font-medium">Use AI to diagnose failed builds</span>
+                <span className="text-muted-foreground block">
+                  Build Doctor sends redacted logs and config files (never secret values) to
+                  Anthropic.
                 </span>
               </span>
             </label>

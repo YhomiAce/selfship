@@ -25,6 +25,8 @@ Object.assign(process.env, {
   GITHUB_APP_CLIENT_SECRET: 'secret',
   GITHUB_APP_PRIVATE_KEY: 'unused-in-tests',
   GITHUB_WEBHOOK_SECRET: 'test-webhook-secret',
+  // Build Doctor is offered when a key is configured (the API itself never calls Claude).
+  ANTHROPIC_API_KEY: 'test-key',
 });
 
 const runId = randomUUID().slice(0, 8);
@@ -733,6 +735,145 @@ describe('Env vars and deployments (e2e)', () => {
           .set('Cookie', bob)
           .send({ hostname: 'bob.example.test' })
           .expect(404);
+      });
+    });
+
+    describe('build doctor', () => {
+      let failedId = '';
+      const doctor = (): string => `/projects/${projectId}/deployments/${failedId}/diagnosis`;
+
+      beforeAll(async () => {
+        const failed = await prisma.deployment.create({
+          data: {
+            projectId,
+            serverId,
+            branch: 'main',
+            commitSha: 'f'.repeat(40),
+            commitMessage: 'broken build',
+            status: 'failed',
+            failedStage: 'health_check',
+            errorSummary: "The app didn't answer on port 3000.",
+            startedAt: new Date(),
+            finishedAt: new Date(),
+          },
+        });
+        failedId = failed.id;
+      });
+
+      it('asks for a diagnosis and queues it (only the ID goes to Redis)', async () => {
+        const before = await http().get(doctor()).set('Cookie', ada).expect(200);
+        expect(before.body).toEqual({ available: true, diagnosis: null });
+
+        const res = await http().post(doctor()).set('Cookie', ada).expect(202);
+        expect(res.body.diagnosis).toMatchObject({
+          status: 'pending',
+          result: null,
+          canApply: false,
+        });
+        const doctorQueue = new Queue(QueueName.BUILD_DOCTOR, {
+          connection: redisConnectionFromUrl(process.env.REDIS_URL ?? 'redis://localhost:6380'),
+          prefix: process.env.QUEUE_PREFIX ?? 'bull',
+        });
+        const jobs = await doctorQueue.getJobs(['waiting', 'delayed']);
+        expect(jobs.map((j): unknown => j.data)).toContainEqual({
+          diagnosisId: res.body.diagnosis.id,
+        });
+        await doctorQueue.obliterate({ force: true });
+        await doctorQueue.close();
+      });
+
+      it('only diagnoses failed deployments', async () => {
+        const live = await prisma.deployment.findFirstOrThrow({
+          where: { projectId, status: 'live' },
+        });
+        const res = await http()
+          .post(`/projects/${projectId}/deployments/${live.id}/diagnosis`)
+          .set('Cookie', ada)
+          .expect(400);
+        expect(res.body.code).toBe('NOT_DIAGNOSABLE');
+      });
+
+      it('offers a valid settings fix and applies it', async () => {
+        await prisma.buildDiagnosis.update({
+          where: { deploymentId: failedId },
+          data: {
+            status: 'ready',
+            result: {
+              category: 'configuration',
+              summary: 'The app listens on 8080, not 3000.',
+              rootCause: 'server.js hard-codes port 8080.',
+              evidence: ['Listening on 8080'],
+              fixSteps: ['Set the port to 8080.'],
+              suggestedPatch: null,
+              remediation: { action: 'set_port', value: '8080' },
+              confidence: 'high',
+            },
+          },
+        });
+        const res = await http().get(doctor()).set('Cookie', ada).expect(200);
+        expect(res.body.diagnosis).toMatchObject({
+          status: 'ready',
+          canApply: true,
+          feedback: null,
+        });
+
+        const applied = await http().post(`${doctor()}/apply`).set('Cookie', ada).expect(200);
+        expect(applied.body).toEqual({ applied: 'Port set to 8080' });
+        const project = await http().get(`/projects/${projectId}`).set('Cookie', ada).expect(200);
+        expect(project.body.settings.port).toBe(8080);
+        // Re-applying the same valid value stays allowed (harmless).
+        const again = await http().get(doctor()).set('Cookie', ada).expect(200);
+        expect(again.body.diagnosis.canApply).toBe(true);
+      });
+
+      it('never applies an invalid value from the model', async () => {
+        await prisma.buildDiagnosis.update({
+          where: { deploymentId: failedId },
+          data: {
+            result: {
+              category: 'configuration',
+              summary: 's',
+              rootCause: 'r',
+              evidence: [],
+              fixSteps: [],
+              suggestedPatch: null,
+              remediation: { action: 'set_start_command', value: 'npm start\nrm -rf /' },
+              confidence: 'high',
+            },
+          },
+        });
+        const res = await http().get(doctor()).set('Cookie', ada).expect(200);
+        expect(res.body.diagnosis.canApply).toBe(false);
+        const refused = await http().post(`${doctor()}/apply`).set('Cookie', ada).expect(409);
+        expect(refused.body.code).toBe('NOTHING_TO_APPLY');
+      });
+
+      it('records feedback', async () => {
+        const res = await http()
+          .post(`${doctor()}/feedback`)
+          .set('Cookie', ada)
+          .send({ helpful: false, comment: 'Wrong file' })
+          .expect(200);
+        expect(res.body.feedback).toBe('down');
+      });
+
+      it("respects the per-project switch and hides other users' diagnoses", async () => {
+        await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ buildDoctor: false })
+          .expect(200);
+        const off = await http().get(doctor()).set('Cookie', ada).expect(200);
+        expect(off.body.available).toBe(false);
+        await prisma.buildDiagnosis.deleteMany({ where: { deploymentId: failedId } });
+        const refused = await http().post(doctor()).set('Cookie', ada).expect(400);
+        expect(refused.body.code).toBe('BUILD_DOCTOR_UNAVAILABLE');
+        await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ buildDoctor: true })
+          .expect(200);
+        await http().get(doctor()).set('Cookie', bob).expect(404);
       });
     });
 

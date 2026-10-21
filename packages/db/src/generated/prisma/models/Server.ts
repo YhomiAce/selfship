@@ -67,6 +67,7 @@ export type ServerMinAggregateOutputType = {
   tier: $Enums.CapabilityTier | null
   lastCheckedAt: Date | null
   readyAt: Date | null
+  isPlatformSandbox: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -96,6 +97,7 @@ export type ServerMaxAggregateOutputType = {
   tier: $Enums.CapabilityTier | null
   lastCheckedAt: Date | null
   readyAt: Date | null
+  isPlatformSandbox: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -127,6 +129,7 @@ export type ServerCountAggregateOutputType = {
   warnings: number
   lastCheckedAt: number
   readyAt: number
+  isPlatformSandbox: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -174,6 +177,7 @@ export type ServerMinAggregateInputType = {
   tier?: true
   lastCheckedAt?: true
   readyAt?: true
+  isPlatformSandbox?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -203,6 +207,7 @@ export type ServerMaxAggregateInputType = {
   tier?: true
   lastCheckedAt?: true
   readyAt?: true
+  isPlatformSandbox?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -234,6 +239,7 @@ export type ServerCountAggregateInputType = {
   warnings?: true
   lastCheckedAt?: true
   readyAt?: true
+  isPlatformSandbox?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -352,6 +358,7 @@ export type ServerGroupByOutputType = {
   warnings: string[]
   lastCheckedAt: Date | null
   readyAt: Date | null
+  isPlatformSandbox: boolean
   createdAt: Date
   updatedAt: Date
   _count: ServerCountAggregateOutputType | null
@@ -406,6 +413,7 @@ export type ServerWhereInput = {
   warnings?: Prisma.StringNullableListFilter<"Server">
   lastCheckedAt?: Prisma.DateTimeNullableFilter<"Server"> | Date | string | null
   readyAt?: Prisma.DateTimeNullableFilter<"Server"> | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFilter<"Server"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -441,6 +449,7 @@ export type ServerOrderByWithRelationInput = {
   warnings?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   readyAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPlatformSandbox?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -480,6 +489,7 @@ export type ServerWhereUniqueInput = Prisma.AtLeast<{
   warnings?: Prisma.StringNullableListFilter<"Server">
   lastCheckedAt?: Prisma.DateTimeNullableFilter<"Server"> | Date | string | null
   readyAt?: Prisma.DateTimeNullableFilter<"Server"> | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFilter<"Server"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -515,6 +525,7 @@ export type ServerOrderByWithAggregationInput = {
   warnings?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   readyAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isPlatformSandbox?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ServerCountOrderByAggregateInput
@@ -554,6 +565,7 @@ export type ServerScalarWhereWithAggregatesInput = {
   warnings?: Prisma.StringNullableListFilter<"Server">
   lastCheckedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Server"> | Date | string | null
   readyAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Server"> | Date | string | null
+  isPlatformSandbox?: Prisma.BoolWithAggregatesFilter<"Server"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Server"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Server"> | Date | string
 }
@@ -584,6 +596,7 @@ export type ServerCreateInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutServersInput
@@ -619,6 +632,7 @@ export type ServerUncheckedCreateInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
@@ -652,6 +666,7 @@ export type ServerUpdateInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
@@ -687,6 +702,7 @@ export type ServerUncheckedUpdateInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
@@ -721,6 +737,7 @@ export type ServerCreateManyInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -751,6 +768,7 @@ export type ServerUpdateManyMutationInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -782,6 +800,7 @@ export type ServerUncheckedUpdateManyInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -841,6 +860,7 @@ export type ServerCountOrderByAggregateInput = {
   warnings?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrder
   readyAt?: Prisma.SortOrder
+  isPlatformSandbox?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -878,6 +898,7 @@ export type ServerMaxOrderByAggregateInput = {
   tier?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrder
   readyAt?: Prisma.SortOrder
+  isPlatformSandbox?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -907,6 +928,7 @@ export type ServerMinOrderByAggregateInput = {
   tier?: Prisma.SortOrder
   lastCheckedAt?: Prisma.SortOrder
   readyAt?: Prisma.SortOrder
+  isPlatformSandbox?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1068,6 +1090,7 @@ export type ServerCreateWithoutUserInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobCreateNestedManyWithoutServerInput
@@ -1101,6 +1124,7 @@ export type ServerUncheckedCreateWithoutUserInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
@@ -1164,6 +1188,7 @@ export type ServerScalarWhereInput = {
   warnings?: Prisma.StringNullableListFilter<"Server">
   lastCheckedAt?: Prisma.DateTimeNullableFilter<"Server"> | Date | string | null
   readyAt?: Prisma.DateTimeNullableFilter<"Server"> | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFilter<"Server"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Server"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Server"> | Date | string
 }
@@ -1194,6 +1219,7 @@ export type ServerCreateWithoutProjectsInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutServersInput
@@ -1228,6 +1254,7 @@ export type ServerUncheckedCreateWithoutProjectsInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
@@ -1276,6 +1303,7 @@ export type ServerUpdateWithoutProjectsInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
@@ -1310,6 +1338,7 @@ export type ServerUncheckedUpdateWithoutProjectsInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
@@ -1342,6 +1371,7 @@ export type ServerCreateWithoutJobsInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutServersInput
@@ -1376,6 +1406,7 @@ export type ServerUncheckedCreateWithoutJobsInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutServerInput
@@ -1424,6 +1455,7 @@ export type ServerUpdateWithoutJobsInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
@@ -1458,6 +1490,7 @@ export type ServerUncheckedUpdateWithoutJobsInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutServerNestedInput
@@ -1490,6 +1523,7 @@ export type ServerCreateWithoutDeploymentsInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutServersInput
@@ -1524,6 +1558,7 @@ export type ServerUncheckedCreateWithoutDeploymentsInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   jobs?: Prisma.ServerJobUncheckedCreateNestedManyWithoutServerInput
@@ -1572,6 +1607,7 @@ export type ServerUpdateWithoutDeploymentsInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutServersNestedInput
@@ -1606,6 +1642,7 @@ export type ServerUncheckedUpdateWithoutDeploymentsInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
@@ -1638,6 +1675,7 @@ export type ServerCreateManyUserInput = {
   warnings?: Prisma.ServerCreatewarningsInput | string[]
   lastCheckedAt?: Date | string | null
   readyAt?: Date | string | null
+  isPlatformSandbox?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1668,6 +1706,7 @@ export type ServerUpdateWithoutUserInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUpdateManyWithoutServerNestedInput
@@ -1701,6 +1740,7 @@ export type ServerUncheckedUpdateWithoutUserInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.ServerJobUncheckedUpdateManyWithoutServerNestedInput
@@ -1734,6 +1774,7 @@ export type ServerUncheckedUpdateManyWithoutUserInput = {
   warnings?: Prisma.ServerUpdatewarningsInput | string[]
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   readyAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isPlatformSandbox?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1814,6 +1855,7 @@ export type ServerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   warnings?: boolean
   lastCheckedAt?: boolean
   readyAt?: boolean
+  isPlatformSandbox?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1850,6 +1892,7 @@ export type ServerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   warnings?: boolean
   lastCheckedAt?: boolean
   readyAt?: boolean
+  isPlatformSandbox?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1882,6 +1925,7 @@ export type ServerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   warnings?: boolean
   lastCheckedAt?: boolean
   readyAt?: boolean
+  isPlatformSandbox?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1914,11 +1958,12 @@ export type ServerSelectScalar = {
   warnings?: boolean
   lastCheckedAt?: boolean
   readyAt?: boolean
+  isPlatformSandbox?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ServerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "host" | "port" | "sshUser" | "keySource" | "encryptedPrivateKey" | "publicKey" | "keyComment" | "hostKeyFingerprint" | "status" | "statusMessage" | "os" | "osVersion" | "arch" | "cpus" | "ramMb" | "swapMb" | "diskFreeGb" | "dockerVersion" | "tier" | "problems" | "warnings" | "lastCheckedAt" | "readyAt" | "createdAt" | "updatedAt", ExtArgs["result"]["server"]>
+export type ServerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "host" | "port" | "sshUser" | "keySource" | "encryptedPrivateKey" | "publicKey" | "keyComment" | "hostKeyFingerprint" | "status" | "statusMessage" | "os" | "osVersion" | "arch" | "cpus" | "ramMb" | "swapMb" | "diskFreeGb" | "dockerVersion" | "tier" | "problems" | "warnings" | "lastCheckedAt" | "readyAt" | "isPlatformSandbox" | "createdAt" | "updatedAt", ExtArgs["result"]["server"]>
 export type ServerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   jobs?: boolean | Prisma.Server$jobsArgs<ExtArgs>
@@ -1986,6 +2031,10 @@ export type $ServerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     warnings: string[]
     lastCheckedAt: Date | null
     readyAt: Date | null
+    /**
+     * Platform-owned server for the free sandbox (shared by many users' apps).
+     */
+    isPlatformSandbox: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["server"]>
@@ -2441,6 +2490,7 @@ export interface ServerFieldRefs {
   readonly warnings: Prisma.FieldRef<"Server", 'String[]'>
   readonly lastCheckedAt: Prisma.FieldRef<"Server", 'DateTime'>
   readonly readyAt: Prisma.FieldRef<"Server", 'DateTime'>
+  readonly isPlatformSandbox: Prisma.FieldRef<"Server", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Server", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Server", 'DateTime'>
 }

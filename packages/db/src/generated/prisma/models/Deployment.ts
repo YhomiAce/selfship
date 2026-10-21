@@ -44,6 +44,7 @@ export type DeploymentMinAggregateOutputType = {
   sourceDeploymentId: string | null
   hintTitle: string | null
   hintAdvice: string | null
+  autoRetry: boolean | null
   createdAt: Date | null
   startedAt: Date | null
   finishedAt: Date | null
@@ -69,6 +70,7 @@ export type DeploymentMaxAggregateOutputType = {
   sourceDeploymentId: string | null
   hintTitle: string | null
   hintAdvice: string | null
+  autoRetry: boolean | null
   createdAt: Date | null
   startedAt: Date | null
   finishedAt: Date | null
@@ -95,6 +97,7 @@ export type DeploymentCountAggregateOutputType = {
   sourceDeploymentId: number
   hintTitle: number
   hintAdvice: number
+  autoRetry: number
   createdAt: number
   startedAt: number
   finishedAt: number
@@ -122,6 +125,7 @@ export type DeploymentMinAggregateInputType = {
   sourceDeploymentId?: true
   hintTitle?: true
   hintAdvice?: true
+  autoRetry?: true
   createdAt?: true
   startedAt?: true
   finishedAt?: true
@@ -147,6 +151,7 @@ export type DeploymentMaxAggregateInputType = {
   sourceDeploymentId?: true
   hintTitle?: true
   hintAdvice?: true
+  autoRetry?: true
   createdAt?: true
   startedAt?: true
   finishedAt?: true
@@ -173,6 +178,7 @@ export type DeploymentCountAggregateInputType = {
   sourceDeploymentId?: true
   hintTitle?: true
   hintAdvice?: true
+  autoRetry?: true
   createdAt?: true
   startedAt?: true
   finishedAt?: true
@@ -272,6 +278,7 @@ export type DeploymentGroupByOutputType = {
   sourceDeploymentId: string | null
   hintTitle: string | null
   hintAdvice: string | null
+  autoRetry: boolean
   createdAt: Date
   startedAt: Date | null
   finishedAt: Date | null
@@ -319,6 +326,7 @@ export type DeploymentWhereInput = {
   sourceDeploymentId?: Prisma.UuidNullableFilter<"Deployment"> | string | null
   hintTitle?: Prisma.StringNullableFilter<"Deployment"> | string | null
   hintAdvice?: Prisma.StringNullableFilter<"Deployment"> | string | null
+  autoRetry?: Prisma.BoolFilter<"Deployment"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
   startedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null
@@ -328,6 +336,7 @@ export type DeploymentWhereInput = {
   logChunks?: Prisma.DeploymentLogChunkListRelationFilter
   source?: Prisma.XOR<Prisma.DeploymentNullableScalarRelationFilter, Prisma.DeploymentWhereInput> | null
   reusedBy?: Prisma.DeploymentListRelationFilter
+  diagnosis?: Prisma.XOR<Prisma.BuildDiagnosisNullableScalarRelationFilter, Prisma.BuildDiagnosisWhereInput> | null
 }
 
 export type DeploymentOrderByWithRelationInput = {
@@ -351,6 +360,7 @@ export type DeploymentOrderByWithRelationInput = {
   sourceDeploymentId?: Prisma.SortOrderInput | Prisma.SortOrder
   hintTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   hintAdvice?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -360,6 +370,7 @@ export type DeploymentOrderByWithRelationInput = {
   logChunks?: Prisma.DeploymentLogChunkOrderByRelationAggregateInput
   source?: Prisma.DeploymentOrderByWithRelationInput
   reusedBy?: Prisma.DeploymentOrderByRelationAggregateInput
+  diagnosis?: Prisma.BuildDiagnosisOrderByWithRelationInput
 }
 
 export type DeploymentWhereUniqueInput = Prisma.AtLeast<{
@@ -386,6 +397,7 @@ export type DeploymentWhereUniqueInput = Prisma.AtLeast<{
   sourceDeploymentId?: Prisma.UuidNullableFilter<"Deployment"> | string | null
   hintTitle?: Prisma.StringNullableFilter<"Deployment"> | string | null
   hintAdvice?: Prisma.StringNullableFilter<"Deployment"> | string | null
+  autoRetry?: Prisma.BoolFilter<"Deployment"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
   startedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null
@@ -395,6 +407,7 @@ export type DeploymentWhereUniqueInput = Prisma.AtLeast<{
   logChunks?: Prisma.DeploymentLogChunkListRelationFilter
   source?: Prisma.XOR<Prisma.DeploymentNullableScalarRelationFilter, Prisma.DeploymentWhereInput> | null
   reusedBy?: Prisma.DeploymentListRelationFilter
+  diagnosis?: Prisma.XOR<Prisma.BuildDiagnosisNullableScalarRelationFilter, Prisma.BuildDiagnosisWhereInput> | null
 }, "id">
 
 export type DeploymentOrderByWithAggregationInput = {
@@ -418,6 +431,7 @@ export type DeploymentOrderByWithAggregationInput = {
   sourceDeploymentId?: Prisma.SortOrderInput | Prisma.SortOrder
   hintTitle?: Prisma.SortOrderInput | Prisma.SortOrder
   hintAdvice?: Prisma.SortOrderInput | Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -450,6 +464,7 @@ export type DeploymentScalarWhereWithAggregatesInput = {
   sourceDeploymentId?: Prisma.UuidNullableWithAggregatesFilter<"Deployment"> | string | null
   hintTitle?: Prisma.StringNullableWithAggregatesFilter<"Deployment"> | string | null
   hintAdvice?: Prisma.StringNullableWithAggregatesFilter<"Deployment"> | string | null
+  autoRetry?: Prisma.BoolWithAggregatesFilter<"Deployment"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Deployment"> | Date | string
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Deployment"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Deployment"> | Date | string | null
@@ -472,6 +487,7 @@ export type DeploymentCreateInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -481,6 +497,7 @@ export type DeploymentCreateInput = {
   logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
   source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
   reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateInput = {
@@ -504,11 +521,13 @@ export type DeploymentUncheckedCreateInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
   reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUpdateInput = {
@@ -528,6 +547,7 @@ export type DeploymentUpdateInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -537,6 +557,7 @@ export type DeploymentUpdateInput = {
   logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
   source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
   reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateInput = {
@@ -560,11 +581,13 @@ export type DeploymentUncheckedUpdateInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentCreateManyInput = {
@@ -588,6 +611,7 @@ export type DeploymentCreateManyInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -610,6 +634,7 @@ export type DeploymentUpdateManyMutationInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -636,6 +661,7 @@ export type DeploymentUncheckedUpdateManyInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -677,6 +703,7 @@ export type DeploymentCountOrderByAggregateInput = {
   sourceDeploymentId?: Prisma.SortOrder
   hintTitle?: Prisma.SortOrder
   hintAdvice?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -702,6 +729,7 @@ export type DeploymentMaxOrderByAggregateInput = {
   sourceDeploymentId?: Prisma.SortOrder
   hintTitle?: Prisma.SortOrder
   hintAdvice?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -727,6 +755,7 @@ export type DeploymentMinOrderByAggregateInput = {
   sourceDeploymentId?: Prisma.SortOrder
   hintTitle?: Prisma.SortOrder
   hintAdvice?: Prisma.SortOrder
+  autoRetry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -947,6 +976,20 @@ export type DeploymentUpdateOneRequiredWithoutLogChunksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DeploymentUpdateToOneWithWhereWithoutLogChunksInput, Prisma.DeploymentUpdateWithoutLogChunksInput>, Prisma.DeploymentUncheckedUpdateWithoutLogChunksInput>
 }
 
+export type DeploymentCreateNestedOneWithoutDiagnosisInput = {
+  create?: Prisma.XOR<Prisma.DeploymentCreateWithoutDiagnosisInput, Prisma.DeploymentUncheckedCreateWithoutDiagnosisInput>
+  connectOrCreate?: Prisma.DeploymentCreateOrConnectWithoutDiagnosisInput
+  connect?: Prisma.DeploymentWhereUniqueInput
+}
+
+export type DeploymentUpdateOneRequiredWithoutDiagnosisNestedInput = {
+  create?: Prisma.XOR<Prisma.DeploymentCreateWithoutDiagnosisInput, Prisma.DeploymentUncheckedCreateWithoutDiagnosisInput>
+  connectOrCreate?: Prisma.DeploymentCreateOrConnectWithoutDiagnosisInput
+  upsert?: Prisma.DeploymentUpsertWithoutDiagnosisInput
+  connect?: Prisma.DeploymentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DeploymentUpdateToOneWithWhereWithoutDiagnosisInput, Prisma.DeploymentUpdateWithoutDiagnosisInput>, Prisma.DeploymentUncheckedUpdateWithoutDiagnosisInput>
+}
+
 export type DeploymentCreateWithoutTriggeredByInput = {
   id?: string
   trigger?: $Enums.DeploymentTrigger
@@ -964,6 +1007,7 @@ export type DeploymentCreateWithoutTriggeredByInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -972,6 +1016,7 @@ export type DeploymentCreateWithoutTriggeredByInput = {
   logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
   source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
   reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateWithoutTriggeredByInput = {
@@ -994,11 +1039,13 @@ export type DeploymentUncheckedCreateWithoutTriggeredByInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
   reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentCreateOrConnectWithoutTriggeredByInput = {
@@ -1051,6 +1098,7 @@ export type DeploymentScalarWhereInput = {
   sourceDeploymentId?: Prisma.UuidNullableFilter<"Deployment"> | string | null
   hintTitle?: Prisma.StringNullableFilter<"Deployment"> | string | null
   hintAdvice?: Prisma.StringNullableFilter<"Deployment"> | string | null
+  autoRetry?: Prisma.BoolFilter<"Deployment"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string
   startedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null
@@ -1073,6 +1121,7 @@ export type DeploymentCreateWithoutProjectInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1081,6 +1130,7 @@ export type DeploymentCreateWithoutProjectInput = {
   logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
   source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
   reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateWithoutProjectInput = {
@@ -1103,11 +1153,13 @@ export type DeploymentUncheckedCreateWithoutProjectInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
   reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentCreateOrConnectWithoutProjectInput = {
@@ -1153,6 +1205,7 @@ export type DeploymentCreateWithoutServerInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1161,6 +1214,7 @@ export type DeploymentCreateWithoutServerInput = {
   logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
   source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
   reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateWithoutServerInput = {
@@ -1183,11 +1237,13 @@ export type DeploymentUncheckedCreateWithoutServerInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
   reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentCreateOrConnectWithoutServerInput = {
@@ -1233,6 +1289,7 @@ export type DeploymentCreateWithoutReusedByInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1241,6 +1298,7 @@ export type DeploymentCreateWithoutReusedByInput = {
   triggeredBy?: Prisma.UserCreateNestedOneWithoutDeploymentsInput
   logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
   source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateWithoutReusedByInput = {
@@ -1264,10 +1322,12 @@ export type DeploymentUncheckedCreateWithoutReusedByInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentCreateOrConnectWithoutReusedByInput = {
@@ -1292,6 +1352,7 @@ export type DeploymentCreateWithoutSourceInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1300,6 +1361,7 @@ export type DeploymentCreateWithoutSourceInput = {
   triggeredBy?: Prisma.UserCreateNestedOneWithoutDeploymentsInput
   logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
   reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateWithoutSourceInput = {
@@ -1322,11 +1384,13 @@ export type DeploymentUncheckedCreateWithoutSourceInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
   reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentCreateOrConnectWithoutSourceInput = {
@@ -1367,6 +1431,7 @@ export type DeploymentUpdateWithoutReusedByInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1375,6 +1440,7 @@ export type DeploymentUpdateWithoutReusedByInput = {
   triggeredBy?: Prisma.UserUpdateOneWithoutDeploymentsNestedInput
   logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
   source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateWithoutReusedByInput = {
@@ -1398,10 +1464,12 @@ export type DeploymentUncheckedUpdateWithoutReusedByInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUpsertWithWhereUniqueWithoutSourceInput = {
@@ -1437,6 +1505,7 @@ export type DeploymentCreateWithoutLogChunksInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1445,6 +1514,7 @@ export type DeploymentCreateWithoutLogChunksInput = {
   triggeredBy?: Prisma.UserCreateNestedOneWithoutDeploymentsInput
   source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
   reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentUncheckedCreateWithoutLogChunksInput = {
@@ -1468,10 +1538,12 @@ export type DeploymentUncheckedCreateWithoutLogChunksInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
   reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedCreateNestedOneWithoutDeploymentInput
 }
 
 export type DeploymentCreateOrConnectWithoutLogChunksInput = {
@@ -1507,6 +1579,7 @@ export type DeploymentUpdateWithoutLogChunksInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1515,6 +1588,7 @@ export type DeploymentUpdateWithoutLogChunksInput = {
   triggeredBy?: Prisma.UserUpdateOneWithoutDeploymentsNestedInput
   source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
   reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateWithoutLogChunksInput = {
@@ -1538,9 +1612,143 @@ export type DeploymentUncheckedUpdateWithoutLogChunksInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
+}
+
+export type DeploymentCreateWithoutDiagnosisInput = {
+  id?: string
+  trigger?: $Enums.DeploymentTrigger
+  status?: $Enums.DeploymentStatus
+  branch: string
+  commitSha: string
+  commitMessage: string
+  commitAuthor?: string | null
+  stages?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  failedStage?: $Enums.DeploymentStatus | null
+  errorSummary?: string | null
+  imageTag?: string | null
+  containerName?: string | null
+  url?: string | null
+  cancelRequestedAt?: Date | string | null
+  hintTitle?: string | null
+  hintAdvice?: string | null
+  autoRetry?: boolean
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  project: Prisma.ProjectCreateNestedOneWithoutDeploymentsInput
+  server?: Prisma.ServerCreateNestedOneWithoutDeploymentsInput
+  triggeredBy?: Prisma.UserCreateNestedOneWithoutDeploymentsInput
+  logChunks?: Prisma.DeploymentLogChunkCreateNestedManyWithoutDeploymentInput
+  source?: Prisma.DeploymentCreateNestedOneWithoutReusedByInput
+  reusedBy?: Prisma.DeploymentCreateNestedManyWithoutSourceInput
+}
+
+export type DeploymentUncheckedCreateWithoutDiagnosisInput = {
+  id?: string
+  projectId: string
+  serverId?: string | null
+  triggeredById?: string | null
+  trigger?: $Enums.DeploymentTrigger
+  status?: $Enums.DeploymentStatus
+  branch: string
+  commitSha: string
+  commitMessage: string
+  commitAuthor?: string | null
+  stages?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  failedStage?: $Enums.DeploymentStatus | null
+  errorSummary?: string | null
+  imageTag?: string | null
+  containerName?: string | null
+  url?: string | null
+  cancelRequestedAt?: Date | string | null
+  sourceDeploymentId?: string | null
+  hintTitle?: string | null
+  hintAdvice?: string | null
+  autoRetry?: boolean
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  logChunks?: Prisma.DeploymentLogChunkUncheckedCreateNestedManyWithoutDeploymentInput
+  reusedBy?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSourceInput
+}
+
+export type DeploymentCreateOrConnectWithoutDiagnosisInput = {
+  where: Prisma.DeploymentWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeploymentCreateWithoutDiagnosisInput, Prisma.DeploymentUncheckedCreateWithoutDiagnosisInput>
+}
+
+export type DeploymentUpsertWithoutDiagnosisInput = {
+  update: Prisma.XOR<Prisma.DeploymentUpdateWithoutDiagnosisInput, Prisma.DeploymentUncheckedUpdateWithoutDiagnosisInput>
+  create: Prisma.XOR<Prisma.DeploymentCreateWithoutDiagnosisInput, Prisma.DeploymentUncheckedCreateWithoutDiagnosisInput>
+  where?: Prisma.DeploymentWhereInput
+}
+
+export type DeploymentUpdateToOneWithWhereWithoutDiagnosisInput = {
+  where?: Prisma.DeploymentWhereInput
+  data: Prisma.XOR<Prisma.DeploymentUpdateWithoutDiagnosisInput, Prisma.DeploymentUncheckedUpdateWithoutDiagnosisInput>
+}
+
+export type DeploymentUpdateWithoutDiagnosisInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  trigger?: Prisma.EnumDeploymentTriggerFieldUpdateOperationsInput | $Enums.DeploymentTrigger
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
+  branch?: Prisma.StringFieldUpdateOperationsInput | string
+  commitSha?: Prisma.StringFieldUpdateOperationsInput | string
+  commitMessage?: Prisma.StringFieldUpdateOperationsInput | string
+  commitAuthor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stages?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  failedStage?: Prisma.NullableEnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus | null
+  errorSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageTag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  containerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  project?: Prisma.ProjectUpdateOneRequiredWithoutDeploymentsNestedInput
+  server?: Prisma.ServerUpdateOneWithoutDeploymentsNestedInput
+  triggeredBy?: Prisma.UserUpdateOneWithoutDeploymentsNestedInput
+  logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
+  source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
+  reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+}
+
+export type DeploymentUncheckedUpdateWithoutDiagnosisInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  serverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trigger?: Prisma.EnumDeploymentTriggerFieldUpdateOperationsInput | $Enums.DeploymentTrigger
+  status?: Prisma.EnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus
+  branch?: Prisma.StringFieldUpdateOperationsInput | string
+  commitSha?: Prisma.StringFieldUpdateOperationsInput | string
+  commitMessage?: Prisma.StringFieldUpdateOperationsInput | string
+  commitAuthor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stages?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  failedStage?: Prisma.NullableEnumDeploymentStatusFieldUpdateOperationsInput | $Enums.DeploymentStatus | null
+  errorSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageTag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  containerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
@@ -1564,6 +1772,7 @@ export type DeploymentCreateManyTriggeredByInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1586,6 +1795,7 @@ export type DeploymentUpdateWithoutTriggeredByInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1594,6 +1804,7 @@ export type DeploymentUpdateWithoutTriggeredByInput = {
   logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
   source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
   reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateWithoutTriggeredByInput = {
@@ -1616,11 +1827,13 @@ export type DeploymentUncheckedUpdateWithoutTriggeredByInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateManyWithoutTriggeredByInput = {
@@ -1643,6 +1856,7 @@ export type DeploymentUncheckedUpdateManyWithoutTriggeredByInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1668,6 +1882,7 @@ export type DeploymentCreateManyProjectInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1690,6 +1905,7 @@ export type DeploymentUpdateWithoutProjectInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1698,6 +1914,7 @@ export type DeploymentUpdateWithoutProjectInput = {
   logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
   source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
   reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateWithoutProjectInput = {
@@ -1720,11 +1937,13 @@ export type DeploymentUncheckedUpdateWithoutProjectInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateManyWithoutProjectInput = {
@@ -1747,6 +1966,7 @@ export type DeploymentUncheckedUpdateManyWithoutProjectInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1772,6 +1992,7 @@ export type DeploymentCreateManyServerInput = {
   sourceDeploymentId?: string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1794,6 +2015,7 @@ export type DeploymentUpdateWithoutServerInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1802,6 +2024,7 @@ export type DeploymentUpdateWithoutServerInput = {
   logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
   source?: Prisma.DeploymentUpdateOneWithoutReusedByNestedInput
   reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateWithoutServerInput = {
@@ -1824,11 +2047,13 @@ export type DeploymentUncheckedUpdateWithoutServerInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateManyWithoutServerInput = {
@@ -1851,6 +2076,7 @@ export type DeploymentUncheckedUpdateManyWithoutServerInput = {
   sourceDeploymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1876,6 +2102,7 @@ export type DeploymentCreateManySourceInput = {
   cancelRequestedAt?: Date | string | null
   hintTitle?: string | null
   hintAdvice?: string | null
+  autoRetry?: boolean
   createdAt?: Date | string
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
@@ -1898,6 +2125,7 @@ export type DeploymentUpdateWithoutSourceInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1906,6 +2134,7 @@ export type DeploymentUpdateWithoutSourceInput = {
   triggeredBy?: Prisma.UserUpdateOneWithoutDeploymentsNestedInput
   logChunks?: Prisma.DeploymentLogChunkUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateWithoutSourceInput = {
@@ -1928,11 +2157,13 @@ export type DeploymentUncheckedUpdateWithoutSourceInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   logChunks?: Prisma.DeploymentLogChunkUncheckedUpdateManyWithoutDeploymentNestedInput
   reusedBy?: Prisma.DeploymentUncheckedUpdateManyWithoutSourceNestedInput
+  diagnosis?: Prisma.BuildDiagnosisUncheckedUpdateOneWithoutDeploymentNestedInput
 }
 
 export type DeploymentUncheckedUpdateManyWithoutSourceInput = {
@@ -1955,6 +2186,7 @@ export type DeploymentUncheckedUpdateManyWithoutSourceInput = {
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   hintTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hintAdvice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  autoRetry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2021,6 +2253,7 @@ export type DeploymentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   sourceDeploymentId?: boolean
   hintTitle?: boolean
   hintAdvice?: boolean
+  autoRetry?: boolean
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
@@ -2030,6 +2263,7 @@ export type DeploymentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   logChunks?: boolean | Prisma.Deployment$logChunksArgs<ExtArgs>
   source?: boolean | Prisma.Deployment$sourceArgs<ExtArgs>
   reusedBy?: boolean | Prisma.Deployment$reusedByArgs<ExtArgs>
+  diagnosis?: boolean | Prisma.Deployment$diagnosisArgs<ExtArgs>
   _count?: boolean | Prisma.DeploymentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deployment"]>
 
@@ -2054,6 +2288,7 @@ export type DeploymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   sourceDeploymentId?: boolean
   hintTitle?: boolean
   hintAdvice?: boolean
+  autoRetry?: boolean
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
@@ -2084,6 +2319,7 @@ export type DeploymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   sourceDeploymentId?: boolean
   hintTitle?: boolean
   hintAdvice?: boolean
+  autoRetry?: boolean
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
@@ -2114,12 +2350,13 @@ export type DeploymentSelectScalar = {
   sourceDeploymentId?: boolean
   hintTitle?: boolean
   hintAdvice?: boolean
+  autoRetry?: boolean
   createdAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
 }
 
-export type DeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "serverId" | "triggeredById" | "trigger" | "status" | "branch" | "commitSha" | "commitMessage" | "commitAuthor" | "stages" | "failedStage" | "errorSummary" | "imageTag" | "containerName" | "url" | "cancelRequestedAt" | "sourceDeploymentId" | "hintTitle" | "hintAdvice" | "createdAt" | "startedAt" | "finishedAt", ExtArgs["result"]["deployment"]>
+export type DeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "serverId" | "triggeredById" | "trigger" | "status" | "branch" | "commitSha" | "commitMessage" | "commitAuthor" | "stages" | "failedStage" | "errorSummary" | "imageTag" | "containerName" | "url" | "cancelRequestedAt" | "sourceDeploymentId" | "hintTitle" | "hintAdvice" | "autoRetry" | "createdAt" | "startedAt" | "finishedAt", ExtArgs["result"]["deployment"]>
 export type DeploymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   server?: boolean | Prisma.Deployment$serverArgs<ExtArgs>
@@ -2127,6 +2364,7 @@ export type DeploymentInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   logChunks?: boolean | Prisma.Deployment$logChunksArgs<ExtArgs>
   source?: boolean | Prisma.Deployment$sourceArgs<ExtArgs>
   reusedBy?: boolean | Prisma.Deployment$reusedByArgs<ExtArgs>
+  diagnosis?: boolean | Prisma.Deployment$diagnosisArgs<ExtArgs>
   _count?: boolean | Prisma.DeploymentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DeploymentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2151,6 +2389,7 @@ export type $DeploymentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     logChunks: Prisma.$DeploymentLogChunkPayload<ExtArgs>[]
     source: Prisma.$DeploymentPayload<ExtArgs> | null
     reusedBy: Prisma.$DeploymentPayload<ExtArgs>[]
+    diagnosis: Prisma.$BuildDiagnosisPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2191,6 +2430,10 @@ export type $DeploymentPayload<ExtArgs extends runtime.Types.Extensions.Internal
      */
     hintTitle: string | null
     hintAdvice: string | null
+    /**
+     * Created by Build Doctor's automatic fix (never retried again automatically).
+     */
+    autoRetry: boolean
     createdAt: Date
     startedAt: Date | null
     finishedAt: Date | null
@@ -2594,6 +2837,7 @@ export interface Prisma__DeploymentClient<T, Null = never, ExtArgs extends runti
   logChunks<T extends Prisma.Deployment$logChunksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Deployment$logChunksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentLogChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   source<T extends Prisma.Deployment$sourceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Deployment$sourceArgs<ExtArgs>>): Prisma.Prisma__DeploymentClient<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reusedBy<T extends Prisma.Deployment$reusedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Deployment$reusedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  diagnosis<T extends Prisma.Deployment$diagnosisArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Deployment$diagnosisArgs<ExtArgs>>): Prisma.Prisma__BuildDiagnosisClient<runtime.Types.Result.GetResult<Prisma.$BuildDiagnosisPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2643,6 +2887,7 @@ export interface DeploymentFieldRefs {
   readonly sourceDeploymentId: Prisma.FieldRef<"Deployment", 'String'>
   readonly hintTitle: Prisma.FieldRef<"Deployment", 'String'>
   readonly hintAdvice: Prisma.FieldRef<"Deployment", 'String'>
+  readonly autoRetry: Prisma.FieldRef<"Deployment", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Deployment", 'DateTime'>
   readonly startedAt: Prisma.FieldRef<"Deployment", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"Deployment", 'DateTime'>
@@ -3149,6 +3394,25 @@ export type Deployment$reusedByArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.DeploymentScalarFieldEnum | Prisma.DeploymentScalarFieldEnum[]
+}
+
+/**
+ * Deployment.diagnosis
+ */
+export type Deployment$diagnosisArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BuildDiagnosis
+   */
+  select?: Prisma.BuildDiagnosisSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BuildDiagnosis
+   */
+  omit?: Prisma.BuildDiagnosisOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BuildDiagnosisInclude<ExtArgs> | null
+  where?: Prisma.BuildDiagnosisWhereInput
 }
 
 /**

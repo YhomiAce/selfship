@@ -56,4 +56,44 @@ export class DeploymentLauncher {
     );
     return true;
   }
+
+  /**
+   * Deploys the same commit again after an automatic fix (Build Doctor). The
+   * new deployment is marked so it is never retried automatically itself.
+   *
+   * @param failedId - The failed deployment
+   * @returns The new deployment's ID, or null if another deployment is already active
+   */
+  async queueAutoRetry(failedId: string): Promise<string | null> {
+    const failed = await this.prisma.deployment.findUniqueOrThrow({ where: { id: failedId } });
+    const created = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM projects WHERE id = ${failed.projectId}::uuid FOR UPDATE`;
+      const active = await tx.deployment.count({
+        where: {
+          projectId: failed.projectId,
+          status: { in: [...ACTIVE_DEPLOYMENT_STATUSES] as DeploymentStatus[] },
+        },
+      });
+      if (active > 0) return null;
+      return tx.deployment.create({
+        data: {
+          projectId: failed.projectId,
+          serverId: failed.serverId,
+          trigger: failed.trigger === 'push' ? 'push' : 'manual',
+          autoRetry: true,
+          branch: failed.branch,
+          commitSha: failed.commitSha,
+          commitMessage: failed.commitMessage,
+          commitAuthor: failed.commitAuthor,
+        },
+      });
+    });
+    if (!created) return null;
+    await this.queue.add(
+      DeploymentQueueJob.RUN,
+      { deploymentId: created.id },
+      { jobId: created.id, attempts: 1 },
+    );
+    return created.id;
+  }
 }

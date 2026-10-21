@@ -69,6 +69,7 @@ export function toProjectDto(
       : null,
     healthCheckPath: project.healthCheckPath,
     autoDeploy: project.autoDeploy,
+    buildDoctor: project.buildDoctor,
     url: deployments.url,
     liveDeployment: deployments.live,
     latestDeployment: deployments.latest,

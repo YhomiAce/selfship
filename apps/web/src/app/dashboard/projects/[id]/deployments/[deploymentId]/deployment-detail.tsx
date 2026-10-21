@@ -23,6 +23,7 @@ import {
   type DeploymentDto,
 } from '@selfship/shared';
 import { FormAlert } from '@/components/auth/form-alert';
+import { BuildDoctorPanel } from '@/components/deployments/build-doctor-panel';
 import { DeploymentStatusBadge } from '@/components/deployments/deployment-status-badge';
 import { LogViewer } from '@/components/deployments/log-viewer';
 import { duration, StageTimeline } from '@/components/deployments/stage-timeline';
@@ -225,6 +226,15 @@ export function DeploymentDetail(): React.ReactNode {
             {deployment.errorSummary}
           </AlertDescription>
         </Alert>
+      ) : null}
+
+      {deployment.status === 'failed' ? (
+        <BuildDoctorPanel
+          key={deployment.id}
+          projectId={projectId}
+          deploymentId={deployment.id}
+          onRedeploy={() => void again('redeploy')}
+        />
       ) : null}
 
       <StageTimeline deployment={deployment} />

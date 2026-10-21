@@ -84,3 +84,8 @@ export type DeploymentLogChunk = Prisma.DeploymentLogChunkModel
  * A hostname routed to a project's app.
  */
 export type Domain = Prisma.DomainModel
+/**
+ * Model BuildDiagnosis
+ * AI diagnosis of a failed deployment.
+ */
+export type BuildDiagnosis = Prisma.BuildDiagnosisModel

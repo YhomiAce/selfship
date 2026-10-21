@@ -116,3 +116,10 @@
 - Built rollback and commit redeploys, auto-deploy on push, a rule-based failure explainer, free subdomains (Cloudflare) and custom domains with DNS guidance, certificate tracking and www ↔ apex redirects.
 - Live test on test-2gb (started for the test, stopped after): everything verified except the free subdomain, which needs the founder's Cloudflare API token. The founder's own `react-web` app on the server was left untouched.
 - Next: founder creates the Cloudflare token (DNS edit on selfship.app) so free subdomains can be tried live; then M6 (Build Doctor + free sandbox).
+
+## Session 12 — 2026-10-21 — M5 finished, M6 Build Doctor + free sandbox
+
+- Founder added the Cloudflare token: free subdomains verified live (`portfolio.selfship.app`, certificate in 45 s, record deleted with the project). M5 merged to main.
+- Built Build Doctor (Claude, structured diagnosis, redaction, fingerprint cache, daily limit, safe auto-fixes, "Apply fix", feedback) and the free sandbox (limits, per-app networks, mail block, rate limit, 7-day expiry with one extension, onboarding).
+- Sandbox verified live on test-2gb (temporarily marked as a sandbox server, all changes reverted afterwards). Build Doctor tested with a fake model; it needs `ANTHROPIC_API_KEY` (a Claude Console key) for a live run.
+- Deferred: sandbox sleep after inactivity (needs traffic data).

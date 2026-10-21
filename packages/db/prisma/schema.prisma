@@ -178,11 +178,17 @@ model Project {
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   /// Server the project deploys to (null until chosen, or after the server is removed).
-  serverId        String? @map("server_id") @db.Uuid
+  serverId         String?   @map("server_id") @db.Uuid
   /// Path checked before traffic moves to a new version; any status below 500 passes.
-  healthCheckPath String  @default("/") @map("health_check_path")
+  healthCheckPath  String    @default("/") @map("health_check_path")
   /// Deploy automatically when the branch receives a push.
-  autoDeploy      Boolean @default(true) @map("auto_deploy")
+  autoDeploy       Boolean   @default(true) @map("auto_deploy")
+  /// Let Build Doctor (AI) diagnose failed deployments.
+  buildDoctor      Boolean   @default(true) @map("build_doctor")
+  /// Free sandbox apps are removed after this date.
+  sandboxExpiresAt DateTime? @map("sandbox_expires_at")
+  /// The sandbox lifetime was extended (allowed once).
+  sandboxExtended  Boolean   @default(false) @map("sandbox_extended")
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   githubInstallation GithubInstallation @relation(fields: [githubInstallationId], references: [id], onDelete: Restrict)
@@ -190,6 +196,7 @@ model Project {
   envVars            EnvVar[]
   deployments        Deployment[]
   domains            Domain[]
+  diagnoses          BuildDiagnosis[]
 
   @@unique([userId, name])
   @@index([serverId])
@@ -264,19 +271,21 @@ model Server {
   statusMessage       String?         @map("status_message")
 
   // Facts from the last pre-flight.
-  os            String?
-  osVersion     String?         @map("os_version")
-  arch          String?
-  cpus          Int?
-  ramMb         Int?            @map("ram_mb")
-  swapMb        Int?            @map("swap_mb")
-  diskFreeGb    Int?            @map("disk_free_gb")
-  dockerVersion String?         @map("docker_version")
-  tier          CapabilityTier?
-  problems      String[]        @default([])
-  warnings      String[]        @default([])
-  lastCheckedAt DateTime?       @map("last_checked_at")
-  readyAt       DateTime?       @map("ready_at")
+  os                String?
+  osVersion         String?         @map("os_version")
+  arch              String?
+  cpus              Int?
+  ramMb             Int?            @map("ram_mb")
+  swapMb            Int?            @map("swap_mb")
+  diskFreeGb        Int?            @map("disk_free_gb")
+  dockerVersion     String?         @map("docker_version")
+  tier              CapabilityTier?
+  problems          String[]        @default([])
+  warnings          String[]        @default([])
+  lastCheckedAt     DateTime?       @map("last_checked_at")
+  readyAt           DateTime?       @map("ready_at")
+  /// Platform-owned server for the free sandbox (shared by many users' apps).
+  isPlatformSandbox Boolean         @default(false) @map("is_platform_sandbox")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -408,6 +417,8 @@ model Deployment {
   /// Plain-language explanation of a failure (rule-based), and what to do about it.
   hintTitle          String?           @map("hint_title")
   hintAdvice         String?           @map("hint_advice")
+  /// Created by Build Doctor's automatic fix (never retried again automatically).
+  autoRetry          Boolean           @default(false) @map("auto_retry")
   createdAt          DateTime          @default(now()) @map("created_at")
   startedAt          DateTime?         @map("started_at")
   finishedAt         DateTime?         @map("finished_at")
@@ -418,6 +429,7 @@ model Deployment {
   logChunks   DeploymentLogChunk[]
   source      Deployment?          @relation("DeploymentSource", fields: [sourceDeploymentId], references: [id], onDelete: SetNull)
   reusedBy    Deployment[]         @relation("DeploymentSource")
+  diagnosis   BuildDiagnosis?
 
   @@index([projectId, createdAt])
   @@index([serverId, status])
@@ -484,4 +496,49 @@ model Domain {
   @@index([projectId])
   @@index([status])
   @@map("domains")
+}
+
+// ── Build Doctor (M6) ───────────────────────────────────────────────────────
+
+enum DiagnosisStatus {
+  pending
+  ready
+  failed
+  /// Not run (daily limit, feature off…); see error.
+  skipped
+}
+
+/// AI diagnosis of a failed deployment.
+model BuildDiagnosis {
+  id              String          @id @default(uuid()) @db.Uuid
+  deploymentId    String          @unique @map("deployment_id") @db.Uuid
+  projectId       String          @map("project_id") @db.Uuid
+  /// Owner of the project at the time (daily limits).
+  userId          String          @map("user_id") @db.Uuid
+  status          DiagnosisStatus @default(pending)
+  /// Hash of the normalised error + project type, for reusing diagnoses.
+  fingerprint     String?
+  /// `Diagnosis` JSON (packages/shared), validated on read.
+  result          Json?
+  error           String?
+  cached          Boolean         @default(false)
+  /// Model that answered (may be a fallback model) and token usage, to watch cost.
+  model           String?
+  inputTokens     Int             @default(0) @map("input_tokens")
+  outputTokens    Int             @default(0) @map("output_tokens")
+  cacheReadTokens Int             @default(0) @map("cache_read_tokens")
+  /// What Selfship did automatically (e.g. "Pruned Docker and retried").
+  autoRemediation String?         @map("auto_remediation")
+  /// 1 = helpful, -1 = not helpful.
+  feedback        Int?
+  feedbackComment String?         @map("feedback_comment")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  finishedAt      DateTime?       @map("finished_at")
+
+  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([projectId, fingerprint])
+  @@map("build_diagnoses")
 }

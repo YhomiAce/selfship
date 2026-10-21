@@ -136,3 +136,13 @@ export const DomainStatus = {
 } as const
 
 export type DomainStatus = (typeof DomainStatus)[keyof typeof DomainStatus]
+
+
+export const DiagnosisStatus = {
+  pending: 'pending',
+  ready: 'ready',
+  failed: 'failed',
+  skipped: 'skipped'
+} as const
+
+export type DiagnosisStatus = (typeof DiagnosisStatus)[keyof typeof DiagnosisStatus]

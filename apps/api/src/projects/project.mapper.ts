@@ -1,16 +1,17 @@
 import type { GithubInstallation, Project, Server } from '@selfship/db';
 import type { DeploymentDto, GithubConnectionState, ProjectDto } from '@selfship/shared';
+import { sandboxFacts } from '../sandbox/sandbox.service';
 
 /** A project with its GitHub installation and server loaded. */
 export type ProjectWithRelations = Project & {
   githubInstallation: GithubInstallation;
-  server: Pick<Server, 'id' | 'name' | 'status'> | null;
+  server: Pick<Server, 'id' | 'name' | 'status' | 'isPlatformSandbox'> | null;
 };
 
 /** Prisma include that loads what {@link toProjectDto} needs. */
 export const PROJECT_INCLUDE = {
   githubInstallation: true,
-  server: { select: { id: true, name: true, status: true } },
+  server: { select: { id: true, name: true, status: true, isPlatformSandbox: true } },
 } as const;
 
 /** The deployments shown with a project. */
@@ -65,10 +66,17 @@ export function toProjectDto(
       state: connectionState(project.githubInstallation),
     },
     server: project.server
-      ? { id: project.server.id, name: project.server.name, status: project.server.status }
+      ? {
+          id: project.server.id,
+          name: project.server.name,
+          status: project.server.status,
+          sandbox: project.server.isPlatformSandbox,
+        }
       : null,
+    sandbox: sandboxFacts(project, project.server?.isPlatformSandbox ?? false),
     healthCheckPath: project.healthCheckPath,
     autoDeploy: project.autoDeploy,
+    buildDoctor: project.buildDoctor,
     url: deployments.url,
     liveDeployment: deployments.live,
     latestDeployment: deployments.latest,

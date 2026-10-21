@@ -46,6 +46,12 @@ export interface DeployPlan {
   healthCheckPath: string;
   /** Variables by when they're needed. A `both` variable appears in each. */
   env: { build: Record<string, string>; runtime: Record<string, string> };
+  /**
+   * Free sandbox (shared platform server): resource limits, no extra
+   * privileges, its own Docker network, a request rate limit, and no
+   * outbound mail. Omitted on users' own servers.
+   */
+  sandbox?: { memory: string; cpus: string; pids: number };
 }
 
 /** Callbacks into the worker. */
@@ -112,6 +118,8 @@ const KEEP_IMAGES = 3;
 const PRUNE_DISK_PERCENT = 80;
 const CLONE_TIMEOUT_MS = 10 * 60_000;
 const BUILD_TIMEOUT_MS = 30 * 60_000;
+/** Builds on shared sandbox servers must be quick. */
+const SANDBOX_BUILD_TIMEOUT_MS = 10 * 60_000;
 
 const APP_ID = /^[a-z0-9]([a-z0-9-]{0,40}[a-z0-9])?$/;
 const HOST = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
@@ -176,6 +184,11 @@ export class AppDeployer {
     const rootDirectory = plan.source.kind === 'git' ? plan.source.rootDirectory : '';
     this.contextDir = rootDirectory ? `${this.srcDir}/${rootDirectory}` : this.srcDir;
     this.pidFile = `${this.buildDir}/pid`;
+  }
+
+  /** Docker network of the app: shared on users' servers, its own on the sandbox. */
+  private get network(): string {
+    return this.plan.sandbox ? `sbx-${this.plan.app}` : 'selfship';
   }
 
   /** Name of the new container (also its Traefik router and service). */
@@ -327,7 +340,7 @@ export class AppDeployer {
           sh(this.contextDir),
         ].join(' '),
       ].join('\n'),
-      { timeoutMs: BUILD_TIMEOUT_MS, stream: true },
+      { timeoutMs: this.plan.sandbox ? SANDBOX_BUILD_TIMEOUT_MS : BUILD_TIMEOUT_MS, stream: true },
     );
     await this.removeSources();
     this.hooks.log('✓ Image built');
@@ -378,12 +391,19 @@ export class AppDeployer {
       `traefik.http.routers.${route}.entrypoints=websecure`,
       `traefik.http.routers.${route}.tls.certresolver=le`,
       `traefik.http.routers.${route}.service=${route}`,
-      `traefik.http.routers.${route}.middlewares=${route}-retry`,
+      `traefik.http.routers.${route}.middlewares=${route}-retry${this.plan.sandbox ? `,${route}-ratelimit` : ''}`,
       `traefik.http.middlewares.${route}-retry.retry.attempts=3`,
       `traefik.http.middlewares.${route}-retry.retry.initialinterval=100ms`,
       `traefik.http.services.${route}.loadbalancer.server.port=${port}`,
       `selfship.app=${app}`,
       `selfship.deployment=${this.plan.deploymentId}`,
+      ...(this.plan.sandbox
+        ? [
+            `traefik.docker.network=${this.network}`,
+            `traefik.http.middlewares.${route}-ratelimit.ratelimit.average=50`,
+            `traefik.http.middlewares.${route}-ratelimit.ratelimit.burst=100`,
+          ]
+        : []),
       // Redirect hostnames get their own router that only redirects (with its own certificate).
       ...this.plan.routing.redirects.flatMap(({ from, to }, index) => {
         const name = `${route}-redirect${index}`;
@@ -413,6 +433,21 @@ export class AppDeployer {
           '--health-start-period 120s',
         ]
       : [];
+    const sandbox = this.plan.sandbox
+      ? [
+          `--memory ${sh(this.plan.sandbox.memory)}`,
+          `--memory-swap ${sh(this.plan.sandbox.memory)}`,
+          `--cpus ${sh(this.plan.sandbox.cpus)}`,
+          `--pids-limit ${this.plan.sandbox.pids}`,
+          '--security-opt no-new-privileges',
+          // Only what nginx/node need to bind their port and drop to their own user.
+          '--cap-drop ALL',
+          ...['CHOWN', 'SETUID', 'SETGID', 'NET_BIND_SERVICE', 'DAC_OVERRIDE'].map(
+            (c) => `--cap-add ${c}`,
+          ),
+        ]
+      : [];
+    if (this.plan.sandbox) await this.isolate();
     const envFile = `${this.buildDir}/run-env.sh`;
     await this.writeFile(envFile, exportLines(this.plan.env.runtime), '600');
     this.hooks.log(`→ Starting ${route}`);
@@ -423,8 +458,9 @@ export class AppDeployer {
         [
           'docker run -d',
           `--name ${sh(route)}`,
-          '--network selfship',
+          `--network ${sh(this.network)}`,
           '--restart unless-stopped',
+          ...sandbox,
           `-e PORT=${sh(port)}`,
           ...runtimeNames.map((name) => `-e ${name}`),
           ...healthCheck,
@@ -434,6 +470,25 @@ export class AppDeployer {
         ].join(' '),
       ].join('\n'),
       { timeoutMs: 5 * 60_000 },
+    );
+  }
+
+  /**
+   * Sandbox only: gives the app its own Docker network (apps can't reach each
+   * other; Traefik is connected to each), and blocks outbound mail ports
+   * (spam). Both are idempotent and re-applied on every deployment.
+   */
+  private async isolate(): Promise<void> {
+    const network = sh(this.network);
+    await this.runner.exec(
+      [
+        `docker network inspect ${network} >/dev/null 2>&1 || docker network create ${network} >/dev/null`,
+        `docker network connect ${network} selfship-traefik 2>/dev/null || true`,
+        'for port in 25 465 587; do',
+        '  iptables -C DOCKER-USER -p tcp --dport "$port" -j REJECT 2>/dev/null || iptables -I DOCKER-USER -p tcp --dport "$port" -j REJECT',
+        'done',
+      ].join('\n'),
+      { sudo: true, timeoutMs: 60_000 },
     );
   }
 
@@ -465,7 +520,7 @@ export class AppDeployer {
       }
       if (health === 'none' || health === 'healthy') {
         const probe = await this.runner.exec(
-          `ip=$(docker inspect -f '{{(index .NetworkSettings.Networks "selfship").IPAddress}}' ${container}); ` +
+          `ip=$(docker inspect -f '{{(index .NetworkSettings.Networks "${this.network}").IPAddress}}' ${container}); ` +
             `curl -s -o /dev/null -m 5 -w '%{http_code}' "http://$ip:${port}"${sh(path)}`,
           { sudo: true, check: false },
         );
@@ -673,6 +728,9 @@ export async function teardownApp(runner: CommandRunner, app: string): Promise<s
       '[ -n "$names" ] && echo "$names" | xargs -r docker rm -f >/dev/null',
       `docker images ${sh(`selfship/${app}`)} -q | sort -u | xargs -r docker rmi -f >/dev/null 2>&1 || true`,
       `rm -rf ${sh(`${APPS_DIR}/${app}`)}`,
+      // Sandbox apps have their own network.
+      `docker network disconnect -f ${sh(`sbx-${app}`)} selfship-traefik >/dev/null 2>&1 || true`,
+      `docker network rm ${sh(`sbx-${app}`)} >/dev/null 2>&1 || true`,
       'echo "$names"',
     ].join('\n'),
     { sudo: true, timeoutMs: 5 * 60_000 },

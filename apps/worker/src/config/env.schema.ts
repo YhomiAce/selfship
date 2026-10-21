@@ -73,6 +73,21 @@ export const EnvSchema = z
       .string()
       .optional()
       .transform((value) => value || undefined),
+    /**
+     * Build Doctor (AI diagnosis of failed builds). Without a key it is off and
+     * users see only the rule-based hints. A Claude Console API key, not a
+     * Claude.ai/Claude Code login.
+     */
+    ANTHROPIC_API_KEY: z
+      .string()
+      .optional()
+      .transform((value) => value || undefined),
+    BUILD_DOCTOR_MODEL: z.string().default('claude-opus-5-5'),
+    BUILD_DOCTOR_EFFORT: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).default('medium'),
+    /** Diagnoses per user per day (reused/cached ones don't count). */
+    BUILD_DOCTOR_DAILY_LIMIT: z.coerce.number().int().min(0).max(10_000).default(10),
+    /** Server-side fallback on refusals; turn off for models that don't support it. */
+    BUILD_DOCTOR_FALLBACKS: z.stringbool().default(true),
     GITHUB_API_URL: z.url().default('https://api.github.com'),
     GITHUB_WEB_URL: z.url().default('https://github.com'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),

@@ -63,7 +63,8 @@ export const ModelName = {
   EnvVar: 'EnvVar',
   Deployment: 'Deployment',
   DeploymentLogChunk: 'DeploymentLogChunk',
-  Domain: 'Domain'
+  Domain: 'Domain',
+  BuildDiagnosis: 'BuildDiagnosis'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -181,7 +182,10 @@ export const ProjectScalarFieldEnum = {
   updatedAt: 'updatedAt',
   serverId: 'serverId',
   healthCheckPath: 'healthCheckPath',
-  autoDeploy: 'autoDeploy'
+  autoDeploy: 'autoDeploy',
+  buildDoctor: 'buildDoctor',
+  sandboxExpiresAt: 'sandboxExpiresAt',
+  sandboxExtended: 'sandboxExtended'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
@@ -214,6 +218,7 @@ export const ServerScalarFieldEnum = {
   warnings: 'warnings',
   lastCheckedAt: 'lastCheckedAt',
   readyAt: 'readyAt',
+  isPlatformSandbox: 'isPlatformSandbox',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -270,6 +275,7 @@ export const DeploymentScalarFieldEnum = {
   sourceDeploymentId: 'sourceDeploymentId',
   hintTitle: 'hintTitle',
   hintAdvice: 'hintAdvice',
+  autoRetry: 'autoRetry',
   createdAt: 'createdAt',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt'
@@ -308,6 +314,30 @@ export const DomainScalarFieldEnum = {
 export type DomainScalarFieldEnum = (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum]
 
 
+export const BuildDiagnosisScalarFieldEnum = {
+  id: 'id',
+  deploymentId: 'deploymentId',
+  projectId: 'projectId',
+  userId: 'userId',
+  status: 'status',
+  fingerprint: 'fingerprint',
+  result: 'result',
+  error: 'error',
+  cached: 'cached',
+  model: 'model',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  cacheReadTokens: 'cacheReadTokens',
+  autoRemediation: 'autoRemediation',
+  feedback: 'feedback',
+  feedbackComment: 'feedbackComment',
+  createdAt: 'createdAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type BuildDiagnosisScalarFieldEnum = (typeof BuildDiagnosisScalarFieldEnum)[keyof typeof BuildDiagnosisScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -321,6 +351,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

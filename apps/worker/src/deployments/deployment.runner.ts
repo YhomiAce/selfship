@@ -20,6 +20,7 @@ import {
   deploymentStreamKey,
   explainFailure,
   QueueName,
+  SANDBOX_LIMITS,
   type TeardownJobData,
 } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
@@ -28,6 +29,7 @@ import { LiveLog } from '../logs/live-log';
 import { PrismaService } from '../prisma/prisma.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import { ServerConnector } from '../servers/server-connector';
+import { BuildDoctorService } from '../build-doctor/build-doctor.service';
 import { DomainRoutingService } from '../domains/domain-routing.service';
 import { appId, envVarContext, resolveIpv4, splitEnv } from './deployment-plan';
 import { StageClock } from './stage-clock';
@@ -70,6 +72,7 @@ export class DeploymentRunner implements OnModuleInit {
     private readonly config: AppConfigService,
     private readonly connector: ServerConnector,
     private readonly domains: DomainRoutingService,
+    private readonly buildDoctor: BuildDoctorService,
     @Inject(GITHUB_CLIENT) private readonly github: GithubAppClient | null,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     @InjectQueue(QueueName.DEPLOYMENTS) private readonly queue: Queue<TeardownJobData>,
@@ -255,6 +258,7 @@ export class DeploymentRunner implements OnModuleInit {
           },
           routing,
           healthCheckPath: project.healthCheckPath,
+          ...(server.isPlatformSandbox ? { sandbox: { ...SANDBOX_LIMITS } } : {}),
           env: splitEnv(vars),
         },
         {
@@ -339,6 +343,12 @@ export class DeploymentRunner implements OnModuleInit {
         status: cancelled ? 'cancelled' : 'failed',
         error: summary,
       });
+      // Unexplained build/run failures get an AI diagnosis (in the background).
+      if (!cancelled && !hint && clock.current) {
+        await this.buildDoctor.requestFor(deployment.id).catch((error: unknown) => {
+          this.logger.warn(`Requesting a Build Doctor diagnosis failed: ${String(error)}`);
+        });
+      }
     } finally {
       clearInterval(ticker);
       ssh?.close();

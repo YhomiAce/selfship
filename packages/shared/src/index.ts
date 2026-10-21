@@ -1,4 +1,5 @@
 export * from './auth/auth.schemas';
+export * from './build-doctor';
 export * from './common/api-error';
 export * from './common/health';
 export * from './deployments';
@@ -8,4 +9,5 @@ export * from './github/github.schemas';
 export * from './projects/project.schemas';
 export * from './servers/server.schemas';
 export * from './queues';
+export * from './sandbox';
 export * from './queues/connection';

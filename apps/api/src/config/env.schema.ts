@@ -87,6 +87,8 @@ export const EnvSchema = z
     CLOUDFLARE_ZONE_ID: optionalString,
     /** Wildcard DNS service for temporary URLs (same as the worker). */
     PREVIEW_DOMAIN: z.string().default('sslip.io'),
+    /** Build Doctor is offered when the worker has an API key (same .env); the API never calls Claude. */
+    ANTHROPIC_API_KEY: optionalString,
     /** Domains users can't add as custom domains (ours), comma-separated. */
     RESERVED_DOMAINS: z.string().default('selfship.dev,selfship.app'),
   })

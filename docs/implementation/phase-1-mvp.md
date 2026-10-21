@@ -142,7 +142,7 @@
 ## M5 — Domains, SSL, auto-deploy, rollback, friendly errors
 
 - [x] **Cloudflare DNS** ([`packages/cloudflare`](../../packages/cloudflare/src/client.ts)): A records for free subdomains, DNS only (not proxied) so Let's Encrypt reaches the server
-- [x] **Free HTTPS subdomain** per project: `<name>.<PLATFORM_APPS_DOMAIN>` (or `<name>-<id>` if taken or reserved), created at the first deployment, moved when the project changes server (after the first success there), deleted with the project. The sslip.io URL stays as a fallback. _Needs a Cloudflare token to try live (see below)._
+- [x] **Free HTTPS subdomain** per project: `<name>.<PLATFORM_APPS_DOMAIN>` (or `<name>-<id>` if taken or reserved), created at the first deployment, moved when the project changes server (after the first success there), deleted with the project. The sslip.io URL stays as a fallback. **Verified live 2026-10-21:** `portfolio.selfship.app` got its DNS record and a Let's Encrypt certificate in 45 s; deleting the project removed the record.
 - [x] **Custom domains**: add → exact DNS record shown → checked through public resolvers (explains missing records, wrong IPs, extra A records, stray AAAA, Cloudflare's orange cloud) → re-run of the live image with the new route → certificate confirmed with a TLS probe → ✅. Stuck certificates are explained from Traefik's log (rate limit, DNS, firewall, CAA). A worker job runs the checks every minute; "Check now" runs them immediately
 - [x] **www ↔ apex redirect** (permanent, path and query kept)
 - [x] **Auto-deploy on push** with a per-project switch: matching repo + branch + installation, newest push wins over waiting deployments, redeliveries and `[skip deploy]`/`[skip ci]` ignored
@@ -153,7 +153,7 @@
 
 **What you'll test**
 
-- [ ] Set the Cloudflare token (`.env`: `PLATFORM_APPS_DOMAIN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`), deploy: the project gets `https://<name>.selfship.app` with a valid certificate
+- [x] Set the Cloudflare token, deploy: the project gets `https://<name>.selfship.app` with a valid certificate (verified 2026-10-21)
 - [ ] Add your real domain. The UI guides you, then it turns ✅ with HTTPS
 - [ ] Push a commit and it auto-deploys (needs the smee relay locally, see the GitHub App guide). Roll back and the old version is live within seconds
 - [ ] Trigger an OOM / wrong port and see a human-readable explanation
@@ -166,24 +166,27 @@ Details: [08-ai-build-doctor.md](../08-ai-build-doctor.md), [09-free-tier-sandbo
 
 **Build Doctor v1**
 
-- [ ] `BuildDoctorModule`: runs after a failed deployment when no deterministic rule matched (or to enrich a rule match)
-- [ ] Context builder: failed stage, redacted log tail, adapter, generated Dockerfile, `package.json`, file tree (depth 2), env var **keys only**, server specs
-- [ ] Call Claude with a zod structured-output schema → `Diagnosis`
-- [ ] Safe auto-remediation for **platform/server** issues from an allowlist (add swap, prune images, retry once). Config fixes need a user click
-- [ ] Cache by error fingerprint. Per-user daily quota. Feature turns off cleanly if no API key is set (self-hosters)
-- [ ] UI: "Build Doctor" panel on failed deployments: summary, root cause, numbered fix steps, suggested code change (diff view), "Apply fix" for safe actions, 👍/👎 feedback
+- [x] Worker [`BuildDoctorService`](../../apps/worker/src/build-doctor/build-doctor.service.ts): runs in the background after a failed deployment when no rule-based hint matched; users can also ask for it on any failure
+- [x] Context: failed stage, last 300 log lines (redacted again with secret patterns, [`redact.ts`](../../apps/worker/src/build-doctor/redact.ts)), project type and settings, generated Dockerfile, `package.json`, file tree (depth 2, read from GitHub at the failed commit), env var **names only**, server specs, the rule hint if any
+- [x] Claude (`claude-opus-5-5`, `BUILD_DOCTOR_MODEL`) with structured output validated by the shared zod `DiagnosisSchema`; stable cached system prompt that treats logs as data; refusals retried server-side on Anthropic's recommended fallback (`fallbacks: "default"`); `refusal`/`max_tokens` handled; token usage stored per diagnosis
+- [x] Safe auto-remediation from an allowlist: `add_swap`, `prune_docker`, `retry` only for server/platform/network problems, not at low confidence, once per deployment chain (the retry is marked and never retried again). Settings fixes (`set_port`, `set_node_version`, `set_*_command`, `set_output_directory`) need a click and are validated exactly like the settings form
+- [x] Cache by error fingerprint (per project, 30 days); daily limit per user (`BUILD_DOCTOR_DAILY_LIMIT`, default 10); off cleanly without `ANTHROPIC_API_KEY`; per-project switch
+- [x] UI: Build Doctor panel on failed deployments (summary, root cause, evidence, numbered fix steps, diff view of a suggested patch, "Apply fix" → "Deploy again", 👍/👎), privacy notice, project switch
 
 **Free sandbox**
 
-- [ ] Platform-owned `Server` records flagged `isPlatformSandbox`
-- [ ] Container limits (memory/CPU/pids), no privileged, read-only root FS where possible, egress rate limits
-- [ ] Sandbox policy: 1 app per verified user, static + Node/SPA (no Next.js if too heavy, decided from spike data), expires after 7 days, sleeps after inactivity
-- [ ] Onboarding offers: "Deploy to free sandbox" or "Connect your own server"
+- [x] `Server.isPlatformSandbox`, set with `pnpm --filter @selfship/api sandbox-server <id> on|off` (admin)
+- [x] Container limits 256 MB (no swap) / 0.25 CPU / 256 processes, all capabilities dropped except those nginx/node need, `no-new-privileges`; a Docker network per app (Traefik joins each); outbound mail ports blocked; request rate limit (50/s, burst 100); 10-minute build timeout
+- [x] Policy: verified email, one sandbox app per user, static/SPA/Node only, free subdomain only (no custom domains), 7 days, extendable once; a project's time isn't restarted; an hourly job removes expired apps (the project stays, ready to move to the user's server)
+- [x] Onboarding: "Deploy to" offers "Try it on the free sandbox" or "Use your own server"; a banner shows the remaining days, Extend, and the way to your own server
+- [ ] Sleep after inactivity: deferred (needs traffic data from Traefik; Phase 2)
+
+**Verified live (2026-10-21, test-2gb as the sandbox server):** sandbox deploy in 31 s at `portfolio.selfship.app`; limits and capabilities as configured; the app could not reach another app's container or open SMTP port 587 while normal HTTPS egress worked; forced expiry removed the app and its network and blocked re-joining. **Build Doctor is unit/e2e tested with a fake model; a live run needs `ANTHROPIC_API_KEY`.**
 
 **What you'll test**
 
-- [ ] Break a repo in 3 different ways (syntax error, missing dependency, wrong start command). Build Doctor explains each correctly with fix steps
-- [ ] Deploy to the sandbox without owning a server, in under 5 minutes from signup
+- [ ] Add `ANTHROPIC_API_KEY` to `.env`. Break a repo in 3 different ways (syntax error, missing dependency, wrong start command). Build Doctor explains each correctly with fix steps
+- [ ] Deploy to the sandbox without owning a server, in under 5 minutes from signup (needs a sandbox server: add one, then `pnpm --filter @selfship/api sandbox-server <id> on`)
 - [ ] Sandbox app gets limited when it exceeds memory, and expires on schedule
 
 ---

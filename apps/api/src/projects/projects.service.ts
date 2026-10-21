@@ -27,6 +27,7 @@ import {
 import { DEPLOYMENT_INCLUDE, toDeploymentDto } from '../deployments/deployment.mapper';
 import { isUniqueViolation } from '../common/prisma-errors';
 import { DomainsService } from '../domains/domains.service';
+import { SandboxService } from '../sandbox/sandbox.service';
 import { GithubAppService } from '../github/github-app.service';
 import { toGithubId } from '../github/github.constants';
 import { GithubInstallationsService } from '../github/github-installations.service';
@@ -53,6 +54,7 @@ export class ProjectsService {
     private readonly github: GithubAppService,
     private readonly installations: GithubInstallationsService,
     private readonly domains: DomainsService,
+    private readonly sandbox: SandboxService,
     @InjectQueue(QueueName.DEPLOYMENTS) private readonly deploymentsQueue: Queue<TeardownJobData>,
   ) {}
 
@@ -204,7 +206,24 @@ export class ProjectsService {
       );
     }
 
-    if (input.serverId) await this.assertServerOwned(userId, input.serverId);
+    // Free sandbox: platform servers anyone eligible may use; otherwise the user's own server.
+    const adapter = input.settings?.adapter ?? project.adapter;
+    let sandboxExpiresAt: Date | undefined;
+    const target = input.serverId
+      ? await this.prisma.server.findUnique({ where: { id: input.serverId } })
+      : null;
+    if (input.serverId) {
+      if (target?.isPlatformSandbox)
+        sandboxExpiresAt = await this.sandbox.join(userId, project, adapter);
+      else await this.assertServerOwned(userId, input.serverId);
+    } else if (
+      input.serverId === undefined &&
+      project.server?.isPlatformSandbox &&
+      input.settings
+    ) {
+      // Staying on the sandbox: the project type must remain one it allows.
+      await this.sandbox.join(userId, project, adapter);
+    }
 
     const data: Prisma.ProjectUncheckedUpdateInput = {
       ...(input.name !== undefined ? { name: input.name } : {}),
@@ -214,6 +233,8 @@ export class ProjectsService {
       ...(input.serverId !== undefined ? { serverId: input.serverId } : {}),
       ...(input.healthCheckPath !== undefined ? { healthCheckPath: input.healthCheckPath } : {}),
       ...(input.autoDeploy !== undefined ? { autoDeploy: input.autoDeploy } : {}),
+      ...(input.buildDoctor !== undefined ? { buildDoctor: input.buildDoctor } : {}),
+      ...(sandboxExpiresAt ? { sandboxExpiresAt } : {}),
     };
 
     try {

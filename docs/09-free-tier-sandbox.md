@@ -35,6 +35,10 @@ A sandbox server is just a `Server` row with `isPlatformSandbox = true` and `own
 - Kill switch: admin can suspend a user/app instantly
 - Later: gVisor (`runsc`) runtime for stronger isolation on sandbox servers
 
+## What's implemented (M6)
+
+Limits, isolation, policy and onboarding as above, except: sleeping after inactivity (deferred, needs traffic data), GitHub account age checks, captcha, crypto-mining detection, gVisor and an admin kill switch (a server can be taken out of the sandbox with `pnpm --filter @selfship/api sandbox-server <id> off`). The outbound mail block is an `iptables` rule re-applied on every sandbox deployment (it doesn't survive a reboot until the next deployment).
+
 ## Upgrade path
 
 The sandbox is the funnel: **try free → connect your own VPS (free plan) → pay per app for features.** One-click "Move to my server" re-deploys the same project to the user's server.

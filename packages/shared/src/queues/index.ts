@@ -19,6 +19,8 @@ export const QueueName = {
   DEPLOYMENTS: 'deployments',
   /** Domain checks: DNS verification, routing and certificates. */
   DOMAINS: 'domains',
+  /** AI diagnosis of failed deployments. */
+  BUILD_DOCTOR: 'build-doctor',
 } as const;
 
 export type QueueName = (typeof QueueName)[keyof typeof QueueName];
@@ -130,4 +132,19 @@ export function deploymentStreamKey(deploymentId: string): string {
 export const DomainQueueJob = {
   /** Repeating: verify DNS of pending domains, route verified ones, confirm certificates. */
   CHECK: 'check',
+} as const;
+
+/** Job names on the `build-doctor` queue. */
+export const BuildDoctorJob = {
+  DIAGNOSE: 'diagnose',
+} as const;
+
+/** Payload of `build-doctor:diagnose`: only the ID (context is built from the database). */
+export const DiagnoseJobDataSchema = z.object({ diagnosisId: z.uuid() });
+export type DiagnoseJobData = z.infer<typeof DiagnoseJobDataSchema>;
+
+/** Repeating housekeeping jobs on the `system` queue. */
+export const SystemSchedule = {
+  /** Removes free sandbox apps that have expired. */
+  EXPIRE_SANDBOX: 'expire-sandbox',
 } as const;

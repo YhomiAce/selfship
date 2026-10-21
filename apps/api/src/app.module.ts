@@ -6,6 +6,7 @@ import type { IncomingMessage } from 'node:http';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
+import { BuildDoctorModule } from './build-doctor/build-doctor.module';
 import { CryptoModule } from './crypto/crypto.module';
 import { DeploymentsModule } from './deployments/deployments.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -22,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
 import { QueueModule } from './queue/queue.module';
 import { RedisModule } from './redis/redis.module';
+import { SandboxModule } from './sandbox/sandbox.module';
 import { ServersModule } from './servers/servers.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 
@@ -74,6 +76,8 @@ function requestId(req: IncomingMessage): string {
     DeploymentsModule,
     WebhooksModule,
     DomainsModule,
+    BuildDoctorModule,
+    SandboxModule,
     HealthModule,
     DiagnosticsModule,
   ],

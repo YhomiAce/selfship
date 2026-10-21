@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { DeploymentDto } from '../deployments/deployment.schemas';
+import type { ProjectSandbox } from '../sandbox/sandbox.schemas';
 import type { ServerStatus } from '../servers/server.schemas';
 
 /** Supported project types, in detection priority order. */
@@ -185,6 +186,8 @@ export const UpdateProjectSchema = z.object({
   healthCheckPath: HealthCheckPathSchema.optional(),
   /** Deploy automatically on every push to the branch. */
   autoDeploy: z.boolean().optional(),
+  /** Let Build Doctor (AI) diagnose failed deployments. */
+  buildDoctor: z.boolean().optional(),
 });
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
 
@@ -201,9 +204,12 @@ export interface ProjectDto {
   settings: ProjectSettings;
   github: { installationId: string; accountLogin: string; state: GithubConnectionState };
   /** Where it deploys to. */
-  server: { id: string; name: string; status: ServerStatus } | null;
+  server: { id: string; name: string; status: ServerStatus; sandbox: boolean } | null;
+  /** Free sandbox lifetime, when the project is (or was) on the sandbox. */
+  sandbox: ProjectSandbox | null;
   healthCheckPath: string;
   autoDeploy: boolean;
+  buildDoctor: boolean;
   /** Main address of the live app: an active custom domain, the free subdomain, or the temporary URL. */
   url: string | null;
   /** The deployment serving traffic now, if any. */

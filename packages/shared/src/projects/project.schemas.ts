@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { DeploymentDto } from '../deployments/deployment.schemas';
+import type { ProjectSandbox } from '../sandbox/sandbox.schemas';
 import type { ServerStatus } from '../servers/server.schemas';
 
 /** Supported project types, in detection priority order. */
@@ -203,7 +204,9 @@ export interface ProjectDto {
   settings: ProjectSettings;
   github: { installationId: string; accountLogin: string; state: GithubConnectionState };
   /** Where it deploys to. */
-  server: { id: string; name: string; status: ServerStatus } | null;
+  server: { id: string; name: string; status: ServerStatus; sandbox: boolean } | null;
+  /** Free sandbox lifetime, when the project is (or was) on the sandbox. */
+  sandbox: ProjectSandbox | null;
   healthCheckPath: string;
   autoDeploy: boolean;
   buildDoctor: boolean;

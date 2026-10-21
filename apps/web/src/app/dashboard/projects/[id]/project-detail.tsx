@@ -15,6 +15,7 @@ import { FormAlert } from '@/components/auth/form-alert';
 import { DeployTargetCard } from '@/components/deployments/deploy-target-card';
 import { DeploymentStatusBadge } from '@/components/deployments/deployment-status-badge';
 import { DeploymentsList } from '@/components/deployments/deployments-list';
+import { SandboxBanner } from '@/components/deployments/sandbox-banner';
 import { DomainsCard } from '@/components/domains/domains-card';
 import { EnvVarsCard } from '@/components/env-vars/env-vars-card';
 import { GithubStateBadge } from '@/components/projects/github-state-badge';
@@ -184,6 +185,14 @@ export function ProjectDetail(): React.ReactNode {
           </Button>
         </div>
       </div>
+
+      {project.sandbox ? (
+        <SandboxBanner
+          projectId={project.id}
+          sandbox={project.sandbox}
+          onChanged={() => void load()}
+        />
+      ) : null}
 
       {live && project.url ? (
         <a

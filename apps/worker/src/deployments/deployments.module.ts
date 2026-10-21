@@ -6,6 +6,7 @@ import { DomainsModule } from '../domains/domains.module';
 import { ServersModule } from '../servers/servers.module';
 import { DeploymentRunner } from './deployment.runner';
 import { DeploymentsProcessor } from './deployments.processor';
+import { SandboxExpiryService } from './sandbox-expiry.service';
 import { TeardownService } from './teardown.service';
 
 /** Deployments: clone, build and run apps on users' servers. */
@@ -16,6 +17,7 @@ import { TeardownService } from './teardown.service';
     DomainsModule,
     BuildDoctorModule,
   ],
-  providers: [DeploymentsProcessor, DeploymentRunner, TeardownService],
+  providers: [DeploymentsProcessor, DeploymentRunner, TeardownService, SandboxExpiryService],
+  exports: [SandboxExpiryService],
 })
 export class DeploymentsModule {}

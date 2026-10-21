@@ -187,6 +187,8 @@ model Project {
   buildDoctor      Boolean   @default(true) @map("build_doctor")
   /// Free sandbox apps are removed after this date.
   sandboxExpiresAt DateTime? @map("sandbox_expires_at")
+  /// The sandbox lifetime was extended (allowed once).
+  sandboxExtended  Boolean   @default(false) @map("sandbox_extended")
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   githubInstallation GithubInstallation @relation(fields: [githubInstallationId], references: [id], onDelete: Restrict)

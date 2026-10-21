@@ -168,6 +168,8 @@ export interface ServerDto {
   warnings: string[];
   lastCheckedAt: string | null;
   readyAt: string | null;
+  /** A platform-owned sandbox server (shared by users' free apps). */
+  isPlatformSandbox: boolean;
   /** Most recent job, for showing progress without another request. */
   latestJob: ServerJobDto | null;
   createdAt: string;

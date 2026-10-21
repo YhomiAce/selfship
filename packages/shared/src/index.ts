@@ -9,4 +9,5 @@ export * from './github/github.schemas';
 export * from './projects/project.schemas';
 export * from './servers/server.schemas';
 export * from './queues';
+export * from './sandbox';
 export * from './queues/connection';

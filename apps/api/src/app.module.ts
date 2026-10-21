@@ -23,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProjectsModule } from './projects/projects.module';
 import { QueueModule } from './queue/queue.module';
 import { RedisModule } from './redis/redis.module';
+import { SandboxModule } from './sandbox/sandbox.module';
 import { ServersModule } from './servers/servers.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 
@@ -76,6 +77,7 @@ function requestId(req: IncomingMessage): string {
     WebhooksModule,
     DomainsModule,
     BuildDoctorModule,
+    SandboxModule,
     HealthModule,
     DiagnosticsModule,
   ],

@@ -877,6 +877,141 @@ describe('Env vars and deployments (e2e)', () => {
       });
     });
 
+    describe('free sandbox', () => {
+      let sandboxId = '';
+      const settingsWith = (adapter: string): Record<string, unknown> => ({
+        adapter,
+        installCommand: 'npm ci',
+        buildCommand: adapter === 'nextjs' ? 'npm run build' : null,
+        startCommand: 'npm start',
+        outputDirectory: null,
+        port: 3000,
+        nodeVersion: 22,
+      });
+
+      beforeAll(async () => {
+        // A platform sandbox server (owned by an admin account; here Bob's).
+        sandboxId = await addServer(
+          (
+            await prisma.user.findFirstOrThrow({
+              where: { email: { contains: `bob+dep-${runId}` } },
+            })
+          ).id,
+          `sandbox-${runId}`,
+          'ready',
+        );
+        await prisma.server.update({ where: { id: sandboxId }, data: { isPlatformSandbox: true } });
+      });
+
+      it('requires a confirmed email address', async () => {
+        const res = await http().get('/sandbox').set('Cookie', ada).expect(200);
+        expect(res.body).toMatchObject({ available: true, eligible: false, projectId: null });
+        expect(res.body.reason).toContain('Confirm your email');
+        await prisma.user.update({ where: { id: adaId }, data: { emailVerifiedAt: new Date() } });
+        const ok = await http().get('/sandbox').set('Cookie', ada).expect(200);
+        expect(ok.body).toMatchObject({ eligible: true, reason: null });
+        expect(typeof ok.body.serverId).toBe('string');
+      });
+
+      it('puts a project on the sandbox for 7 days', async () => {
+        const res = await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ serverId: sandboxId })
+          .expect(200);
+        expect(res.body.server).toMatchObject({ id: sandboxId, sandbox: true });
+        const days = (Date.parse(res.body.sandbox.expiresAt) - Date.now()) / 86_400_000;
+        expect(days).toBeGreaterThan(6.9);
+        expect(days).toBeLessThanOrEqual(7);
+        expect(res.body.sandbox).toMatchObject({ extended: false, expired: false });
+        const status = await http().get('/sandbox').set('Cookie', ada).expect(200);
+        expect(status.body).toMatchObject({ eligible: false, projectId });
+      });
+
+      it('refuses heavy project types and custom domains on the sandbox', async () => {
+        const adapter = await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ settings: settingsWith('nextjs') })
+          .expect(400);
+        expect(adapter.body.code).toBe('SANDBOX_ADAPTER');
+        const domain = await http()
+          .post(`/projects/${projectId}/domains`)
+          .set('Cookie', ada)
+          .send({ hostname: 'mine.example.test' })
+          .expect(400);
+        expect(domain.body.code).toBe('SANDBOX_CUSTOM_DOMAIN');
+      });
+
+      it('extends once', async () => {
+        const res = await http()
+          .post(`/projects/${projectId}/sandbox/extend`)
+          .set('Cookie', ada)
+          .expect(200);
+        const days = (Date.parse(res.body.expiresAt) - Date.now()) / 86_400_000;
+        expect(days).toBeGreaterThan(13.9);
+        expect(res.body.extended).toBe(true);
+        const again = await http()
+          .post(`/projects/${projectId}/sandbox/extend`)
+          .set('Cookie', ada)
+          .expect(409);
+        expect(again.body.code).toBe('SANDBOX_ALREADY_EXTENDED');
+      });
+
+      it('allows one sandbox project per user', async () => {
+        const installation = await prisma.githubInstallation.findFirstOrThrow({
+          where: { githubInstallationId: BigInt(INSTALL) },
+        });
+        const second = await http()
+          .post('/projects')
+          .set('Cookie', ada)
+          .send({
+            name: `second-${runId}`,
+            source: {
+              installationId: installation.id,
+              repoFullName: 'acme/web',
+              branch: 'main',
+              rootDirectory: '',
+            },
+            settings: settingsWith('node'),
+          })
+          .expect(201);
+        const res = await http()
+          .patch(`/projects/${second.body.id}`)
+          .set('Cookie', ada)
+          .send({ serverId: sandboxId })
+          .expect(400);
+        expect(res.body.code).toBe('SANDBOX_NOT_ELIGIBLE');
+        await http().delete(`/projects/${second.body.id}`).set('Cookie', ada).expect(204);
+      });
+
+      it('shows an expired sandbox and does not restart its clock', async () => {
+        await prisma.project.update({
+          where: { id: projectId },
+          data: { sandboxExpiresAt: new Date(Date.now() - 1000), serverId: null },
+        });
+        const res = await http().get(`/projects/${projectId}`).set('Cookie', ada).expect(200);
+        expect(res.body.sandbox).toMatchObject({ expired: true });
+        const rejoin = await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ serverId: sandboxId })
+          .expect(400);
+        expect(rejoin.body.code).toBe('SANDBOX_NOT_ELIGIBLE');
+
+        // Moving to your own server always works.
+        const moved = await http()
+          .patch(`/projects/${projectId}`)
+          .set('Cookie', ada)
+          .send({ serverId })
+          .expect(200);
+        expect(moved.body).toMatchObject({
+          server: { id: serverId, sandbox: false },
+          sandbox: null,
+        });
+      });
+    });
+
     it('removes the app from its servers when the project is deleted', async () => {
       await http().delete(`/projects/${projectId}`).set('Cookie', ada).expect(204);
       const job = await queue.getJob(`teardown-${projectId}-${serverId}`);

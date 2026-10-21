@@ -65,7 +65,14 @@ export function ServersList(): React.ReactNode {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2">
                     <span className="truncate">{server.name}</span>
-                    <ServerStatusBadge status={server.status} />
+                    <span className="flex items-center gap-1.5">
+                      {server.isPlatformSandbox ? (
+                        <span className="bg-muted text-muted-foreground rounded-md px-1.5 py-0.5 text-xs">
+                          Sandbox
+                        </span>
+                      ) : null}
+                      <ServerStatusBadge status={server.status} />
+                    </span>
                   </CardTitle>
                   <CardDescription className="truncate font-mono text-xs">
                     {server.sshUser}@{server.host}

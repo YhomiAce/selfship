@@ -15,6 +15,7 @@ import {
   type DomainDto,
   DomainErrorCode,
   ErrorCode,
+  SandboxErrorCode,
 } from '@selfship/shared';
 import { isUniqueViolation } from '../common/prisma-errors';
 import { AppConfigService } from '../config/app-config.service';
@@ -83,6 +84,13 @@ export class DomainsService {
         ? input.hostname.slice(4)
         : `www.${input.hostname}`
       : null;
+    if (project.server?.isPlatformSandbox) {
+      throw new BadRequestException({
+        code: SandboxErrorCode.SANDBOX_CUSTOM_DOMAIN,
+        message:
+          'Apps on the free sandbox use their free subdomain. Move the project to your own server to add a domain.',
+      });
+    }
     for (const hostname of [input.hostname, ...(twin ? [twin] : [])]) this.assertAllowed(hostname);
 
     let created: Domain[];

@@ -142,3 +142,9 @@ export const BuildDoctorJob = {
 /** Payload of `build-doctor:diagnose`: only the ID (context is built from the database). */
 export const DiagnoseJobDataSchema = z.object({ diagnosisId: z.uuid() });
 export type DiagnoseJobData = z.infer<typeof DiagnoseJobDataSchema>;
+
+/** Repeating housekeeping jobs on the `system` queue. */
+export const SystemSchedule = {
+  /** Removes free sandbox apps that have expired. */
+  EXPIRE_SANDBOX: 'expire-sandbox',
+} as const;

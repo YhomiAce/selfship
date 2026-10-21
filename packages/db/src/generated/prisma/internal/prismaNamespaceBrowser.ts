@@ -184,7 +184,8 @@ export const ProjectScalarFieldEnum = {
   healthCheckPath: 'healthCheckPath',
   autoDeploy: 'autoDeploy',
   buildDoctor: 'buildDoctor',
-  sandboxExpiresAt: 'sandboxExpiresAt'
+  sandboxExpiresAt: 'sandboxExpiresAt',
+  sandboxExtended: 'sandboxExtended'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]

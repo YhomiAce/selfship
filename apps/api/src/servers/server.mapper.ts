@@ -68,6 +68,7 @@ export function toServerDto(server: Server, latestJob: ServerJob | null): Server
     lastCheckedAt: server.lastCheckedAt?.toISOString() ?? null,
     readyAt: server.readyAt?.toISOString() ?? null,
     latestJob: latestJob ? toServerJobDto(latestJob) : null,
+    isPlatformSandbox: server.isPlatformSandbox,
     createdAt: server.createdAt.toISOString(),
   };
 }

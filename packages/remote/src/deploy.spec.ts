@@ -148,7 +148,7 @@ describe('AppDeployer', () => {
     expect(build).toContain('--build-arg NEXT_PUBLIC_API');
     const run = server.calls.find((c) => c.command.includes('docker run'))?.command ?? '';
     expect(run).toContain('-e DB_PASSWORD');
-    expect(run).toContain('--network selfship');
+    expect(run.replace(/'/g, '').replace(/\\/g, '')).toContain('--network selfship');
     expect(run).toContain('Host(`web-0123ab.13-50-208-142.sslip.io`)');
     expect(server.commandText).toContain("'/health'");
   });
@@ -258,6 +258,48 @@ describe('AppDeployer', () => {
       `middlewares.${route}-redirect0.redirectregex.replacement=https://example.com\${1}`,
     );
     expect(run).toContain(`routers.${route}-redirect0.tls.certresolver=le`);
+  });
+
+  it('limits and isolates sandbox apps', async () => {
+    const server = new FakeServer();
+    const { deployer } = makeDeployer(server, {
+      sandbox: { memory: '256m', cpus: '0.25', pids: 256 },
+    });
+    await deployer.run();
+    const route = deployer.containerName;
+    // Shell quoting nests here; compare without the quote characters.
+    const run = (server.calls.find((c) => c.command.includes('docker run'))?.command ?? '')
+      .replace(/'/g, '')
+      .replace(/\\/g, '');
+    for (const flag of [
+      '--memory 256m',
+      '--memory-swap 256m',
+      '--cpus 0.25',
+      '--pids-limit 256',
+      '--security-opt no-new-privileges',
+      '--cap-drop ALL',
+      '--network sbx-p-0123456789ab',
+    ]) {
+      expect(run).toContain(flag);
+    }
+    expect(run).toContain(`routers.${route}.middlewares=${route}-retry,${route}-ratelimit`);
+    expect(run).toContain('traefik.docker.network=sbx-p-0123456789ab');
+    const isolate =
+      server.calls.find((c) => c.command.includes('docker network create'))?.command ?? '';
+    expect(isolate).toContain("docker network connect 'sbx-p-0123456789ab' selfship-traefik");
+    expect(isolate).toContain('DOCKER-USER');
+    expect(server.commandText).toContain('"sbx-p-0123456789ab").IPAddress');
+  });
+
+  it("keeps users' own servers unrestricted", async () => {
+    const server = new FakeServer();
+    await makeDeployer(server).deployer.run();
+    const run = (server.calls.find((c) => c.command.includes('docker run'))?.command ?? '')
+      .replace(/'/g, '')
+      .replace(/\\/g, '');
+    expect(run).toContain('--network selfship');
+    expect(run).not.toContain('--memory');
+    expect(server.commandText).not.toContain('DOCKER-USER');
   });
 
   it('rolls back to an existing image without cloning or building', async () => {

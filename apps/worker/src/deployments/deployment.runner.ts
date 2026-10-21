@@ -20,6 +20,7 @@ import {
   deploymentStreamKey,
   explainFailure,
   QueueName,
+  SANDBOX_LIMITS,
   type TeardownJobData,
 } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
@@ -257,6 +258,7 @@ export class DeploymentRunner implements OnModuleInit {
           },
           routing,
           healthCheckPath: project.healthCheckPath,
+          ...(server.isPlatformSandbox ? { sandbox: { ...SANDBOX_LIMITS } } : {}),
           env: splitEnv(vars),
         },
         {

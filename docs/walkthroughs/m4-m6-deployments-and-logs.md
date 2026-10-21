@@ -19,7 +19,7 @@ Cmd+click on `AppDeployer` in the worker now opens [`packages/remote/src/deploy.
 pnpm turbo run dev --parallel --filter='./packages/*'   # tsc --watch for every package
 ```
 
-The API and worker (`nest start --watch`) then restart when a package's `dist/` changes.
+If the API or worker doesn't pick up the rebuilt package by itself, restart that app (`nest start --watch` mainly watches the app's own files).
 
 ## The packages (and who uses them)
 

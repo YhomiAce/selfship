@@ -66,6 +66,8 @@ export interface UserDto {
   emailVerified: boolean;
   /** False for accounts created via GitHub that never set a password. */
   hasPassword: boolean;
+  /** Two-factor authentication (authenticator app) is on. */
+  twoFactorEnabled: boolean;
   /** ISO 8601 timestamp. */
   createdAt: string;
 }
@@ -75,6 +77,12 @@ export interface AuthUserResponse {
   user: UserDto;
 }
 
+/**
+ * Response of sign-in endpoints: signed in, or a second step is needed (the
+ * challenge is in an httpOnly cookie; send the code to `POST /auth/2fa/verify`).
+ */
+export type LoginResponse = AuthUserResponse | { twoFactorRequired: true };
+
 /** Response of `GET /auth/providers`: which sign-in methods are enabled. */
 export interface AuthProvidersResponse {
   github: boolean;
@@ -82,6 +90,9 @@ export interface AuthProvidersResponse {
 
 /** Error codes specific to authentication. */
 export const AuthErrorCode = {
+  TWO_FACTOR_INVALID: 'TWO_FACTOR_INVALID',
+  TWO_FACTOR_ALREADY_ENABLED: 'TWO_FACTOR_ALREADY_ENABLED',
+  TWO_FACTOR_NOT_ENABLED: 'TWO_FACTOR_NOT_ENABLED',
   EMAIL_TAKEN: 'EMAIL_TAKEN',
   INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
   INVALID_TOKEN: 'INVALID_TOKEN',

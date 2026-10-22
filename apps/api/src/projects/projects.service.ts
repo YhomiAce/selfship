@@ -33,6 +33,7 @@ import { toGithubId } from '../github/github.constants';
 import { GithubInstallationsService } from '../github/github-installations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PROJECT_INCLUDE, type ProjectWithRelations, toProjectDto } from './project.mapper';
+import { AuditService } from '../audit/audit.service';
 
 /** 404 used whenever a project doesn't exist or belongs to someone else. */
 const PROJECT_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Project not found.' };
@@ -56,6 +57,7 @@ export class ProjectsService {
     private readonly domains: DomainsService,
     private readonly sandbox: SandboxService,
     @InjectQueue(QueueName.DEPLOYMENTS) private readonly deploymentsQueue: Queue<TeardownJobData>,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -279,6 +281,14 @@ export class ProjectsService {
     });
     await this.domains.removeDnsRecords(project.id);
     await this.prisma.project.delete({ where: { id: project.id } });
+    await this.audit.record(
+      userId,
+      'project.deleted',
+      { type: 'project', id: project.id, name: project.name },
+      {
+        repository: project.repoFullName,
+      },
+    );
     for (const { serverId } of servers) {
       if (!serverId) continue;
       await this.deploymentsQueue.add(

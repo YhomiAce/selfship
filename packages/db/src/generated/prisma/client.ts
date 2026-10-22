@@ -111,3 +111,13 @@ export type Domain = Prisma.DomainModel
  * AI diagnosis of a failed deployment.
  */
 export type BuildDiagnosis = Prisma.BuildDiagnosisModel
+/**
+ * Model RecoveryCode
+ * One-time code to sign in when the authenticator app is unavailable.
+ */
+export type RecoveryCode = Prisma.RecoveryCodeModel
+/**
+ * Model AuditEvent
+ * Security-relevant action on a user's account, shown in Settings → Activity.
+ */
+export type AuditEvent = Prisma.AuditEventModel

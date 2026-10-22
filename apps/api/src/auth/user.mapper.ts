@@ -16,6 +16,7 @@ export function toUserDto(user: User): UserDto {
     avatarUrl: user.avatarUrl,
     emailVerified: user.emailVerifiedAt !== null,
     hasPassword: user.passwordHash !== null,
+    twoFactorEnabled: user.totpEnabledAt !== null,
     createdAt: user.createdAt.toISOString(),
   };
 }

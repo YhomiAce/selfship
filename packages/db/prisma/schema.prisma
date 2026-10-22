@@ -21,10 +21,17 @@ model User {
   passwordHash    String?   @map("password_hash")
   emailVerifiedAt DateTime? @map("email_verified_at")
   avatarUrl       String?   @map("avatar_url")
+  /// Envelope-encrypted TOTP secret (context "user:<id>:totp"); set during setup, active once totpEnabledAt is set.
+  totpSecret      String?   @map("totp_secret")
+  totpEnabledAt   DateTime? @map("totp_enabled_at")
+  /// Last accepted TOTP time step, so a code can't be used twice.
+  totpLastStep    Int?      @map("totp_last_step")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   sessions            Session[]
+  recoveryCodes       RecoveryCode[]
+  auditEvents         AuditEvent[]
   tokens              VerificationToken[]
   oauthAccounts       OAuthAccount[]
   githubInstallations GithubInstallationMember[]
@@ -57,6 +64,8 @@ model Session {
 enum TokenPurpose {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+  /// Second step of a sign-in with two-factor authentication (short-lived, in a cookie).
+  TWO_FACTOR_LOGIN
 
   @@map("token_purpose")
 }
@@ -541,4 +550,44 @@ model BuildDiagnosis {
   @@index([userId, createdAt])
   @@index([projectId, fingerprint])
   @@map("build_diagnoses")
+}
+
+// ── Hardening (M7) ──────────────────────────────────────────────────────────
+
+/// One-time code to sign in when the authenticator app is unavailable.
+model RecoveryCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  /// SHA-256 of the normalised code (codes are random, so a fast hash is enough).
+  codeHash  String    @map("code_hash")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("recovery_codes")
+}
+
+/// Security-relevant action on a user's account, shown in Settings → Activity.
+model AuditEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  /// Account the event belongs to.
+  userId     String   @map("user_id") @db.Uuid
+  /// e.g. "auth.login", "server.added", "env.revealed".
+  action     String
+  /// What it was about, for display ("server", "project"…) and its ID/name.
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  targetName String?  @map("target_name")
+  /// Extra details (never secrets).
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("audit_events")
 }

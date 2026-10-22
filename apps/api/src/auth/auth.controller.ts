@@ -14,12 +14,18 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import type { User } from '@selfship/db';
-import type { AuthProvidersResponse, AuthUserResponse } from '@selfship/shared';
+import type { AuthProvidersResponse, AuthUserResponse, LoginResponse } from '@selfship/shared';
 import { generateToken, safeEqual } from '../common/crypto';
 import { queryString, readCookie } from '../common/http';
 import { AppConfigService } from '../config/app-config.service';
-import { AUTH_THROTTLE, OAUTH_STATE_COOKIE, OAUTH_STATE_TTL_MS } from './auth.constants';
-import { AuthService, type SignedIn } from './auth.service';
+import {
+  AUTH_THROTTLE,
+  OAUTH_STATE_COOKIE,
+  OAUTH_STATE_TTL_MS,
+  TWO_FACTOR_COOKIE,
+  TWO_FACTOR_TTL_MS,
+} from './auth.constants';
+import { AuthService, type SignedIn, type SignInResult } from './auth.service';
 import { type AuthenticatedRequest, requestContext } from './auth.types';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
@@ -75,10 +81,11 @@ export class AuthController {
   }
 
   /**
-   * Signs in with email and password.
+   * Signs in with email and password. With two-factor on, no session yet:
+   * a challenge cookie is set and the code goes to `POST /auth/2fa/verify`.
    *
    * @param body - Email and password
-   * @returns The user (session cookie is set)
+   * @returns The user (session cookie is set), or `{ twoFactorRequired: true }`
    */
   @Public()
   @Throttle(AUTH_THROTTLE)
@@ -88,8 +95,10 @@ export class AuthController {
     @Body() body: LoginDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthUserResponse> {
-    return this.signIn(res, await this.auth.login(body, requestContext(req)));
+  ): Promise<LoginResponse> {
+    const result = await this.auth.login(body, requestContext(req));
+    if (this.startTwoFactor(res, result)) return { twoFactorRequired: true };
+    return this.signIn(res, result as SignedIn);
   }
 
   /**
@@ -224,13 +233,36 @@ export class AuthController {
 
     try {
       const profile = await this.github.fetchProfile(code);
-      const signedIn = await this.auth.loginWithGithub(profile, requestContext(req));
+      const result = await this.auth.loginWithGithub(profile, requestContext(req));
+      if (this.startTwoFactor(res, result)) {
+        res.redirect(`${webUrl}/login/two-factor`);
+        return;
+      }
+      const signedIn = result as SignedIn;
       this.sessions.setCookie(res, signedIn.session.token, signedIn.session.expiresAt);
       res.redirect(`${webUrl}/dashboard`);
     } catch (error) {
       this.logger.warn({ err: error }, 'GitHub sign-in failed');
       res.redirect(`${webUrl}/login?error=github`);
     }
+  }
+
+  /**
+   * For a two-factor sign-in, stores the challenge in a short-lived httpOnly
+   * cookie (page scripts can't read it; it never appears in a URL).
+   *
+   * @returns True if a code is still needed
+   */
+  private startTwoFactor(res: Response, result: SignInResult): boolean {
+    if (!('challenge' in result)) return false;
+    res.cookie(TWO_FACTOR_COOKIE, result.challenge, {
+      httpOnly: true,
+      secure: this.config.isProduction,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: TWO_FACTOR_TTL_MS,
+    });
+    return true;
   }
 
   /** Sets the session cookie and returns the user DTO. */

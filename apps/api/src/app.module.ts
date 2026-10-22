@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import type { IncomingMessage } from 'node:http';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { LoggerModule } from 'nestjs-pino';
+import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { BuildDoctorModule } from './build-doctor/build-doctor.module';
 import { CryptoModule } from './crypto/crypto.module';
@@ -67,6 +68,7 @@ function requestId(req: IncomingMessage): string {
     QueueModule,
     CryptoModule,
     MailModule,
+    AuditModule,
     AuthModule,
     GithubModule,
     ProjectsModule,

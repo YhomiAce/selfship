@@ -61,4 +61,21 @@ export class TokenService {
       message: 'This link is invalid or has expired. Please request a new one.',
     });
   }
+
+  /**
+   * Checks a token without using it up (e.g. a sign-in challenge that allows
+   * a few attempts at the code before it is consumed).
+   *
+   * @param token - Raw token
+   * @param purpose - Expected purpose
+   * @returns The user ID, or null if unknown, expired, used or of another purpose
+   */
+  async peek(token: string, purpose: TokenPurpose): Promise<string | null> {
+    const record = await this.prisma.verificationToken.findUnique({
+      where: { tokenHash: hashToken(token) },
+    });
+    return record?.purpose === purpose && record.usedAt === null && record.expiresAt > new Date()
+      ? record.userId
+      : null;
+  }
 }

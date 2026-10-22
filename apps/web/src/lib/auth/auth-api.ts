@@ -3,6 +3,10 @@ import type {
   AuthUserResponse,
   ForgotPasswordInput,
   LoginInput,
+  LoginResponse,
+  RecoveryCodesResponse,
+  TwoFactorSetupResponse,
+  TwoFactorVerifyInput,
   RegisterInput,
   ResetPasswordInput,
   UserDto,
@@ -21,9 +25,29 @@ export const authApi = {
   register: async (input: RegisterInput): Promise<UserDto> =>
     (await apiFetch<AuthUserResponse>('/auth/register', { method: 'POST', json: input })).user,
 
-  /** Signs in with email and password. */
-  login: async (input: LoginInput): Promise<UserDto> =>
-    (await apiFetch<AuthUserResponse>('/auth/login', { method: 'POST', json: input })).user,
+  /** Signs in with email and password (may ask for a two-factor code next). */
+  login: (input: LoginInput): Promise<LoginResponse> =>
+    apiFetch('/auth/login', { method: 'POST', json: input }),
+
+  /** Second sign-in step: authenticator code or recovery code. */
+  verifyTwoFactor: async (input: TwoFactorVerifyInput): Promise<UserDto> =>
+    (await apiFetch<AuthUserResponse>('/auth/2fa/verify', { method: 'POST', json: input })).user,
+
+  /** Starts two-factor setup (secret + QR code URI). */
+  setupTwoFactor: (): Promise<TwoFactorSetupResponse> =>
+    apiFetch('/auth/2fa/setup', { method: 'POST' }),
+
+  /** Turns two-factor on; returns recovery codes (shown once). */
+  enableTwoFactor: (code: string): Promise<RecoveryCodesResponse> =>
+    apiFetch('/auth/2fa/enable', { method: 'POST', json: { code } }),
+
+  /** Turns two-factor off. */
+  disableTwoFactor: (code: string): Promise<void> =>
+    apiFetch('/auth/2fa/disable', { method: 'POST', json: { code } }),
+
+  /** Replaces the recovery codes. */
+  regenerateRecoveryCodes: (code: string): Promise<RecoveryCodesResponse> =>
+    apiFetch('/auth/2fa/recovery-codes', { method: 'POST', json: { code } }),
 
   /** Signs out the current session. */
   logout: (): Promise<void> => apiFetch('/auth/logout', { method: 'POST' }),

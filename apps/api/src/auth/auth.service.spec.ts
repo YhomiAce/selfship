@@ -6,6 +6,7 @@ import type { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 import { GithubOAuthError, type GithubProfile } from './github-oauth.service';
 import type { PasswordService } from './password.service';
+import type { AuditService } from '../audit/audit.service';
 import type { SessionService } from './session.service';
 import type { TokenService } from './token.service';
 
@@ -18,6 +19,9 @@ function makeUser(overrides: Partial<User> = {}): User {
     passwordHash: 'hash',
     emailVerifiedAt: new Date(),
     avatarUrl: null,
+    totpSecret: null,
+    totpEnabledAt: null,
+    totpLastStep: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -33,6 +37,7 @@ describe('AuthService', () => {
   const sessions = { create: jest.fn(), revokeAll: jest.fn() };
   const tokens = { issue: jest.fn(), consume: jest.fn() };
   const mail = { send: jest.fn() };
+  const audit = { record: jest.fn() };
   const config = { get: jest.fn().mockReturnValue('http://localhost:3000') };
   const context = { ipAddress: '127.0.0.1', userAgent: 'jest' };
   const session = { token: 'tok', expiresAt: new Date() };
@@ -44,11 +49,42 @@ describe('AuthService', () => {
     tokens as unknown as TokenService,
     mail as unknown as MailService,
     config as unknown as AppConfigService,
+    audit as unknown as AuditService,
   );
 
   beforeEach(() => {
     jest.clearAllMocks();
     sessions.create.mockResolvedValue(session);
+  });
+
+  describe('two-factor sign-in', () => {
+    it('asks for a code instead of creating a session when 2FA is on', async () => {
+      prisma.user.findUnique.mockResolvedValueOnce(makeUser({ totpEnabledAt: new Date() }));
+      passwords.verify.mockResolvedValue(true);
+      passwords.needsRehash.mockReturnValue(false);
+      tokens.issue.mockResolvedValueOnce('challenge-token');
+
+      const result = await service.login({ email: 'ada@example.com', password: 'pw' }, context);
+
+      expect(result).toMatchObject({ challenge: 'challenge-token' });
+      expect(sessions.create).not.toHaveBeenCalled();
+      expect(tokens.issue).toHaveBeenCalledWith('user-1', 'TWO_FACTOR_LOGIN', expect.any(Number));
+      expect(audit.record).not.toHaveBeenCalledWith(
+        'user-1',
+        'auth.login',
+        undefined,
+        expect.anything(),
+      );
+    });
+
+    it('records failed sign-ins on existing accounts', async () => {
+      prisma.user.findUnique.mockResolvedValueOnce(makeUser());
+      passwords.verify.mockResolvedValue(false);
+      await expect(
+        service.login({ email: 'ada@example.com', password: 'nope' }, context),
+      ).rejects.toThrow();
+      expect(audit.record).toHaveBeenCalledWith('user-1', 'auth.login_failed');
+    });
   });
 
   describe('login', () => {

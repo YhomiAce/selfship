@@ -30,16 +30,16 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^22",
+    "@types/node": "^26",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.0",
-    "shadcn": "^4.21.4",
+    "eslint": "^10",
+    "eslint-config-next": "16.4.2",
+    "shadcn": "^4.22.1",
     "tailwindcss": "^4",
     "typescript": "~6.0.3",
-    "vitest": "^5.0.4"
+    "vitest": "^5.0.5"
   },
   "license": "AGPL-3.0-only",
   "description": "Dashboard (Next.js)."

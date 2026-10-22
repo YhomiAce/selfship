@@ -1,5 +1,12 @@
 import { DEFAULT_NODE_VERSION } from '@selfship/shared';
-import { header, NODE_DOCKERIGNORE, nodeBuildStage, safeCommand, safePort } from '../dockerfile';
+import {
+  header,
+  NODE_DOCKERIGNORE,
+  nodeBuildStage,
+  OPENSSL,
+  safeCommand,
+  safePort,
+} from '../dockerfile';
 import { installCommand, runScript } from '../node/commands';
 import {
   detectNodeVersion,
@@ -80,6 +87,7 @@ export const nextjsAdapter: Adapter = {
       'WORKDIR /app',
       // WORKDIR creates /app as root; the app may write next to its files (e.g. nest start clears dist/).
       'RUN chown node:node /app',
+      OPENSSL,
       // next start reads PORT and HOSTNAME; 0.0.0.0 so it's reachable from outside the container.
       `ENV NODE_ENV=production PORT=${port} HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1`,
       'COPY --from=build --chown=node:node /app /app',

@@ -1,5 +1,12 @@
 import { DEFAULT_NODE_VERSION } from '@selfship/shared';
-import { header, NODE_DOCKERIGNORE, nodeBuildStage, safeCommand, safePort } from '../dockerfile';
+import {
+  header,
+  NODE_DOCKERIGNORE,
+  nodeBuildStage,
+  OPENSSL,
+  safeCommand,
+  safePort,
+} from '../dockerfile';
 import { installCommand, runScript } from '../node/commands';
 import { detectNodeVersion, detectPackageManager, readPackageJson } from '../node/package-json';
 import type {
@@ -58,6 +65,7 @@ export const nodeAdapter: Adapter = {
       'WORKDIR /app',
       // WORKDIR creates /app as root; the app may write next to its files (e.g. nest start clears dist/).
       'RUN chown node:node /app',
+      OPENSSL,
       `ENV NODE_ENV=production PORT=${port}`,
       'COPY --from=build --chown=node:node /app /app',
       'USER node',

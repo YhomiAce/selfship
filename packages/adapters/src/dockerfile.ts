@@ -88,6 +88,13 @@ const MANIFESTS: Record<PackageManager, string | null> = {
   bun: null,
 };
 
+/**
+ * Installs the openssl tool. Alpine ships libssl but not the binary, which
+ * Prisma (one of the most common Node dependencies) uses to pick its engine;
+ * without it Prisma loads an engine for OpenSSL 1.1 and every query fails.
+ */
+export const OPENSSL = 'RUN apk add --no-cache openssl';
+
 /** Setup step for package managers that aren't bundled with Node. */
 function packageManagerSetup(pm: PackageManager): string | null {
   if (pm === 'pnpm' || pm === 'yarn' || pm === 'yarn-berry') return 'RUN corepack enable';
@@ -115,6 +122,7 @@ export function nodeBuildStage(config: BuildConfig, stageName = 'build'): string
   const lines = [
     `FROM node:${node}-alpine AS ${stageName}`,
     'WORKDIR /app',
+    OPENSSL,
     // Defaults as ARGs, not ENV: Docker lets ENV override a build arg of the
     // same name, which would ignore a user's CI=false (needed by old Create
     // React App builds that treat warnings as errors when CI=true).

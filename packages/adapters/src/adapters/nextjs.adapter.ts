@@ -78,6 +78,8 @@ export const nextjsAdapter: Adapter = {
       '',
       `FROM node:${node}-alpine`,
       'WORKDIR /app',
+      // WORKDIR creates /app as root; the app may write next to its files (e.g. nest start clears dist/).
+      'RUN chown node:node /app',
       // next start reads PORT and HOSTNAME; 0.0.0.0 so it's reachable from outside the container.
       `ENV NODE_ENV=production PORT=${port} HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1`,
       'COPY --from=build --chown=node:node /app /app',

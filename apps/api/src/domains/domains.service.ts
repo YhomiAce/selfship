@@ -22,6 +22,7 @@ import { AppConfigService } from '../config/app-config.service';
 import { DeploymentsService } from '../deployments/deployments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CLOUDFLARE_CLIENT } from './cloudflare.provider';
+import { AuditService } from '../audit/audit.service';
 
 const PROJECT_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Project not found.' };
 const DOMAIN_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Domain not found.' };
@@ -46,6 +47,7 @@ export class DomainsService {
     private readonly config: AppConfigService,
     private readonly deployments: DeploymentsService,
     @Inject(CLOUDFLARE_CLIENT) private readonly cloudflare: CloudflareDnsClient | null,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -116,6 +118,14 @@ export class DomainsService {
       throw error;
     }
 
+    await this.audit.record(
+      userId,
+      'domain.added',
+      { type: 'project', id: projectId },
+      {
+        domains: created.map((d) => d.hostname).join(', '),
+      },
+    );
     const ip = await this.serverIp(project.server);
     if (ip) await this.checkDns(projectId, created, ip);
     return this.list(userId, projectId);
@@ -175,6 +185,14 @@ export class DomainsService {
       where: { OR: [{ id: domain.id }, { redirectToId: domain.id }] },
     });
     await this.prisma.domain.deleteMany({ where: { id: { in: removed.map((d) => d.id) } } });
+    await this.audit.record(
+      userId,
+      'domain.removed',
+      { type: 'project', id: projectId },
+      {
+        domains: removed.map((d) => d.hostname).join(', '),
+      },
+    );
     if (removed.some((d) => ROUTED.includes(d.status))) {
       await this.deployments.queueConfigRedeploy(projectId);
     }

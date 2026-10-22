@@ -11,6 +11,7 @@ import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
 import { type ApiError, ErrorCode } from '@selfship/shared';
+import { reportError } from '../error-tracking';
 
 /** Maps HTTP status codes to default machine-readable error codes. */
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {
@@ -73,6 +74,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         { err: exception, requestId: body.requestId },
         `Unhandled error on ${request.method} ${request.url}`,
       );
+      reportError(exception, {
+        route: `${request.method} ${request.route ? String((request.route as { path?: unknown }).path) : 'unknown'}`,
+      });
     }
 
     response.status(body.statusCode).json(body);

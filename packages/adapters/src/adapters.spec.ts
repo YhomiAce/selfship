@@ -92,6 +92,13 @@ describe('detectProject', () => {
     });
   });
 
+  it('starts NestJS with start:prod rather than nest start', async () => {
+    expect(await detect('nestApi')).toMatchObject({
+      reason: 'Found a "start:prod" script in package.json',
+      settings: { startCommand: 'yarn start:prod' },
+    });
+  });
+
   it('does not treat a Vite app with its own Express server as a static SPA', async () => {
     expect((await detect('viteWithExpressServer'))?.adapter).toBe('node');
   });

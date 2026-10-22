@@ -58,6 +58,11 @@ describe('generated Dockerfiles', () => {
   it('node: sets PORT and EXPOSE from settings', async () => {
     const dockerfile = await render('expressApi', { port: 8080 });
     expect(dockerfile).toContain('PORT=8080');
+    // The app user owns /app itself, not just its files (nest start deletes dist/).
+    expect(dockerfile).toContain('RUN chown node:node /app');
+    expect(dockerfile.indexOf('RUN chown node:node /app')).toBeLessThan(
+      dockerfile.indexOf('USER node'),
+    );
     expect(dockerfile).toContain('EXPOSE 8080');
   });
 

@@ -1,11 +1,12 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import { type Job, UnrecoverableError } from 'bullmq';
 import { BuildDoctorJob, DiagnoseJobDataSchema, QueueName } from '@selfship/shared';
 import { BuildDoctorService } from './build-doctor.service';
+import { ReportingWorkerHost } from '../common/reporting-worker-host';
 
 /** Consumes the `build-doctor` queue (two diagnoses at a time). */
 @Processor(QueueName.BUILD_DOCTOR, { concurrency: 2 })
-export class BuildDoctorProcessor extends WorkerHost {
+export class BuildDoctorProcessor extends ReportingWorkerHost {
   constructor(private readonly doctor: BuildDoctorService) {
     super();
   }

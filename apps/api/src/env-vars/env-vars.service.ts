@@ -9,6 +9,7 @@ import {
   type UpsertEnvVarsInput,
 } from '@selfship/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 /**
  * Encryption context of an env var value: binds the ciphertext to its project
@@ -35,6 +36,7 @@ export class EnvVarsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cipher: EnvelopeCipher,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -73,6 +75,15 @@ export class EnvVarsService {
         });
       }),
     );
+    await this.audit.record(
+      userId,
+      'env.changed',
+      { type: 'project', id: projectId },
+      {
+        // Names only: values never go into the audit log.
+        variables: input.vars.map((v) => v.key).join(', '),
+      },
+    );
     return this.list(userId, projectId);
   }
 
@@ -109,6 +120,12 @@ export class EnvVarsService {
    */
   async reveal(userId: string, projectId: string, key: string): Promise<EnvVarValueResponse> {
     const envVar = await this.findOwned(userId, projectId, key);
+    await this.audit.record(
+      userId,
+      'env.revealed',
+      { type: 'project', id: projectId },
+      { variable: key },
+    );
     return {
       key,
       value: this.cipher.decrypt(envVar.encryptedValue, envVarContext(projectId, key)),
@@ -126,6 +143,12 @@ export class EnvVarsService {
   async remove(userId: string, projectId: string, key: string): Promise<void> {
     const envVar = await this.findOwned(userId, projectId, key);
     await this.prisma.envVar.delete({ where: { id: envVar.id } });
+    await this.audit.record(
+      userId,
+      'env.deleted',
+      { type: 'project', id: projectId },
+      { variable: key },
+    );
   }
 
   /** 404 unless the project exists and belongs to the user. */

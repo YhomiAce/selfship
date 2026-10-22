@@ -1,15 +1,16 @@
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { InjectQueue, Processor } from '@nestjs/bullmq';
 import { Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { type Job, Queue, UnrecoverableError } from 'bullmq';
 import { DomainQueueJob, QueueName } from '@selfship/shared';
 import { DomainChecker } from './domain-checker.service';
+import { ReportingWorkerHost } from '../common/reporting-worker-host';
 
 /** How often domains are checked. */
 const CHECK_EVERY_MS = 60_000;
 
 /** Runs the domain checker on a schedule (one at a time). */
 @Processor(QueueName.DOMAINS, { concurrency: 1 })
-export class DomainsProcessor extends WorkerHost implements OnApplicationBootstrap {
+export class DomainsProcessor extends ReportingWorkerHost implements OnApplicationBootstrap {
   private readonly logger = new Logger(DomainsProcessor.name);
 
   constructor(

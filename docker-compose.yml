@@ -1,0 +1,93 @@
+# Self-hosted Selfship: the whole platform on one machine.
+#   cp .env.selfhost.example .env.selfhost   # then fill it in
+#   docker compose --env-file .env.selfhost up -d --build
+# Full guide: docs/self-hosting.md. (Local development uses docker-compose.dev.yml.)
+
+name: selfship
+
+x-app: &app
+  restart: unless-stopped
+  env_file: .env.selfhost
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: postgresql://selfship:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/selfship
+    REDIS_URL: redis://redis:6379
+    WEB_URL: https://${SELFSHIP_DOMAIN:?set SELFSHIP_DOMAIN}
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: selfship
+      POSTGRES_DB: selfship
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U selfship -d selfship']
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Append-only file: queued jobs survive a restart.
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 20
+
+  migrate:
+    build: { context: ., target: migrate }
+    environment:
+      DATABASE_URL: postgresql://selfship:${POSTGRES_PASSWORD}@postgres:5432/selfship
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    <<: *app
+    build: { context: ., target: api }
+
+  worker:
+    <<: *app
+    build: { context: ., target: worker }
+
+  web:
+    <<: *app
+    build: { context: ., target: web, args: { API_URL: http://api:4000 } }
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # HTTPS in front of the web app (certificates from Let's Encrypt, automatic).
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      SELFSHIP_DOMAIN: ${SELFSHIP_DOMAIN}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - web
+
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:

@@ -64,7 +64,9 @@ export const ModelName = {
   Deployment: 'Deployment',
   DeploymentLogChunk: 'DeploymentLogChunk',
   Domain: 'Domain',
-  BuildDiagnosis: 'BuildDiagnosis'
+  BuildDiagnosis: 'BuildDiagnosis',
+  RecoveryCode: 'RecoveryCode',
+  AuditEvent: 'AuditEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -90,6 +92,9 @@ export const UserScalarFieldEnum = {
   passwordHash: 'passwordHash',
   emailVerifiedAt: 'emailVerifiedAt',
   avatarUrl: 'avatarUrl',
+  totpSecret: 'totpSecret',
+  totpEnabledAt: 'totpEnabledAt',
+  totpLastStep: 'totpLastStep',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -336,6 +341,33 @@ export const BuildDiagnosisScalarFieldEnum = {
 } as const
 
 export type BuildDiagnosisScalarFieldEnum = (typeof BuildDiagnosisScalarFieldEnum)[keyof typeof BuildDiagnosisScalarFieldEnum]
+
+
+export const RecoveryCodeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  codeHash: 'codeHash',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type RecoveryCodeScalarFieldEnum = (typeof RecoveryCodeScalarFieldEnum)[keyof typeof RecoveryCodeScalarFieldEnum]
+
+
+export const AuditEventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  targetName: 'targetName',
+  metadata: 'metadata',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditEventScalarFieldEnum = (typeof AuditEventScalarFieldEnum)[keyof typeof AuditEventScalarFieldEnum]
 
 
 export const SortOrder = {

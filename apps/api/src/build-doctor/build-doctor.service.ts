@@ -22,6 +22,7 @@ import {
 } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 const NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Deployment not found.' };
 
@@ -35,6 +36,7 @@ export class BuildDoctorService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     @InjectQueue(QueueName.BUILD_DOCTOR) private readonly queue: Queue<DiagnoseJobData>,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -172,6 +174,14 @@ export class BuildDoctorService {
         nodeVersion: change.settings.nodeVersion,
       },
     });
+    await this.audit.record(
+      userId,
+      'build_doctor.fix_applied',
+      { type: 'project', id: project.id, name: project.name },
+      {
+        change: change.description,
+      },
+    );
     return { applied: change.description };
   }
 

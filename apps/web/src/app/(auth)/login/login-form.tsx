@@ -42,7 +42,12 @@ export function LoginForm(): React.ReactNode {
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      await authApi.login(values);
+      const result = await authApi.login(values);
+      if ('twoFactorRequired' in result) {
+        const next = params.get('next');
+        router.push(`/login/two-factor${next ? `?next=${encodeURIComponent(next)}` : ''}`);
+        return;
+      }
       router.replace(safeRedirect(params.get('next')));
     } catch (error) {
       setFormError(applyApiErrors(error, setError, ['email', 'password']));

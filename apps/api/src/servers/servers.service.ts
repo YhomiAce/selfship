@@ -35,6 +35,7 @@ import { isUniqueViolation } from '../common/prisma-errors';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { toServerDto, toServerJobDetailDto, toServerJobDto } from './server.mapper';
+import { AuditService } from '../audit/audit.service';
 
 /** 404 for servers that don't exist or belong to someone else. */
 const SERVER_NOT_FOUND = { code: ErrorCode.NOT_FOUND, message: 'Server not found.' };
@@ -64,6 +65,7 @@ export class ServersService {
     private readonly cipher: EnvelopeCipher,
     private readonly config: AppConfigService,
     @InjectQueue(QueueName.SERVERS) private readonly queue: Queue<ServerJobData>,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -140,6 +142,15 @@ export class ServersService {
 
     // With a pasted key or an installed key we can connect right away.
     if (input.method !== 'generated') await this.startJob(userId, id, 'setup');
+    await this.audit.record(
+      userId,
+      'server.added',
+      { type: 'server', id, name: input.name },
+      {
+        host: input.host,
+        access: input.method,
+      },
+    );
     return this.get(userId, id);
   }
 
@@ -282,6 +293,14 @@ export class ServersService {
       });
     }
     await this.prisma.server.delete({ where: { id: server.id } });
+    await this.audit.record(
+      userId,
+      'server.removed',
+      { type: 'server', id: server.id, name: server.name },
+      {
+        host: server.host,
+      },
+    );
     return { revokeCommand: revokeKeyCommand(server.keyComment) };
   }
 

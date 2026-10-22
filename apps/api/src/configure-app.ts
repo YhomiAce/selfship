@@ -1,6 +1,7 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { requestContextMiddleware } from './common/request-context';
 import { AppConfigService } from './config/app-config.service';
 
 /**
@@ -19,6 +20,7 @@ export function configureApp(app: NestExpressApplication): void {
   app.useBodyParser('json', { limit: '2mb' });
   app.use(helmet());
   app.use(cookieParser());
+  app.use(requestContextMiddleware);
   app.enableCors({ origin: config.get('WEB_URL'), credentials: true });
   app.enableShutdownHooks();
 }

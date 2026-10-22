@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { configureApp } from './configure-app';
+import { flushErrorTracking, initErrorTracking, reportError } from './common/error-tracking';
 import { AppConfigService } from './config/app-config.service';
 
 /** Starts the HTTP server. */
@@ -17,15 +18,22 @@ async function bootstrap(): Promise<void> {
   configureApp(app);
 
   const config = app.get(AppConfigService);
+  initErrorTracking({
+    dsn: config.get('SENTRY_DSN'),
+    environment: config.get('SENTRY_ENVIRONMENT') ?? config.get('NODE_ENV'),
+    service: 'api',
+  });
   const port = config.get('API_PORT');
   await app.listen(port);
   app.get(Logger).log(`API listening on http://localhost:${port}`, 'Bootstrap');
 }
 
-bootstrap().catch((error: unknown) => {
+bootstrap().catch(async (error: unknown) => {
   // Logger may not be ready yet, so write straight to stderr.
   process.stderr.write(
     `API failed to start: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
   );
+  reportError(error, { kind: 'startup' });
+  await flushErrorTracking();
   process.exit(1);
 });

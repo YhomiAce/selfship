@@ -82,7 +82,7 @@ export const FIXTURES = {
 
   nestApi: {
     'package.json': pkg({
-      scripts: { build: 'nest build', start: 'node dist/main', 'start:prod': 'node dist/main' },
+      scripts: { build: 'nest build', start: 'nest start', 'start:prod': 'node dist/main' },
       dependencies: { '@nestjs/core': '^11.0.0' },
     }),
     'yarn.lock': '',

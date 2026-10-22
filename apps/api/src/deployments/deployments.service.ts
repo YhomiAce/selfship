@@ -30,6 +30,7 @@ import {
   type DeploymentWithServer,
   toDeploymentDto,
 } from './deployment.mapper';
+import { AuditService } from '../audit/audit.service';
 
 /** A project whose server is set and ready. */
 type ReadyProject = Project & { githubInstallation: GithubInstallation; server: Server };
@@ -49,6 +50,7 @@ export class DeploymentsService {
     private readonly github: GithubAppService,
     @InjectQueue(QueueName.DEPLOYMENTS) private readonly queue: Queue,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -98,6 +100,15 @@ export class DeploymentsService {
       );
     }
 
+    await this.audit.record(
+      userId,
+      'deployment.started',
+      { type: 'project', id: projectId, name: project.name },
+      {
+        commit: commit.sha.slice(0, 7),
+        server: project.server.name,
+      },
+    );
     return this.launch(projectId, {
       serverId: project.server.id,
       triggeredById: userId,
@@ -132,6 +143,14 @@ export class DeploymentsService {
             : "This deployment's image is no longer kept on the server. Redeploy its commit instead.",
       });
     }
+    await this.audit.record(
+      userId,
+      'deployment.rolled_back',
+      { type: 'project', id: projectId, name: project.name },
+      {
+        commit: target.commitSha.slice(0, 7),
+      },
+    );
     return this.launch(projectId, {
       serverId: project.server.id,
       triggeredById: userId,
@@ -243,6 +262,14 @@ export class DeploymentsService {
       });
     }
 
+    await this.audit.record(
+      userId,
+      'deployment.cancelled',
+      { type: 'project', id: projectId },
+      {
+        commit: deployment.commitSha.slice(0, 7),
+      },
+    );
     const now = new Date();
     if (deployment.status === 'queued') {
       // Only if the worker hasn't picked it up in the meantime.

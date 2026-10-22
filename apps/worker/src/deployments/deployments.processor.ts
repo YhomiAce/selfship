@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import type { OnApplicationBootstrap } from '@nestjs/common';
 import { DelayedError, type Job, UnrecoverableError } from 'bullmq';
 import {
@@ -10,13 +10,14 @@ import {
 import { AppConfigService } from '../config/app-config.service';
 import { DeploymentRunner } from './deployment.runner';
 import { TeardownService } from './teardown.service';
+import { ReportingWorkerHost } from '../common/reporting-worker-host';
 
 /** How long a deployment waits before trying again when its server or project is busy. */
 const BUSY_RETRY_MS = 5_000;
 
 /** Consumes the `deployments` queue. */
 @Processor(QueueName.DEPLOYMENTS)
-export class DeploymentsProcessor extends WorkerHost implements OnApplicationBootstrap {
+export class DeploymentsProcessor extends ReportingWorkerHost implements OnApplicationBootstrap {
   constructor(
     private readonly runner: DeploymentRunner,
     private readonly teardown: TeardownService,

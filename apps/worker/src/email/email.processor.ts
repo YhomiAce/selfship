@@ -1,14 +1,15 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { type Job, UnrecoverableError } from 'bullmq';
 import { EmailJob, type EmailJobData, EmailJobDataSchema, QueueName } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { MailerService } from './mailer.service';
 import { renderEmail } from './templates';
+import { ReportingWorkerHost } from '../common/reporting-worker-host';
 
 /** Renders and sends transactional emails queued by the API. */
 @Processor(QueueName.EMAIL)
-export class EmailProcessor extends WorkerHost {
+export class EmailProcessor extends ReportingWorkerHost {
   private readonly logger = new Logger(EmailProcessor.name);
 
   constructor(

@@ -28,6 +28,7 @@
     "@selfship/github": "workspace:*",
     "@selfship/remote": "workspace:*",
     "@selfship/shared": "workspace:*",
+    "@sentry/node": "^11.8.0",
     "argon2": "^0.45.1",
     "bullmq": "^6.3.13",
     "cookie-parser": "^1.4.7",

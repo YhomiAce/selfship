@@ -7,11 +7,16 @@ import {
   type RegisterInput,
   type ResetPasswordInput,
 } from '@selfship/shared';
+import { AuditService } from '../audit/audit.service';
 import { isUniqueViolation } from '../common/prisma-errors';
 import { AppConfigService } from '../config/app-config.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { EMAIL_VERIFICATION_TTL_MS, PASSWORD_RESET_TTL_MS } from './auth.constants';
+import {
+  EMAIL_VERIFICATION_TTL_MS,
+  PASSWORD_RESET_TTL_MS,
+  TWO_FACTOR_TTL_MS,
+} from './auth.constants';
 import type { RequestContext } from './auth.types';
 import { GithubOAuthError, type GithubProfile } from './github-oauth.service';
 import { PasswordService } from './password.service';
@@ -23,6 +28,16 @@ export interface SignedIn {
   user: User;
   session: CreatedSession;
 }
+
+/** Password/GitHub was right, but the account has two-factor on: a code is still needed. */
+export interface TwoFactorPending {
+  user: User;
+  /** Raw challenge token (goes into an httpOnly cookie, never into a URL). */
+  challenge: string;
+}
+
+/** Outcome of a sign-in attempt that passed the first factor. */
+export type SignInResult = SignedIn | TwoFactorPending;
 
 /**
  * Account lifecycle: sign-up, sign-in (password or GitHub), email
@@ -41,6 +56,7 @@ export class AuthService {
     private readonly tokens: TokenService,
     private readonly mail: MailService,
     private readonly config: AppConfigService,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -84,15 +100,16 @@ export class AuthService {
    *
    * @param input - Validated login form
    * @param context - Client IP and user agent
-   * @returns The user and their new session
+   * @returns A session, or a two-factor challenge when 2FA is on
    * @throws {UnauthorizedException} `INVALID_CREDENTIALS` on any mismatch
    */
-  async login(input: LoginInput, context: RequestContext): Promise<SignedIn> {
+  async login(input: LoginInput, context: RequestContext): Promise<SignInResult> {
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
     const passwordHash = user?.passwordHash ?? null;
     const valid = await this.passwords.verify(passwordHash, input.password);
 
     if (!user || !passwordHash || !valid) {
+      if (user) await this.audit.record(user.id, 'auth.login_failed');
       throw new UnauthorizedException({
         code: AuthErrorCode.INVALID_CREDENTIALS,
         message: 'Email or password is incorrect.',
@@ -106,7 +123,27 @@ export class AuthService {
       });
     }
 
+    return this.finishSignIn(user, context, 'password');
+  }
+
+  /**
+   * Last step of a sign-in: a session, or (with two-factor on) a challenge
+   * for the code. The first factor alone never yields a session then.
+   *
+   * @param user - User who passed the first factor
+   * @param context - Client IP and user agent
+   * @param method - How they signed in (for the audit log)
+   * @returns Session or two-factor challenge
+   */
+  async finishSignIn(user: User, context: RequestContext, method: string): Promise<SignInResult> {
+    if (user.totpEnabledAt) {
+      return {
+        user,
+        challenge: await this.tokens.issue(user.id, 'TWO_FACTOR_LOGIN', TWO_FACTOR_TTL_MS),
+      };
+    }
     const session = await this.sessions.create(user.id, context);
+    await this.audit.record(user.id, 'auth.login', undefined, { method });
     return { user, session };
   }
 
@@ -179,6 +216,7 @@ export class AuthService {
       data: { passwordHash, emailVerifiedAt: user.emailVerifiedAt ?? new Date() },
     });
     await this.sessions.revokeAll(userId);
+    await this.audit.record(userId, 'auth.password_reset');
 
     await this.mail.send({
       template: 'password-changed',
@@ -199,10 +237,10 @@ export class AuthService {
    *
    * @param profile - Profile returned by GitHub
    * @param context - Client IP and user agent
-   * @returns The user and their new session
+   * @returns A session, or a two-factor challenge when 2FA is on
    * @throws {GithubOAuthError} If GitHub provided no verified email for a new account
    */
-  async loginWithGithub(profile: GithubProfile, context: RequestContext): Promise<SignedIn> {
+  async loginWithGithub(profile: GithubProfile, context: RequestContext): Promise<SignInResult> {
     const linked = await this.prisma.oAuthAccount.findUnique({
       where: { provider_providerAccountId: { provider: 'GITHUB', providerAccountId: profile.id } },
       include: { user: true },
@@ -213,8 +251,7 @@ export class AuthService {
         where: { id: linked.id },
         data: { username: profile.login },
       });
-      const session = await this.sessions.create(linked.userId, context);
-      return { user: linked.user, session };
+      return this.finishSignIn(linked.user, context, 'github');
     }
 
     if (!profile.verifiedEmail) {
@@ -240,8 +277,7 @@ export class AuthService {
           },
         });
 
-    const session = await this.sessions.create(user.id, context);
-    return { user, session };
+    return this.finishSignIn(user, context, 'github');
   }
 
   /** Links GitHub to an existing user, neutralising pre-registration hijacks. */

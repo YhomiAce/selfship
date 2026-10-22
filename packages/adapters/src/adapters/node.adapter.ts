@@ -24,19 +24,19 @@ export const nodeAdapter: Adapter = {
     const pkg = await readPackageJson(repo);
     if (!pkg) return null;
 
-    const start = pkg.scripts.start ? 'start' : null;
+    const start = startScript(pkg.scripts);
     if (!start && !pkg.main) return null;
 
     const pm = detectPackageManager(repo, pkg);
     return {
       adapter: 'node',
-      reason: start ? 'Found a "start" script in package.json' : 'Found "main" in package.json',
+      reason: start ? `Found a "${start}" script in package.json` : 'Found "main" in package.json',
       packageManager: pm,
       settings: {
         adapter: 'node',
         installCommand: installCommand(pm, repo),
         buildCommand: pkg.scripts.build ? runScript(pm, 'build') : null,
-        startCommand: start ? runScript(pm, 'start') : `node ${pkg.main ?? 'index.js'}`,
+        startCommand: start ? runScript(pm, start) : `node ${pkg.main ?? 'index.js'}`,
         outputDirectory: null,
         port: NODE_DEFAULT_PORT,
         nodeVersion: await detectNodeVersion(repo, pkg),
@@ -56,6 +56,8 @@ export const nodeAdapter: Adapter = {
       '',
       `FROM node:${node}-alpine`,
       'WORKDIR /app',
+      // WORKDIR creates /app as root; the app may write next to its files (e.g. nest start clears dist/).
+      'RUN chown node:node /app',
       `ENV NODE_ENV=production PORT=${port}`,
       'COPY --from=build --chown=node:node /app /app',
       'USER node',
@@ -68,3 +70,16 @@ export const nodeAdapter: Adapter = {
     return { Dockerfile: dockerfile, '.dockerignore': NODE_DOCKERIGNORE };
   },
 };
+
+/**
+ * The script that starts the app in production. `start:prod` wins when it
+ * exists: in NestJS projects `start` is `nest start`, which recompiles at
+ * every boot, while `start:prod` runs the build output.
+ *
+ * @param scripts - package.json scripts
+ * @returns Script name, or null without a start script
+ */
+export function startScript(scripts: Record<string, string>): string | null {
+  if (scripts['start:prod']) return 'start:prod';
+  return scripts.start ? 'start' : null;
+}

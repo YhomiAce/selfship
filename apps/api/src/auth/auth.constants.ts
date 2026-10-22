@@ -21,3 +21,12 @@ export const AUTH_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
  * browsers enforce Secure, Path=/ and no Domain attribute.
  */
 export const SESSION_COOKIE = { secure: '__Host-sid', insecure: 'sid' } as const;
+
+/** Time to enter the two-factor code after a correct password. */
+export const TWO_FACTOR_TTL_MS = 10 * 60 * 1000;
+
+/** Cookie holding the pending two-factor sign-in challenge (httpOnly). */
+export const TWO_FACTOR_COOKIE = 'two_factor_challenge';
+
+/** Recovery codes created at a time. */
+export const RECOVERY_CODE_COUNT = 10;

@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.selfhost.example
 *.pem
 *.key
 
@@ -32,3 +33,6 @@ starter_notes.md
 
 # Local dev artefacts (mock keys etc.)
 .dev/
+
+# Self-hosting secrets
+.env.selfhost

@@ -6,12 +6,14 @@
  * The server must already be added and set up in Selfship (by an admin
  * account). Sandbox servers run many users' small apps with resource limits.
  */
+import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { config } from 'dotenv';
 import { PrismaClient, PrismaPg } from '@selfship/db';
 
 async function main(): Promise<void> {
-  config({ path: path.resolve(__dirname, '../../../../.env'), quiet: true });
+  // Local checkouts keep settings in the root .env; containers get them from the environment.
+  const envFile = path.resolve(__dirname, '../../../../.env');
+  if (existsSync(envFile)) process.loadEnvFile(envFile);
   const [serverId, mode] = process.argv.slice(2);
   if (!serverId || (mode !== 'on' && mode !== 'off')) {
     process.stderr.write('Usage: pnpm --filter @selfship/api sandbox-server <server-id> on|off\n');

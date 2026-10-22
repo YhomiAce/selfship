@@ -1,0 +1,7 @@
+# Serves the Selfship dashboard on your domain with automatic HTTPS.
+# Everything (including GitHub webhooks at /api/webhooks/github) goes through
+# the web app, which proxies /api/* to the API on the internal network.
+{$SELFSHIP_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}

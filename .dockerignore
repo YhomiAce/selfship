@@ -1,0 +1,16 @@
+# Keep build context small and free of secrets.
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+.git
+.env
+.env.*
+!.env.example
+!.env.selfhost.example
+*.pem
+starter_notes.md
+infra/aws/**/terraform.tfstate*
+infra/aws/**/.terraform
+docs

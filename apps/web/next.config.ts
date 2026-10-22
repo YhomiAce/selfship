@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 /** Where the NestJS API listens. The browser never calls it directly. */
@@ -5,6 +6,11 @@ import type { NextConfig } from 'next';
 const API_URL = process.env.API_URL || 'http://localhost:4000';
 
 const nextConfig: NextConfig = {
+  // Docker images use the self-contained server (`node apps/web/server.js`);
+  // local `next start` keeps the normal output.
+  ...(process.env.NEXT_OUTPUT === 'standalone'
+    ? { output: 'standalone' as const, outputFileTracingRoot: path.join(__dirname, '../..') }
+    : {}),
   cacheComponents: true,
   partialPrefetching: true,
   // The shared package is built to CommonJS in dist/; let Next bundle it.

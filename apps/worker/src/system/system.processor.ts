@@ -1,15 +1,16 @@
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { InjectQueue, Processor } from '@nestjs/bullmq';
 import { Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { type Job, Queue, UnrecoverableError } from 'bullmq';
 import { type PingJobData, QueueName, SystemJob, SystemSchedule } from '@selfship/shared';
 import { SandboxExpiryService } from '../deployments/sandbox-expiry.service';
+import { ReportingWorkerHost } from '../common/reporting-worker-host';
 
 /** How often expired sandbox apps are removed. */
 const SANDBOX_EXPIRY_EVERY_MS = 60 * 60 * 1000;
 
 /** Handles jobs on the `system` queue (diagnostics and housekeeping). */
 @Processor(QueueName.SYSTEM)
-export class SystemProcessor extends WorkerHost implements OnApplicationBootstrap {
+export class SystemProcessor extends ReportingWorkerHost implements OnApplicationBootstrap {
   private readonly logger = new Logger(SystemProcessor.name);
 
   constructor(

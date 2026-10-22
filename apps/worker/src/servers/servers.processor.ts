@@ -1,13 +1,14 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import type { OnApplicationBootstrap } from '@nestjs/common';
 import { type Job, UnrecoverableError } from 'bullmq';
 import { QueueName, ServerJobDataSchema, ServerQueueJob } from '@selfship/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { ServerJobRunner } from './server-job.runner';
+import { ReportingWorkerHost } from '../common/reporting-worker-host';
 
 /** Consumes the `servers` queue (checks and setup over SSH). */
 @Processor(QueueName.SERVERS)
-export class ServersProcessor extends WorkerHost implements OnApplicationBootstrap {
+export class ServersProcessor extends ReportingWorkerHost implements OnApplicationBootstrap {
   constructor(
     private readonly runner: ServerJobRunner,
     private readonly config: AppConfigService,

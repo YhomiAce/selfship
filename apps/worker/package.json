@@ -25,6 +25,7 @@
     "@selfship/github": "workspace:*",
     "@selfship/remote": "workspace:*",
     "@selfship/shared": "workspace:*",
+    "@sentry/node": "^11.8.0",
     "bullmq": "^6.3.13",
     "ioredis": "^6.0.0",
     "nestjs-pino": "^5.3.1",

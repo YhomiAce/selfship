@@ -83,6 +83,15 @@ export const EnvSchema = z
       .optional()
       .transform((value) => value || undefined),
     BUILD_DOCTOR_MODEL: z.string().default('claude-opus-5-5'),
+    /** Error reporting (Sentry). Off when empty. */
+    SENTRY_DSN: z
+      .string()
+      .optional()
+      .transform((value) => value || undefined),
+    SENTRY_ENVIRONMENT: z
+      .string()
+      .optional()
+      .transform((value) => value || undefined),
     BUILD_DOCTOR_EFFORT: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).default('medium'),
     /** Diagnoses per user per day (reused/cached ones don't count). */
     BUILD_DOCTOR_DAILY_LIMIT: z.coerce.number().int().min(0).max(10_000).default(10),

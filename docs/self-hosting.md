@@ -74,6 +74,8 @@ docker compose --env-file .env.selfhost exec -T postgres pg_dump -U selfship sel
 gunzip -c selfship-2026-10-22.sql.gz | docker compose --env-file .env.selfhost exec -T postgres psql -U selfship selfship
 ```
 
+**Monitoring:** point an uptime checker (UptimeRobot, Better Stack…) at `https://<SELFSHIP_DOMAIN>/api/health`; it answers `200` while the API, Postgres and Redis are up, and `503` when one of them is down. For error reports, set `SENTRY_DSN`.
+
 Back up `.env.selfhost` too (it holds `ENCRYPTION_KEY`), somewhere other than this machine.
 
 ## How it fits together

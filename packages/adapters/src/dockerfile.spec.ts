@@ -58,6 +58,8 @@ describe('generated Dockerfiles', () => {
   it('node: sets PORT and EXPOSE from settings', async () => {
     const dockerfile = await render('expressApi', { port: 8080 });
     expect(dockerfile).toContain('PORT=8080');
+    // Prisma needs the openssl tool to pick its engine, while building and at runtime.
+    expect(dockerfile.match(/RUN apk add --no-cache openssl/g)).toHaveLength(2);
     // The app user owns /app itself, not just its files (nest start deletes dist/).
     expect(dockerfile).toContain('RUN chown node:node /app');
     expect(dockerfile.indexOf('RUN chown node:node /app')).toBeLessThan(

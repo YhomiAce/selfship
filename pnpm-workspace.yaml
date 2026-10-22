@@ -17,3 +17,9 @@ allowBuilds:
   ssh2: true
   cpu-features: false
   unrs-resolver: true
+
+# Patched versions of transitive dependencies flagged by `pnpm audit`
+# (both come from the Prisma CLI; mysql2 is unused with Postgres).
+overrides:
+  mysql2: '>=3.23.1'
+  deepmerge-ts: '>=8.0.0'

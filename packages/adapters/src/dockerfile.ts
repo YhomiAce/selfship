@@ -81,12 +81,21 @@ export function safePort(port: number): number {
 /** Files copied before `install`, for layer caching (per package manager). */
 const MANIFESTS: Record<PackageManager, string | null> = {
   npm: 'package.json package-lock.json* npm-shrinkwrap.json* .npmrc*',
-  pnpm: 'package.json pnpm-lock.yaml* .npmrc*',
   yarn: 'package.json yarn.lock* .npmrc* .yarnrc*',
-  // Berry (.yarn/ folder) and bun need more than single files; copy everything.
+  // These need more than single files, so copy everything: pnpm reads
+  // pnpm-workspace.yaml (allowed builds, patches, workspace packages) and
+  // patches/, berry its .yarn/ folder.
+  pnpm: null,
   'yarn-berry': null,
   bun: null,
 };
+
+/**
+ * Installs the openssl tool. Alpine ships libssl but not the binary, which
+ * Prisma (one of the most common Node dependencies) uses to pick its engine;
+ * without it Prisma loads an engine for OpenSSL 1.1 and every query fails.
+ */
+export const OPENSSL = 'RUN apk add --no-cache openssl';
 
 /** Setup step for package managers that aren't bundled with Node. */
 function packageManagerSetup(pm: PackageManager): string | null {
@@ -115,6 +124,7 @@ export function nodeBuildStage(config: BuildConfig, stageName = 'build'): string
   const lines = [
     `FROM node:${node}-alpine AS ${stageName}`,
     'WORKDIR /app',
+    OPENSSL,
     // Defaults as ARGs, not ENV: Docker lets ENV override a build arg of the
     // same name, which would ignore a user's CI=false (needed by old Create
     // React App builds that treat warnings as errors when CI=true).
@@ -149,6 +159,10 @@ export const NODE_DOCKERIGNORE = [
 /**
  * nginx config for static hosting.
  *
+ * Without the fallback (multi-page sites), clean URLs work (`/about` serves
+ * `about.html` or `about/index.html`) and missing pages get the site's
+ * `404.html` with a 404 status (nginx's own page if there is none).
+ *
  * @param spaFallback - Serve index.html for unknown paths (client-side routing)
  * @returns nginx `server` block
  */
@@ -158,9 +172,17 @@ export function nginxConfig(spaFallback: boolean): string {
     '  listen 80;',
     '  root /usr/share/nginx/html;',
     '  index index.html;',
-    `  location / { try_files $uri $uri/ ${spaFallback ? '/index.html' : '=404'}; }`,
+    // Relative redirects (/about → /about/): behind the HTTPS proxy, nginx's
+    // absolute ones would point at http://<host>:80.
+    '  absolute_redirect off;',
+    spaFallback
+      ? '  location / { try_files $uri $uri/ /index.html; }'
+      : '  location / { try_files $uri $uri/ $uri.html =404; }',
+    spaFallback ? null : '  error_page 404 /404.html;',
     '}',
-  ].join('\n');
+  ]
+    .filter((line): line is string => line !== null)
+    .join('\n');
 }
 
 /**
@@ -173,3 +195,26 @@ export function nginxConfig(spaFallback: boolean): string {
 export function writeNginxConfig(spaFallback: boolean): string {
   return `COPY <<'NGINX' /etc/nginx/conf.d/default.conf\n${nginxConfig(spaFallback)}\nNGINX`;
 }
+
+/** Where the multi-page config waits until the build output is known. */
+const MULTI_PAGE_CONF = '/etc/nginx/selfship-multi-page.conf';
+
+/**
+ * Dockerfile lines for build output that may be a single-page app or a
+ * multi-page static site: static-site generators (Astro, Next.js export,
+ * Gatsby, Nuxt generate…) emit a `404.html`, SPA bundlers don't. With one,
+ * the multi-page config is used, so missing pages return 404 instead of the
+ * home page; without, unknown paths fall back to index.html for client routing.
+ * Must come after the output is copied to /usr/share/nginx/html.
+ *
+ * @returns Dockerfile instructions
+ */
+export function chooseNginxConfig(): string {
+  return [
+    writeNginxConfig(true),
+    `COPY <<'NGINX' ${MULTI_PAGE_CONF}\n${nginxConfig(false)}\nNGINX`,
+  ].join('\n');
+}
+
+/** RUN step that activates the multi-page config when the output has a 404.html. */
+export const ACTIVATE_NGINX_CONFIG = `RUN if [ -f /usr/share/nginx/html/404.html ]; then mv ${MULTI_PAGE_CONF} /etc/nginx/conf.d/default.conf; else rm ${MULTI_PAGE_CONF}; fi`;

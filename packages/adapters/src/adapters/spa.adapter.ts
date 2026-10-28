@@ -4,7 +4,8 @@ import {
   NODE_DOCKERIGNORE,
   nodeBuildStage,
   safePath,
-  writeNginxConfig,
+  chooseNginxConfig,
+  ACTIVATE_NGINX_CONFIG,
 } from '../dockerfile';
 import { installCommand, runScript } from '../node/commands';
 import {
@@ -139,7 +140,8 @@ async function detectToolchain(repo: RepoSnapshot, pkg: PackageInfo): Promise<Sp
 
 /**
  * Single-page apps and static-site generators: built with Node, then served
- * as static files by nginx with a fallback to index.html for client routing.
+ * as static files by nginx: with a fallback to index.html for client routing,
+ * or with real 404s when the output is a multi-page site (has a 404.html).
  */
 export const spaAdapter: Adapter = {
   name: 'spa',
@@ -174,8 +176,9 @@ export const spaAdapter: Adapter = {
       nodeBuildStage(config),
       '',
       'FROM nginx:stable-alpine',
-      writeNginxConfig(true),
+      chooseNginxConfig(),
       `COPY --from=build /app/${output} /usr/share/nginx/html`,
+      ACTIVATE_NGINX_CONFIG,
       'EXPOSE 80',
       '',
     ].join('\n');

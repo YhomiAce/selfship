@@ -146,6 +146,8 @@ describe('AppDeployer', () => {
 
     const build = server.calls.find((c) => c.command.includes('docker build'))?.command ?? '';
     expect(build).toContain('--build-arg NEXT_PUBLIC_API');
+    // Base images are refreshed on every build.
+    expect(build).toContain('--pull');
     const run = server.calls.find((c) => c.command.includes('docker run'))?.command ?? '';
     expect(run).toContain('-e DB_PASSWORD');
     expect(run.replace(/'/g, '').replace(/\\/g, '')).toContain('--network selfship');

@@ -28,7 +28,9 @@ describe('generated Dockerfiles', () => {
     const dockerfile = await render('plainHtml');
     expect(dockerfile).toContain('FROM nginx:stable-alpine');
     expect(dockerfile).toContain('COPY . /usr/share/nginx/html');
-    expect(dockerfile).toContain('try_files $uri $uri/ =404');
+    expect(dockerfile).toContain('try_files $uri $uri/ $uri.html =404');
+    expect(dockerfile).toContain('error_page 404 /404.html');
+    expect(dockerfile).toContain('absolute_redirect off;');
   });
 
   it('spa: builds with Node, serves output with an index.html fallback', async () => {
@@ -44,6 +46,11 @@ describe('generated Dockerfiles', () => {
     );
     expect(dockerfile).toContain('COPY --from=build /app/dist /usr/share/nginx/html');
     expect(dockerfile).toContain('try_files $uri $uri/ /index.html');
+    // Multi-page output (has a 404.html) switches to real 404s at build time.
+    expect(dockerfile).toContain('/etc/nginx/selfship-multi-page.conf');
+    expect(dockerfile.indexOf('RUN if [ -f /usr/share/nginx/html/404.html ]')).toBeGreaterThan(
+      dockerfile.indexOf('COPY --from=build /app/dist /usr/share/nginx/html'),
+    );
   });
 
   it('nextjs: enables corepack for pnpm and starts with sh -c', async () => {

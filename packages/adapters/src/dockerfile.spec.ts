@@ -53,6 +53,11 @@ describe('generated Dockerfiles', () => {
     expect(dockerfile).toContain('HOSTNAME=0.0.0.0');
     expect(dockerfile).toContain('CMD ["sh", "-c", "pnpm run start"]');
     expect(dockerfile).toContain('USER node');
+    // pnpm reads pnpm-workspace.yaml (allowBuilds, patches) at install: copy the whole repo first.
+    expect(dockerfile).not.toContain('COPY package.json pnpm-lock.yaml');
+    expect(dockerfile.indexOf('COPY . .')).toBeLessThan(
+      dockerfile.indexOf('RUN pnpm install --frozen-lockfile'),
+    );
   });
 
   it('node: sets PORT and EXPOSE from settings', async () => {

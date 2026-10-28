@@ -81,9 +81,11 @@ export function safePort(port: number): number {
 /** Files copied before `install`, for layer caching (per package manager). */
 const MANIFESTS: Record<PackageManager, string | null> = {
   npm: 'package.json package-lock.json* npm-shrinkwrap.json* .npmrc*',
-  pnpm: 'package.json pnpm-lock.yaml* .npmrc*',
   yarn: 'package.json yarn.lock* .npmrc* .yarnrc*',
-  // Berry (.yarn/ folder) and bun need more than single files; copy everything.
+  // These need more than single files, so copy everything: pnpm reads
+  // pnpm-workspace.yaml (allowed builds, patches, workspace packages) and
+  // patches/, berry its .yarn/ folder.
+  pnpm: null,
   'yarn-berry': null,
   bun: null,
 };

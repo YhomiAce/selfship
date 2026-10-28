@@ -333,7 +333,9 @@ export class AppDeployer {
         `trap ${sh(`rm -f ${sh(envFile)}`)} EXIT`,
         `. ${sh(envFile)}`,
         [
-          'DOCKER_BUILDKIT=1 docker build --progress=plain',
+          // --pull: refresh base images (node:22-alpine…) so a server doesn't keep
+          // the copy it first downloaded: newer patch releases and security fixes.
+          'DOCKER_BUILDKIT=1 docker build --progress=plain --pull',
           ...buildArgNames.map((name) => `--build-arg ${name}`),
           `--label ${sh(`selfship.app=${this.plan.app}`)}`,
           `-t ${sh(imageTag)}`,

@@ -196,9 +196,10 @@ Details: [08-ai-build-doctor.md](../08-ai-build-doctor.md), [09-free-tier-sandbo
 - [ ] Audit log (server added/removed, secret revealed, deploy, domain changes) + UI
 - [ ] 2FA (TOTP) + recovery codes
 - [ ] Security review pass ([04](../04-security.md) checklist), dependency audit, run `/security-review`
-- [ ] **Self-host** package: `docker-compose.yml` for the whole platform, with an install guide (open-source promise)
-- [ ] Production deploy of the platform itself (we deploy ourselves with our own engine if possible), backups of our Postgres
-- [ ] Error tracking (Sentry, free tier) + uptime monitoring
+- [x] **Self-host** package: `docker-compose.yml` for the whole platform, with an install guide (open-source promise)
+- [x] Dev environment of the platform itself: `main` → dev.selfship.dev via GitHub Actions + ghcr.io + EC2 (`infra/aws/platform-dev`), nightly Postgres backups (decisions #74–77)
+- [ ] Production environment (`prod` branch), off-server backups
+- [x] Error tracking (Sentry, free tier, on when `SENTRY_DSN` is set) + uptime monitoring (`/api/health` for an external checker; documented in docs/self-hosting.md)
 - [ ] Public docs site (getting started, supported frameworks, server requirements, troubleshooting)
 - [ ] Landing page + waitlist/feedback link
 - [ ] Terms of service + privacy policy (AI data sharing disclosure included)

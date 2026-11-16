@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Deploys Selfship on one of our servers. It's the forced command of the CI
+# deploy key (authorized_keys `command=`), so CI can run nothing else; admins
+# can run it too (sudo -u deploy selfship-deploy <action>).
+#
+#   deploy <commit-sha>   pull that commit's images and config, start them,
+#                         wait for health, roll back to the previous commit on failure
+#   status                current commit and container states
+#
+# Installed by Terraform (infra/aws/platform-dev) to /usr/local/bin.
+set -euo pipefail
+
+DIR=/opt/selfship
+REPO=${SELFSHIP_REPO:-YhomiAce/selfship}
+HEALTH_TIMEOUT=${HEALTH_TIMEOUT:-300}
+
+log() { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*"; }
+die() { log "✗ $*" >&2; exit 1; }
+
+# Arguments come from SSH_ORIGINAL_COMMAND (CI) or the command line (admins).
+read -r action sha extra <<<"${SSH_ORIGINAL_COMMAND:-$*}" || true
+[ -z "${extra:-}" ] || die "Unexpected arguments."
+
+compose() { SELFSHIP_TAG="$1" docker compose -f "$DIR/compose.yml" --env-file "$DIR/.env" "${@:2}"; }
+
+# Waits until the API container reports healthy and the migration exited 0.
+wait_healthy() {
+  local tag=$1 deadline=$((SECONDS + HEALTH_TIMEOUT)) api migrate state code
+  while ((SECONDS < deadline)); do
+    migrate=$(compose "$tag" ps -a -q migrate)
+    if [ -n "$migrate" ]; then
+      state=$(docker inspect -f '{{.State.Status}}' "$migrate")
+      code=$(docker inspect -f '{{.State.ExitCode}}' "$migrate")
+      if [ "$state" = exited ] && [ "$code" != 0 ]; then
+        compose "$tag" logs --no-color --tail 40 migrate >&2 || true
+        return 1
+      fi
+    fi
+    api=$(compose "$tag" ps -q api)
+    if [ -n "$api" ] && [ "$(docker inspect -f '{{.State.Health.Status}}' "$api" 2>/dev/null)" = healthy ]; then
+      return 0
+    fi
+    sleep 5
+  done
+  compose "$tag" logs --no-color --tail 40 api >&2 || true
+  return 1
+}
+
+# Starts a commit's images with the config files already in $DIR.
+start() {
+  local tag=$1
+  log "→ Pulling images for ${tag:0:7}"
+  compose "$tag" pull --quiet
+  log "→ Starting"
+  compose "$tag" up -d --remove-orphans
+  log "→ Waiting for the API to be healthy (up to ${HEALTH_TIMEOUT}s)"
+  wait_healthy "$tag"
+}
+
+# Downloads compose.yml and the Caddyfile at a commit into a staging folder.
+fetch_config() {
+  local tag=$1 out=$2 file
+  for file in compose.yml Caddyfile; do
+    curl -fsSL --retry 3 -o "$out/$file" "https://raw.githubusercontent.com/$REPO/$tag/deploy/$file" \
+      || die "Couldn't download deploy/$file at ${tag:0:7}."
+    [ -s "$out/$file" ] || die "deploy/$file is empty at ${tag:0:7}."
+  done
+}
+
+case "${action:-}" in
+  deploy)
+    [[ "${sha:-}" =~ ^[0-9a-f]{40}$ ]] || die "Usage: deploy <40-character commit sha>"
+    [ -f "$DIR/.env" ] || die "$DIR/.env is missing: run 'make env-push' from infra/aws/platform-dev."
+    exec 9>"$DIR/.deploy.lock"
+    flock -w 600 9 || die "Another deployment is still running."
+
+    previous=$(cat "$DIR/.current-tag" 2>/dev/null || true)
+    staging=$(mktemp -d)
+    trap 'rm -rf "$staging"' EXIT
+    fetch_config "$sha" "$staging"
+    # Keep the previous config for rollback.
+    [ -f "$DIR/compose.yml" ] && cp "$DIR/compose.yml" "$staging/compose.previous.yml"
+    [ -f "$DIR/Caddyfile" ] && cp "$DIR/Caddyfile" "$staging/Caddyfile.previous"
+    cp "$staging/compose.yml" "$staging/Caddyfile" "$DIR/"
+
+    if start "$sha"; then
+      echo "$sha" >"$DIR/.current-tag"
+      log "✓ Deployed ${sha:0:7}"
+      docker image prune -af --filter 'until=72h' >/dev/null || true
+      exit 0
+    fi
+
+    log "✗ ${sha:0:7} is unhealthy"
+    if [ -n "$previous" ] && [ -f "$staging/compose.previous.yml" ]; then
+      log "→ Rolling back to ${previous:0:7}"
+      cp "$staging/compose.previous.yml" "$DIR/compose.yml"
+      cp "$staging/Caddyfile.previous" "$DIR/Caddyfile"
+      start "$previous" && log "✓ Rolled back to ${previous:0:7}" || log "✗ Rollback is unhealthy too"
+    fi
+    exit 1
+    ;;
+  status)
+    current=$(cat "$DIR/.current-tag" 2>/dev/null || echo none)
+    echo "commit: $current"
+    [ "$current" = none ] || compose "$current" ps --format 'table {{.Service}}\t{{.Status}}'
+    ;;
+  *)
+    die "Usage: deploy <commit-sha> | status"
+    ;;
+esac

@@ -185,9 +185,32 @@ GitHub sometimes creates new container images as **private**, even for a public 
 
 ---
 
-## Part 7: GitHub App for dev (optional, when you want to connect repos)
+## Part 7: GitHub App for dev (to connect repositories)
 
-The dev site needs its **own** GitHub App, because an app has a single webhook URL. Follow [github-app-setup.md](github-app-setup.md) with these values:
+The dev site needs its **own** GitHub App, because an app has a single webhook URL.
+
+### 7.1 One click
+
+```bash
+cd ~/Documents/Projects/infra/aws/platform-dev
+make github-app
+```
+
+1. **Your browser opens a local page.** Click **Continue to GitHub**.
+2. **GitHub opens "Create GitHub App"** with everything filled in: name **Selfship Dev**, the dev URLs, permissions (Contents: read), the Push event, and "request user authorization during installation".
+   - If GitHub says the name is taken, change it there (e.g. `Selfship Dev Yomi`).
+   - Then click **Create GitHub App**.
+3. **GitHub returns to the local page:** "✓ … created. Credentials saved to dev.env".
+4. **The terminal finishes on its own:** it saves the app's ID, client ID and secret, webhook secret and private key into `dev.env`, then runs `make env-push`. Nothing secret is printed.
+
+✅ **Check:**
+
+- The app appears at https://github.com/settings/apps.
+- On https://dev.selfship.dev, **New project → Connect GitHub** opens GitHub's install page for the new app.
+
+### 7.2 By hand (only if 7.1 doesn't work)
+
+Follow [github-app-setup.md](github-app-setup.md) with these values:
 
 | Field           | Value                                          |
 | --------------- | ---------------------------------------------- |

@@ -21,13 +21,22 @@ die() { log "✗ $*" >&2; exit 1; }
 read -r action sha extra <<<"${SSH_ORIGINAL_COMMAND:-$*}" || true
 [ -z "${extra:-}" ] || die "Unexpected arguments."
 
-compose() { SELFSHIP_TAG="$1" docker compose -f "$DIR/compose.yml" --env-file "$DIR/.env" "${@:2}"; }
+# Compose reads the working directory: admins run this through sudo from
+# their own home, which the deploy user can't read.
+cd "$DIR" || die "Can't enter $DIR."
+
+# SELFSHIP_ENV_HASH changes when .env does, so compose recreates the app
+# containers on `make env-push` (it doesn't notice env_file contents itself).
+compose() {
+  SELFSHIP_TAG="$1" SELFSHIP_ENV_HASH="$(sha256sum "$DIR/.env" | cut -c1-16)" \
+    docker compose -f "$DIR/compose.yml" --env-file "$DIR/.env" "${@:2}"
+}
 
 # Waits until the API container reports healthy and the migration exited 0.
 wait_healthy() {
   local tag=$1 deadline=$((SECONDS + HEALTH_TIMEOUT)) api migrate state code
   while ((SECONDS < deadline)); do
-    migrate=$(compose "$tag" ps -a -q migrate)
+    migrate=$(compose "$tag" ps -a -q migrate) || return 1
     if [ -n "$migrate" ]; then
       state=$(docker inspect -f '{{.State.Status}}' "$migrate")
       code=$(docker inspect -f '{{.State.ExitCode}}' "$migrate")
@@ -36,7 +45,7 @@ wait_healthy() {
         return 1
       fi
     fi
-    api=$(compose "$tag" ps -q api)
+    api=$(compose "$tag" ps -q api) || return 1
     if [ -n "$api" ] && [ "$(docker inspect -f '{{.State.Health.Status}}' "$api" 2>/dev/null)" = healthy ]; then
       return 0
     fi
@@ -46,13 +55,14 @@ wait_healthy() {
   return 1
 }
 
-# Starts a commit's images with the config files already in $DIR.
+# Starts a commit's images with the config files already in $DIR. Each step is
+# checked explicitly: callers use `if start`, where `set -e` doesn't apply.
 start() {
   local tag=$1
   log "→ Pulling images for ${tag:0:7}"
-  compose "$tag" pull --quiet
+  compose "$tag" pull --quiet || { log "✗ Pull failed"; return 1; }
   log "→ Starting"
-  compose "$tag" up -d --remove-orphans
+  compose "$tag" up -d --remove-orphans || { log "✗ docker compose up failed"; return 1; }
   log "→ Waiting for the API to be healthy (up to ${HEALTH_TIMEOUT}s)"
   wait_healthy "$tag"
 }

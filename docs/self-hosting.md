@@ -42,6 +42,15 @@ The first build takes a few minutes. Compose then:
 
 Open `https://<SELFSHIP_DOMAIN>` and sign up. The first account is a normal user; there's no separate admin yet.
 
+**Skipping the build.** Prebuilt images of every commit on `main` are on ghcr.io (`ghcr.io/yhomiace/selfship-{api,worker,web,migrate}:<commit sha>`). [`deploy/compose.yml`](../deploy/compose.yml) runs them instead of building:
+
+```bash
+cp deploy/compose.yml deploy/Caddyfile . && cp .env.selfhost .env
+SELFSHIP_TAG=<commit sha> docker compose -f compose.yml --env-file .env up -d
+```
+
+These are development builds, the same ones our dev environment runs. Tagged releases will come with the first production release.
+
 ## Optional features
 
 Set these in `.env.selfhost` and run `docker compose --env-file .env.selfhost up -d` again.

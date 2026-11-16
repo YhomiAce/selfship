@@ -23,6 +23,9 @@ x-app: &app
     DATABASE_URL: postgresql://selfship:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/selfship
     REDIS_URL: redis://redis:6379
     WEB_URL: https://${SELFSHIP_DOMAIN:?set SELFSHIP_DOMAIN}
+    # Set by selfship-deploy from .env's checksum: a changed .env changes this
+    # value, so compose recreates the app containers with the new settings.
+    SELFSHIP_ENV_HASH: ${SELFSHIP_ENV_HASH:-}
   depends_on:
     postgres:
       condition: service_healthy

@@ -9,7 +9,7 @@ KNOWN    := .known_hosts
 SSH      := ssh -o UserKnownHostsFile=$(KNOWN) -o CheckHostIP=no
 DEPLOYCMD = sudo -u deploy env $$(cat /etc/selfship/deploy.env) /usr/local/bin/selfship-deploy
 
-.PHONY: help init plan up start stop down ready ssh status deploy logs env-init env-push github-env server-update backup backups
+.PHONY: help init plan up start stop down ready ssh status deploy logs env-init env-push github-app github-env server-update backup backups
 
 help:          ## List targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed -E 's/:.*## /\t/' | expand -t 16
@@ -51,7 +51,7 @@ deploy: $(KNOWN) ## Deploy (or roll back to) a commit by hand: make deploy SHA=<
 	$(SSH) ubuntu@$(DOMAIN) '$(DEPLOYCMD) deploy $(SHA)'
 
 logs: $(KNOWN)  ## Follow logs: make logs [S=api|worker|web|migrate|caddy|postgres|redis]
-	$(SSH) -t ubuntu@$(DOMAIN) 'cd /opt/selfship && sudo -u deploy env SELFSHIP_TAG=$$(cat .current-tag) docker compose -f compose.yml --env-file .env logs -f --tail 100 $(S)'
+	$(SSH) -t ubuntu@$(DOMAIN) 'sudo -u deploy sh -c "cd /opt/selfship && SELFSHIP_TAG=\$$(cat .current-tag) docker compose -f compose.yml --env-file .env logs -f --tail 100 $(S)"'
 
 env-init:      ## Create dev.env with generated secrets (never overwrites)
 	@test ! -f dev.env || { echo "dev.env already exists"; exit 1; }
@@ -69,7 +69,13 @@ env-push: $(KNOWN) ## Upload dev.env to the server and restart the running versi
 	@test -f dev.env || { echo "No dev.env: run make env-init"; exit 1; }
 	@$(SSH) ubuntu@$(DOMAIN) 'sudo install -o deploy -g deploy -m 600 /dev/stdin /opt/selfship/.env' < dev.env
 	@echo "Uploaded."
-	@$(SSH) ubuntu@$(DOMAIN) 'if test -f /opt/selfship/.current-tag; then $(DEPLOYCMD) deploy $$(cat /opt/selfship/.current-tag); else echo "Nothing deployed yet: push to main (or make deploy SHA=...)"; fi'
+	@# /opt/selfship belongs to the deploy user, so read the deployed commit through sudo.
+	@$(SSH) ubuntu@$(DOMAIN) 'tag=$$(sudo cat /opt/selfship/.current-tag 2>/dev/null); if [ -n "$$tag" ]; then $(DEPLOYCMD) deploy $$tag; else echo "Nothing deployed yet: push to main (or make deploy SHA=...)"; fi'
+
+github-app:    ## Create this environment's GitHub App in one click; credentials go into dev.env, then env-push
+	@test -f dev.env || { echo "No dev.env: run make env-init"; exit 1; }
+	python3 github-app.py "$(DOMAIN)" "$(or $(APP_NAME),Selfship Dev)"
+	@$(MAKE) --no-print-directory env-push
 
 github-env:    ## Create/refresh the GitHub environment: deploy key, host, known_hosts; deploys from main only
 	echo '{"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}' | gh api -X PUT repos/$(REPO)/environments/$(ENV) --input - >/dev/null

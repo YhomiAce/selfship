@@ -5,3 +5,4 @@ terraform.tfvars
 dev.env
 .known_hosts
 backups/
+__pycache__/

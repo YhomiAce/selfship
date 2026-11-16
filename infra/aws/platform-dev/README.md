@@ -38,8 +38,6 @@ push to main ─► GitHub Actions: checks (ci.yml) ─► build 4 images ─►
 
 ## First-time setup
 
-**Step-by-step version, with what to click and how to check each step:** [docs/guides/dev-environment-setup.md](../../../docs/guides/dev-environment-setup.md).
-
 You need:
 
 - Terraform, and the AWS `selfship` profile

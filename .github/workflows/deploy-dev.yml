@@ -45,7 +45,7 @@ jobs:
       # One job, four targets: they share the expensive build stage, which the
       # first build caches for the other three (and in GitHub's cache for the next run).
       - name: Build and push api
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: api
@@ -56,7 +56,7 @@ jobs:
           cache-to: type=gha,scope=selfship,mode=max
 
       - name: Build and push worker
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: worker
@@ -66,7 +66,7 @@ jobs:
           cache-from: type=gha,scope=selfship
 
       - name: Build and push web
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: web
@@ -76,7 +76,7 @@ jobs:
           cache-from: type=gha,scope=selfship
 
       - name: Build and push migrate
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: migrate

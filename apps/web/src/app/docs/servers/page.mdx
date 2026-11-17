@@ -1,0 +1,125 @@
+export const metadata = {
+  title: 'Servers',
+  description:
+    'Server requirements, how to give Selfship access, what setup installs, and server statuses.',
+};
+
+# Servers
+
+A server is a machine you own, usually a VPS, where Selfship builds and runs your apps. One server can run many apps.
+
+## Requirements
+
+| Requirement          | Details                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| **Operating system** | Ubuntu 22.04 or 24.04, or Debian 12 or 13                                                |
+| **CPU**              | x86_64 or arm64                                                                          |
+| **Access**           | SSH as `root`, or as a user with **passwordless** sudo                                   |
+| **Network**          | A public IP address. Ports **80 and 443** must be free; Selfship's HTTPS proxy uses them |
+| **Disk**             | At least 5 GB free                                                                       |
+
+Memory decides what the server can build:
+
+| Memory       | Good for                               |
+| ------------ | -------------------------------------- |
+| Under 1 GB   | Static sites and single-page apps      |
+| 1–2 GB       | Most apps (Selfship adds 2 GB of swap) |
+| 2 GB or more | Everything, including Next.js          |
+
+<Callout>
+  Builds run on your server. If a large build runs out of memory, Selfship tells you; the fix is
+  usually a bigger server or a swap file.
+  [Troubleshooting](/docs/troubleshooting#the-server-ran-out-of-memory).
+</Callout>
+
+## Adding a server
+
+Open **Servers → Add server** and fill in:
+
+- **Name:** letters, numbers, spaces, `.`, `-` and `_`, up to 40 characters. It must be unique in your account.
+- **IP address or hostname:** without `http://` or a port. Private addresses (e.g. `192.168.…`) aren't accepted, because Selfship must reach the server over the internet.
+- **SSH port:** `22` unless you changed it.
+- **SSH user:** `root`, or a user with passwordless sudo (for example `ubuntu` on AWS).
+
+Then choose how Selfship logs in.
+
+### Generate a key (recommended)
+
+Selfship creates an SSH key for this server. The server page shows **Give Selfship access** with a single command:
+
+```bash
+mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo 'ssh-ed25519 AAAA… selfship-1a2b3c4d' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+```
+
+Log in to the server as the SSH user you entered, with your provider's web console or your own SSH, and run it. Then click **I've added it, connect**.
+
+### Paste a private key
+
+Paste an existing private key, the whole file including the `-----BEGIN` and `-----END` lines. Keys protected by a passphrase aren't supported. To remove the passphrase from a copy of the key:
+
+```bash
+ssh-keygen -p -N "" -f path/to/key
+```
+
+### Use a password once
+
+Selfship logs in once with the password, installs its own key, and **never stores the password**. Password login must be enabled on the server.
+
+<Callout kind="tip">
+  With every method, the private key Selfship uses is encrypted before it's stored. On the first
+  connection Selfship also records the server's identity (its host key). If that identity ever
+  changes, Selfship stops and warns you.
+</Callout>
+
+## What setup does
+
+After connecting, Selfship **checks** the server: operating system, architecture, memory, swap, free disk, Docker, and ports 80 and 443. Anything that blocks setup is listed under **Findings** with how to fix it.
+
+Then **setup** runs. It's safe to run again; it skips what's already done.
+
+1. Installs **Docker** (version 23 or newer, from Docker's official install script) and git.
+2. Adds a **2 GB swap file** if the server has less than 2 GB of memory and no swap.
+3. If the `ufw` firewall is installed: allows SSH, HTTP (80) and HTTPS (443), and turns it on.
+4. Turns on **automatic security updates** for the operating system.
+5. Starts **Traefik**, the reverse proxy that routes each domain to the right app and gets certificates from Let's Encrypt. HTTP requests are redirected to HTTPS.
+
+Apps live in `/opt/selfship/apps/` on the server, and the proxy's settings in `/opt/selfship/traefik/`.
+
+<Callout kind="warning">
+  If another program already uses port 80 or 443 (often nginx or Apache), setup can't continue. Stop
+  it, for example `sudo systemctl disable --now nginx`, then click **Check again**.
+</Callout>
+
+## Server statuses
+
+| Status              | Meaning                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| **Waiting for key** | Run the command from **Give Selfship access** on the server, then click **I've added it, connect** |
+| **Checking…**       | Selfship is inspecting the server                                                                  |
+| **Not set up**      | The check passed; click **Run setup**                                                              |
+| **Needs attention** | Something blocks setup. See **Findings**                                                           |
+| **Setting up…**     | Setup is running; follow it in the live log                                                        |
+| **Setup failed**    | See the log for the step that failed, fix it, then **Re-run setup**                                |
+| **Ready**           | The server can take deployments                                                                    |
+| **Unreachable**     | A deployment couldn't connect. Check the server is on and SSH is allowed, then **Check again**     |
+
+On the server page, **Check again** only inspects the server; **Run setup** (or **Re-run setup**) installs and repairs. Only one check or setup runs on a server at a time.
+
+<Callout>
+  Selfship doesn't monitor servers continuously: a status changes when you run a check or setup, or
+  when a deployment can't connect.
+</Callout>
+
+## Builds on a server
+
+By default each server runs **one build at a time**; more deployments wait in the queue. This keeps a small server from running out of memory. Old build cache is cleaned up when the disk is 80% full.
+
+## Removing a server
+
+Open the server and click **Remove**. Selfship forgets the server and its key, but **changes nothing on the server**: apps and Docker keep running. Projects that used it are left without a server until you choose another.
+
+To also revoke Selfship's access, run the command shown in the dialog on the server. It removes Selfship's key from `~/.ssh/authorized_keys`, for example:
+
+```bash
+sed -i '/ selfship-1a2b3c4d$/d' ~/.ssh/authorized_keys
+```

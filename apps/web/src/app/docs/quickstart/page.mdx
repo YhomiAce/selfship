@@ -1,0 +1,84 @@
+export const metadata = {
+  title: 'Quickstart',
+  description: 'From sign-up to a live HTTPS app on your own server, step by step.',
+};
+
+# Quickstart
+
+This page takes you from a new account to your app live on HTTPS, on your own server. It takes about ten minutes, plus the time your app takes to build.
+
+**You need:**
+
+- **A GitHub account,** with the repository you want to deploy.
+- **A server:** a VPS with Ubuntu 22.04 or 24.04, or Debian 12 or 13, a public IP address, and ports 80 and 443 free. 1 GB of memory is enough for static sites and single-page apps; take **2 GB or more** for Next.js and Node servers. [More about servers](/docs/servers).
+
+<Callout kind="tip">
+  No server yet? You can run a static site, single-page app or small Node app on the [free
+  sandbox](/docs/sandbox) for 7 days, and skip step 2.
+</Callout>
+
+## 1. Create your account
+
+1. Open **[Sign up](/signup)**. Enter your name, email and a password of at least 10 characters, and click **Create account**. You can also use **Continue with GitHub** on the log-in page.
+2. Confirm your email with the link we send you. It's valid for 24 hours. You can use Selfship before confirming, except for the free sandbox.
+
+## 2. Add your server
+
+1. In the dashboard, open **Servers → Add server**.
+2. Fill in:
+   - **Name:** anything you like, e.g. `hetzner-1`.
+   - **IP address or hostname:** the server's public address, without `http://`.
+   - **SSH port:** usually `22`.
+   - **SSH user:** `root`, or a user with passwordless sudo (`ubuntu` on AWS).
+3. Under access, keep **Generate a key (recommended)** and save.
+4. The server page shows a card **Give Selfship access** with one command. Log in to your server, as the user you entered, with your provider's web console or your own SSH. Run the command; it adds Selfship's public key to `~/.ssh/authorized_keys`.
+5. Click **I've added it, connect**.
+
+Selfship checks the server (operating system, memory, disk, ports), then sets it up: it installs Docker, adds swap on small servers, opens the firewall for SSH, HTTP and HTTPS, and starts the HTTPS proxy. Follow it in the live log. When the status shows **Ready**, the server can take deployments.
+
+<Callout>
+  If a check finds a problem, for example another web server already using port 80, the server shows
+  **Needs attention** with exactly what to fix. Fix it, then click **Check again**.
+</Callout>
+
+## 3. Create a project
+
+1. Open **Projects → New project**.
+2. Click **Connect GitHub**. GitHub asks where to install the Selfship app: choose your account (or an organization) and the repositories Selfship may see.
+3. Back in Selfship, find your repository and click **Import**.
+4. Review the settings. Selfship has read your repository and filled them in: the project type (for example **Next.js**), the install, build and start commands, the Node version and the port. Change anything that's wrong, then click **Create project**.
+
+[How detection works, and every setting](/docs/projects).
+
+## 4. Add environment variables (if your app needs them)
+
+On the project page, open **Environment variables**. Click **Add variable**, or **Paste .env** to add many at once.
+
+Each variable has a scope:
+
+- **Runtime:** for the running app. Most variables, e.g. `DATABASE_URL`.
+- **Build:** only while building.
+- **Build + runtime:** both.
+
+Variables that end up in browser code, like `NEXT_PUBLIC_…` or `VITE_…`, must be available at build time; Selfship selects **Build** for them automatically. [More about variables](/docs/environment-variables).
+
+## 5. Deploy
+
+1. In **Deploy to**, choose your server.
+2. Click **Deploy**.
+
+The deployment page shows each step live: **Clone → Build → Start → Health check → Switch traffic**. The first build takes longer; later builds reuse the cache.
+
+When it's done, the status is **Live**. Click **Visit** to open your app on its HTTPS address. Every app gets a working HTTPS address on the first deploy, even before you add a domain.
+
+<Callout kind="warning">
+  If something fails, nothing changes on your server: whatever was live before stays live. The
+  deployment page shows the failed step, the log, and usually a hint explaining the cause. See
+  [Troubleshooting](/docs/troubleshooting).
+</Callout>
+
+## Next steps
+
+- **Deploy on every push:** turn on **Deploy on every push to `main`** in **Deploy to**. [Deployments](/docs/deployments).
+- **Use your own domain:** [Domains and HTTPS](/docs/domains).
+- **Turn on two-factor authentication:** [Account security](/docs/account-security).

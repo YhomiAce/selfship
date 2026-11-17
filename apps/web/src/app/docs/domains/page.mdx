@@ -1,0 +1,68 @@
+export const metadata = {
+  title: 'Domains and HTTPS',
+  description:
+    'Your app’s automatic addresses, adding your own domain, DNS records and certificates.',
+};
+
+# Domains and HTTPS
+
+Every app is reachable over HTTPS from its first deployment. Certificates come from **Let's Encrypt** and are renewed automatically, by the proxy Selfship runs on your server.
+
+## Automatic addresses
+
+- **Free subdomain:** `<project-name>.<apps domain>`, on Selfship installs that offer free subdomains. It's created at the first deployment and shown with a **Free** badge. If the name is taken, a short code is added (e.g. `shop-1a2b3c`). It's removed when you delete the project.
+- **Temporary address:** every app also gets an address on [sslip.io](https://sslip.io), a public service whose names point at the IP inside them. For example `shop-1a2b3c.203-0-113-10.sslip.io`. It works without any DNS setup, which is why your app has HTTPS straight away.
+
+The project page shows the best address it has: your own domain, else the free subdomain, else the temporary address.
+
+## Adding your own domain
+
+1. Choose a server for the project first; the DNS record must point at it.
+2. Under **Domains**, click **Add domain** and enter the hostname, e.g. `app.example.com` or `example.com`.
+3. Keep **Also add www.example.com (redirects to example.com)** on if you want both. The second name permanently redirects to the one you entered.
+4. Selfship shows the DNS record to create:
+
+   | Type  | Name              | Value            |
+   | ----- | ----------------- | ---------------- |
+   | **A** | `app.example.com` | your server's IP |
+
+5. Create it where you manage your domain's DNS (your registrar or DNS host). Some providers want only the part before your domain as the name, e.g. `app`, or `@` for the domain itself.
+
+Selfship checks DNS every minute; **Check now** checks immediately. Once the record points at your server, the app is updated to answer on the domain (without a rebuild), and the certificate is requested.
+
+<Callout kind="warning">
+  **Using Cloudflare?** Set the record to **DNS only** (grey cloud), not proxied. Selfship's proxy
+  needs to receive the traffic itself to get the certificate.
+</Callout>
+
+<Callout>
+  Remove any **AAAA** (IPv6) record for the name, and any other A record, so every visitor reaches
+  your server.
+</Callout>
+
+## Domain statuses
+
+| Status                  | Meaning                                                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Waiting for DNS**     | The A record doesn't point at your server yet. The message says what Selfship sees instead                            |
+| **Getting certificate** | DNS is right. The app now answers on the domain and Let's Encrypt is issuing the certificate (usually under a minute) |
+| **Active**              | HTTPS works with a valid certificate                                                                                  |
+| **Needs attention**     | No certificate after 10 minutes. The message gives the reason; Selfship keeps retrying                                |
+
+Common reasons a certificate fails:
+
+- **Port 80 is blocked** by a firewall at your provider. Let's Encrypt checks domains over HTTP.
+- A **CAA** DNS record doesn't allow Let's Encrypt.
+- Let's Encrypt's **rate limit**: too many certificates for the same domain recently. It clears by itself.
+
+A domain added before the project's first deployment starts working after you deploy.
+
+## Removing a domain
+
+Click the trash icon next to it. This also removes its www twin, and the app stops answering on it right away. The free subdomain can't be removed; it goes away with the project.
+
+## Rules
+
+- A domain can belong to one Selfship project at a time.
+- Selfship's own domains (like `selfship.dev`, `selfship.app` and `sslip.io`) and their subdomains can't be added.
+- Custom domains aren't available on the [free sandbox](/docs/sandbox).

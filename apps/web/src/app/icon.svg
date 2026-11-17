@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <title>Selfship</title>
+  <!-- Drawn on a 16-pixel grid so it stays sharp in browser tabs (16, 32, 48 px).
+       The large Apple icon (apple-icon.png) uses the same design in more detail. -->
+  <rect width="16" height="16" rx="3.5" fill="#0a0a0a"/>
+  <!-- Main sail and jib, one pixel apart (the mast). -->
+  <path d="M8 2 L13 10 H8 Z" fill="#fff"/>
+  <path d="M7 5 V10 H3 Z" fill="#fff"/>
+  <!-- Hull. -->
+  <path d="M2 11 H14 L12.5 13 H3.5 Z" fill="#fff"/>
+  <!-- Waterline in the "Live" green: shipped. -->
+  <rect x="4" y="14" width="8" height="1" fill="#10b981"/>
+</svg>

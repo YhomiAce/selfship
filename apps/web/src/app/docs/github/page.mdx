@@ -1,0 +1,36 @@
+export const metadata = {
+  title: 'Connecting GitHub',
+  description:
+    'Install the Selfship GitHub App, choose repositories, and what happens when access changes.',
+};
+
+# Connecting GitHub
+
+Selfship reads your code through the **Selfship GitHub App**. You decide which repositories it can see, and you can change that at any time on GitHub.
+
+The app only needs to **read** your repositories' contents. It also receives push notifications, which power [deploy on push](/docs/deployments#deploy-on-push).
+
+## Connect your account
+
+1. Open **Projects → New project**.
+2. Click **Connect GitHub**. To install on an organization rather than your personal account, use **Install on an organization instead**.
+3. On GitHub, choose **All repositories** or **Only select repositories**, and confirm.
+4. You're back in Selfship with **GitHub connected**, and your repositories are listed.
+
+If you install on an organization where you aren't an owner, GitHub sends the request to an owner. You'll see **Installation requested**: once an owner approves it, come back and the repositories appear.
+
+## Choose a repository
+
+On **New project**, pick the GitHub account in the dropdown (or **Add account** to connect another), search for the repository, and click **Import**. Private repositories have a lock icon.
+
+**Missing a repository?** Click **Change repository access on GitHub**, add it to the app's repositories, and come back.
+
+## When access changes
+
+If you uninstall the app, suspend it, or remove a repository from it:
+
+- **Your live app keeps running.** Nothing is removed from your server.
+- **New deployments are blocked.** The project shows **GitHub access removed** (or **GitHub app suspended**) and a **Reconnect GitHub** button. Deploy on push skips the project.
+- **Rollbacks still work.** They reuse an image already on your server and don't need GitHub.
+
+If only one repository was removed, the next deployment fails at **Clone** with a message that Selfship lost access to the repository. Add it back under **GitHub → Settings → Applications → Selfship → Configure**.

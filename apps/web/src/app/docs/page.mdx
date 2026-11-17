@@ -1,0 +1,48 @@
+export const metadata = {
+  title: 'Introduction',
+  description: 'What Selfship is, how it works, and where to start.',
+};
+
+# Introduction
+
+Selfship deploys apps from **GitHub** to **a server you own**: a VPS from Hetzner, DigitalOcean, AWS, Hostinger or anywhere else you can SSH into. You get a one-click deploy flow on your own machine, without handing your app or your bill to a hosting platform.
+
+## How it works
+
+1. **Add a server.** Give Selfship SSH access to an Ubuntu or Debian VPS. It installs Docker and a reverse proxy (Traefik) that handles HTTPS.
+2. **Connect GitHub** and pick a repository.
+3. **Deploy.** Selfship detects the framework and builds the app on your server. It starts the app, checks it's healthy, and only then switches traffic to it.
+
+Every push to the branch you choose can deploy automatically.
+
+<Callout kind="tip">
+  New here? The [Quickstart](/docs/quickstart) takes you from sign-up to a live HTTPS URL in about
+  ten minutes.
+</Callout>
+
+## What you get
+
+| Feature                 | What it does                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| **Framework detection** | Next.js, Node servers, single-page apps, static sites, or your own Dockerfile |
+| **HTTPS by default**    | Every app gets a URL with a certificate from Let's Encrypt                    |
+| **Live build logs**     | Watch each step as it happens, and keep the history                           |
+| **Safe deploys**        | If a new version fails, the version that was live keeps running               |
+| **Build Doctor**        | Plain-language explanations of failed builds, with suggested fixes            |
+
+## What you need
+
+- A **GitHub** account with the repository you want to deploy.
+- A **server**: a VPS with Ubuntu 22.04/24.04 or Debian 12/13 and ports 80 and 443 free. 2 GB of memory builds anything; 1 GB is fine for static sites and single-page apps. See [Servers](/docs/servers). No server yet? Start on the [free sandbox](/docs/sandbox).
+
+## Find your way around
+
+| If you want to…                                             | Read                                                 |
+| ----------------------------------------------------------- | ---------------------------------------------------- |
+| Deploy your first app                                       | [Quickstart](/docs/quickstart)                       |
+| Prepare or connect a server                                 | [Servers](/docs/servers)                             |
+| Check your framework is supported, or change build commands | [Projects and frameworks](/docs/projects)            |
+| Add secrets and configuration                               | [Environment variables](/docs/environment-variables) |
+| Understand deploys, auto-deploy and rollbacks               | [Deployments](/docs/deployments)                     |
+| Use your own domain                                         | [Domains and HTTPS](/docs/domains)                   |
+| Fix a failed deployment                                     | [Troubleshooting](/docs/troubleshooting)             |

@@ -1,0 +1,54 @@
+export const metadata = {
+  title: 'Account security',
+  description: 'Two-factor authentication, recovery codes, password resets and the activity log.',
+};
+
+# Account security
+
+Your Selfship account can deploy to your servers, so protect it well. Turn on two-factor authentication, and check your activity log from time to time.
+
+## Signing in
+
+- **Email and password:** passwords must be at least 10 characters; a short phrase works well.
+- **Continue with GitHub:** signs you in with your GitHub account. If its verified email matches an existing Selfship account, the two are linked.
+
+Sessions last 30 days and are extended while you use Selfship. Resetting your password signs you out everywhere.
+
+### Forgot your password?
+
+Click **Forgot password?** on the log-in page. The reset link is valid for **1 hour**. Accounts created with GitHub can use it to add a password.
+
+## Two-factor authentication
+
+With two-factor authentication on, signing in also needs a 6-digit code from an authenticator app on your phone (Google Authenticator, 1Password, Authy, Microsoft Authenticator…).
+
+### Turning it on
+
+1. Open **Settings → Two-factor authentication → Set up two-factor**.
+2. Scan the QR code with your authenticator app (or type in the key shown under **Can't scan?**).
+3. Enter the 6-digit code from the app and click **Turn on**.
+4. Save your **10 recovery codes**: **Copy** or **Download** them and keep them somewhere safe, like a password manager. They're shown only once. Then click **I've saved them**.
+
+### Signing in with two-factor
+
+After your password (or GitHub), enter the current code from your app. You have 10 minutes. If the code is refused, check that your phone's clock is set automatically: codes depend on the time.
+
+### Lost your phone?
+
+Click **Use a recovery code** on the code page and enter one of your recovery codes. Each code works **once**. Afterwards, create a fresh set with **New recovery codes** in Settings.
+
+Turning two-factor off, or creating new recovery codes, needs a current code.
+
+## Activity log
+
+**Settings → Activity** lists security-relevant actions on your account, newest first, with the time, browser, operating system and IP address:
+
+- sign-ins, failed sign-ins and password resets
+- two-factor turned on or off, new recovery codes, and sign-ins with a recovery code
+- servers added or removed
+- environment variables changed, revealed or deleted (names only, never values)
+- deployments started, cancelled and rolled back
+- domains added or removed
+- Build Doctor fixes applied, and projects deleted
+
+If you see something you didn't do, reset your password and turn on two-factor authentication.

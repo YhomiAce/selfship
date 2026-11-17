@@ -1,4 +1,5 @@
 import path from 'node:path';
+import createMDX from '@next/mdx';
 import type { NextConfig } from 'next';
 
 /** Where the NestJS API listens. The browser never calls it directly. */
@@ -6,6 +7,8 @@ import type { NextConfig } from 'next';
 const API_URL = process.env.API_URL || 'http://localhost:4000';
 
 const nextConfig: NextConfig = {
+  // Docs pages are MDX files (src/app/docs/**/page.mdx).
+  pageExtensions: ['ts', 'tsx', 'mdx'],
   // Docker images use the self-contained server (`node apps/web/server.js`);
   // local `next start` keeps the normal output.
   ...(process.env.NEXT_OUTPUT === 'standalone'
@@ -32,4 +35,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * MDX for the public docs. Plugins are named as strings: Turbopack can't take
+ * JavaScript functions. remark-gfm adds tables; rehype-slug gives headings
+ * ids, used by the "On this page" list and for linking to a section.
+ */
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: ['remark-gfm'],
+    rehypePlugins: ['rehype-slug'],
+  },
+});
+
+export default withMDX(nextConfig);

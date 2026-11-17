@@ -1,0 +1,68 @@
+export const metadata = {
+  title: 'Self-hosting Selfship',
+  description: 'Run the Selfship platform itself on your own machine with Docker Compose.',
+};
+
+# Self-hosting Selfship
+
+Selfship is open source (AGPL-3.0). You can run the whole platform yourself: the dashboard, API, worker and database, on one machine with Docker Compose. Your apps then deploy to whatever servers you add in your own Selfship.
+
+## What you need
+
+- A Linux machine with **Docker** and Docker Compose, at least **2 GB of memory** and 10 GB of disk.
+- A **domain** for the dashboard, e.g. `selfship.example.com`, with an A record pointing at the machine, and ports **80 and 443** open.
+- An **SMTP** account for sign-up and password-reset emails.
+- A **GitHub App**, so users can connect repositories.
+
+## Install
+
+```bash
+git clone https://github.com/YhomiAce/selfship.git && cd selfship
+cp .env.selfhost.example .env.selfhost
+```
+
+Fill in `.env.selfhost`:
+
+| Setting                                 | Value                                                                                                                                          |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SELFSHIP_DOMAIN`                       | Your dashboard domain, without `https://`                                                                                                      |
+| `POSTGRES_PASSWORD`                     | A long random string: `openssl rand -hex 24`                                                                                                   |
+| `ENCRYPTION_KEY`                        | `openssl rand -base64 32`. **Back it up:** without it, stored keys and variables can't be decrypted                                            |
+| `SMTP_*`, `MAIL_FROM`                   | Your email provider's SMTP settings                                                                                                            |
+| `GITHUB_APP_*`, `GITHUB_WEBHOOK_SECRET` | From your GitHub App. Webhook URL: `https://<SELFSHIP_DOMAIN>/api/webhooks/github`; callback URL: `https://<SELFSHIP_DOMAIN>/api/github/setup` |
+
+Then start it:
+
+```bash
+docker compose --env-file .env.selfhost up -d --build
+```
+
+Compose starts Postgres and Redis, runs the database migrations, starts the API, worker and dashboard, and starts Caddy, which gets the HTTPS certificate for your domain. Open `https://<SELFSHIP_DOMAIN>` and sign up.
+
+<Callout kind="tip">
+  Don't want to build from source? Prebuilt images of every commit on `main` are published on
+  GitHub's container registry;
+  [`deploy/compose.yml`](https://github.com/YhomiAce/selfship/blob/main/deploy/compose.yml) runs
+  them.
+</Callout>
+
+## Optional features
+
+| Feature                  | Settings                                                             |
+| ------------------------ | -------------------------------------------------------------------- |
+| Free subdomains for apps | `PLATFORM_APPS_DOMAIN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID` |
+| Build Doctor             | `ANTHROPIC_API_KEY`                                                  |
+| Sign in with GitHub      | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`                           |
+| Error reports            | `SENTRY_DSN`                                                         |
+
+## Operating it
+
+```bash
+docker compose --env-file .env.selfhost logs -f worker     # deployments and server jobs
+git pull && docker compose --env-file .env.selfhost up -d --build   # update (migrations run automatically)
+docker compose --env-file .env.selfhost exec -T postgres pg_dump -U selfship selfship | gzip > backup.sql.gz
+```
+
+For uptime monitoring, point a checker at `https://<SELFSHIP_DOMAIN>/api/health`: it answers 200 while the API, database and Redis are up.
+
+The complete guide, including troubleshooting, is [docs/self-hosting.md](https://github.com/YhomiAce/selfship/blob/main/docs/self-hosting.md) in the repository.

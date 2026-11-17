@@ -1,0 +1,52 @@
+export const metadata = {
+  title: 'Build Doctor',
+  description:
+    'AI explanations of failed builds: what it shows, what it can fix, and what data it uses.',
+};
+
+# Build Doctor
+
+When a build or deployment fails, Build Doctor reads the log and your project's setup and explains, in plain language, **why** it failed and **how to fix it**. It's powered by Anthropic's Claude.
+
+## Hints first, AI second
+
+For well-known problems, Selfship shows a hint straight away, without AI. Examples: a lockfile out of date, the server out of memory, a missing build script, a wrong Node version. Build Doctor runs **automatically when no hint matches**. You can also click **Ask Build Doctor** on any failed deployment.
+
+## What it shows
+
+- A **category**: Code, Dependencies, Settings, Server resources, Platform, Network or Unclear. Also a **confidence** level: low, medium or high.
+- A **summary** and the **root cause**.
+- **From the log:** the lines that show the problem.
+- **How to fix it:** numbered steps.
+- Sometimes a **suggested change** to a file in your repository, as a diff you can apply yourself.
+- **Was this helpful?** 👍 / 👎: your answer helps improve it.
+
+If the same failure happened before (within 30 days), Build Doctor reuses that diagnosis, marked **seen before**.
+
+## Fixes it can apply
+
+- **Settings fixes:** if the fix is a project setting (the port, Node version, install, build or start command, or the output directory), a button applies it. Then click **Deploy again**.
+- **Server fixes, applied automatically:** for problems with the server rather than your code, Selfship fixes the server and deploys again by itself. It can add 2 GB of swap when memory runs out, clear Docker's build cache when the disk is full, or retry after a network error. This happens at most once per failed deployment, and only when Build Doctor is confident. The panel then says **Selfship already fixed this on the server**.
+
+Build Doctor never changes your code.
+
+## What data it uses
+
+To diagnose a failure, Selfship sends Anthropic:
+
+- the failed step, the error and the last 300 lines of the log
+- the project type and build settings, and the package manager
+- your `package.json` and the Dockerfile (yours, or the one Selfship generated)
+- the repository's file and folder names, two levels deep
+- the server's operating system, memory and free disk
+- the **names** and scopes of your environment variables, **never their values**
+
+Before sending, Selfship masks the values of your environment variables in the log. It also removes anything that looks like a secret: private keys, access tokens and API keys, passwords in URLs, and `password=` or `secret=` style settings.
+
+## Turning it off
+
+Each project has **Use AI to diagnose failed builds** under **Deploy to**. Turn it off and failures only get the built-in hints.
+
+## Limits
+
+Each account can get **10 diagnoses per 24 hours**. Reused ("seen before") diagnoses don't count. Build Doctor is available on Selfship installs that have it configured.

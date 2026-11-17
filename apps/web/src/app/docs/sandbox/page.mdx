@@ -1,0 +1,48 @@
+export const metadata = {
+  title: 'Free sandbox',
+  description:
+    'Try Selfship without a server: what runs on the sandbox, its limits, and moving to your own server.',
+};
+
+# Free sandbox
+
+Don't have a server yet? Deploy a project to the **free sandbox**, a shared Selfship server, to try everything out. When you're ready, move the project to your own server in one step.
+
+## What you can run
+
+- **Static sites**, **single-page apps** and **small Node.js servers**.
+- **One sandbox project** per account at a time.
+- Your email address must be **confirmed**.
+
+**Next.js** and **Dockerfile** projects need your own server.
+
+## Using it
+
+In the project's **Deploy to**, choose **Use the free sandbox** (or **Free sandbox (7 days)** in the server list), then **Deploy**. Your app gets its free subdomain with HTTPS.
+
+## How long it lasts
+
+- A project can stay on the sandbox for **7 days**.
+- You can **Extend 7 days** once.
+- A banner on the project shows the removal date.
+
+When time is up, the app is removed from the sandbox. **The project is kept:** its settings, environment variables and deployment history. Choose your own server and deploy to bring it back. A project can't go back to the sandbox after its time is over.
+
+## Limits
+
+Sandbox apps share a server with other people's apps, so each one is contained:
+
+| Limit          | Value                               |
+| -------------- | ----------------------------------- |
+| Memory         | 256 MB                              |
+| CPU            | a quarter of a core                 |
+| Build time     | 10 minutes                          |
+| Requests       | about 50 per second (bursts of 100) |
+| Outgoing email | blocked (ports 25, 465 and 587)     |
+| Custom domains | not available                       |
+
+Sandbox apps can't reach each other. Outgoing HTTPS (calling APIs) works normally.
+
+## Moving to your own server
+
+[Add your server](/docs/servers), choose it in **Deploy to**, and deploy. The sandbox copy keeps running until the deployment on your server succeeds; then it's removed from the sandbox. Custom domains become available as soon as the project is on your server.

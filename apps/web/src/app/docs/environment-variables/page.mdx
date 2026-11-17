@@ -1,0 +1,64 @@
+export const metadata = {
+  title: 'Environment variables',
+  description: 'Add, import and scope environment variables, and how they are stored.',
+};
+
+# Environment variables
+
+Environment variables hold configuration and secrets: database URLs, API keys, feature flags. Set them per project under **Environment variables** on the project page.
+
+<Callout>
+  Changes apply to the **next deployment**. After adding or editing variables, click **Deploy** for
+  the running app to use them.
+</Callout>
+
+## Adding variables
+
+- **Add variable:** type a name and value, choose the scope, click **Add**. If the name already exists, the button says **Replace**.
+- **Paste .env:** paste the contents of a `.env` file. Selfship shows how many variables it found and which ones will replace existing ones, then **Save N variables**.
+
+Each row lets you reveal the value (eye icon), edit it, change its scope, or delete it.
+
+### .env format
+
+`KEY=value` lines, with:
+
+- `export KEY=value` and `# comments`
+- single or double quotes, including values that span several lines
+- in double quotes, escapes like `\n`, `\t` and `\"`
+
+`${OTHER_VARIABLE}` references are **not** expanded. If a name appears twice, the last one wins.
+
+## Scopes: build or runtime
+
+Each variable has a scope:
+
+| Scope               | Available             | Use it for                                                                                  |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------------------- |
+| **Runtime**         | To the running app    | Almost everything: `DATABASE_URL`, API keys, secrets                                        |
+| **Build**           | Only during the build | Settings the build needs, like `CI=false` or `NODE_OPTIONS`                                 |
+| **Build + runtime** | Both                  | Values needed in both places, e.g. a Next.js page that reads the database while being built |
+
+**Front-end frameworks bake some variables into the JavaScript they build:** `NEXT_PUBLIC_…`, `VITE_…`, `REACT_APP_…`, `PUBLIC_…`, `NUXT_PUBLIC_…`, `GATSBY_…`. They must be available at build time, so Selfship selects **Build** for these names automatically.
+
+<Callout kind="warning">
+  Anything baked into front-end code ends up in the page source that every visitor can read. Never
+  put secrets in `NEXT_PUBLIC_` or `VITE_` variables.
+</Callout>
+
+**Projects with their own Dockerfile:** declare each Build variable with an `ARG` line in the Dockerfile, e.g. `ARG NEXT_PUBLIC_API_URL`, before the step that uses it. Docker only passes build values to steps after a matching `ARG`.
+
+**Changing a build-time value needs a new build:** deploy again (a rollback reuses the old build, with its old build-time values).
+
+## Rules
+
+- **Names:** letters, digits and `_`, not starting with a digit, up to 128 characters.
+- **Values:** up to 32 KB.
+- **`PORT` is reserved:** Selfship sets it from the project's port setting.
+
+## How values are kept safe
+
+- Values are **encrypted** before they're stored, and never shown in lists. Revealing a value is recorded in your [activity log](/docs/account-security#activity-log).
+- Values are **masked in build and deploy logs**: if your build prints one, the log shows a mask instead.
+- On your server, values exist in files only while a deployment runs, and are deleted afterwards. They reach your app as normal environment variables.
+- [Build Doctor](/docs/build-doctor) only ever sees variable **names**, never values.

@@ -1,0 +1,89 @@
+export const metadata = {
+  title: 'Deployments',
+  description:
+    'What happens during a deployment, deploying on push, cancelling, redeploying and rolling back.',
+};
+
+# Deployments
+
+A deployment builds one commit of your project and puts it live on your server. Each one keeps its log, so you can always see what happened.
+
+## What happens during a deployment
+
+| Step               | What Selfship does                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| **Queued**         | Waits for its turn. A server runs one build at a time by default                   |
+| **Clone**          | Fetches the commit from GitHub onto your server                                    |
+| **Build**          | Builds a Docker image of your app on your server, using the build-time variables   |
+| **Start**          | Starts the new version **next to** the one that's live, with the runtime variables |
+| **Health check**   | Calls your app's health check path until it answers                                |
+| **Switch traffic** | Sends new requests to the new version, then stops the old one                      |
+| **Live**           | Done                                                                               |
+
+### The health check
+
+Selfship requests `http://<app>:<port><health check path>` every 2 seconds, for up to **2 minutes**. Any response with a status below 500 counts as healthy, so even a 404 page proves the app is up. The path is `/` by default; change it under **Deploy to → Health check path** (e.g. `/api/health`).
+
+If the app exits right after starting, or doesn't answer in time, the deployment fails with the app's last log lines.
+
+### No downtime, and nothing breaks on failure
+
+The new version only receives traffic after it passes the health check. If any step fails, **nothing changes on your server**: the previous version keeps serving, and the deployment shows:
+
+> Failed at "Build". Nothing was changed on the server: what was live before is still live.
+
+Below it you get the error and, usually, a hint that explains the cause. See [Troubleshooting](/docs/troubleshooting).
+
+## Starting a deployment
+
+Click **Deploy** on the project page. The button is disabled, with the reason, when:
+
+- the project has no server yet ("Choose a server below first")
+- the server isn't **Ready**
+- GitHub access was removed ("Reconnect GitHub first")
+- another deployment of this project is running: only one runs at a time
+
+### Deploy on push
+
+In **Deploy to**, turn on **Deploy on every push to `<branch>`**. Every push to that branch starts a deployment of the newest commit.
+
+- If you push several times quickly, the newest commit wins: a deployment still waiting in the queue is replaced, and one already building finishes first.
+- To skip a push, put `[skip deploy]` in the commit message. `[deploy skip]`, `[skip ci]` and `[ci skip]` also work.
+
+## Watching a deployment
+
+The deployment page streams the log live. Each step has a timer, and you can search the log. Values of your environment variables are masked. Logs are kept after the deployment ends.
+
+The project page lists the 30 most recent deployments, with who or what started them: **Manual**, **Push**, **Rollback** or **Settings change**.
+
+## Cancelling
+
+Click **Cancel** on a deployment that's queued or in progress. The version that was live stays live. Once a deployment reaches **Switch traffic** it can't be cancelled any more.
+
+## Redeploying and rolling back
+
+On a past deployment:
+
+- **Redeploy this commit** builds that commit again, with today's settings and variables.
+- **Roll back to this** puts that version live again **without rebuilding**: it takes a few seconds.
+
+Rollbacks are possible to versions that were live before ("Replaced"), as long as their image is still on the server. Selfship keeps the **last 3** images per app. For older versions, use **Redeploy this commit**.
+
+<Callout>
+  A rollback uses the old build with **today's runtime** variables. Build-time values are the ones
+  the old build was made with.
+</Callout>
+
+## Moving a project to another server
+
+Choose the new server in **Deploy to** and deploy. The old copy keeps running until the first deployment on the new server succeeds; then Selfship removes it from the old server.
+
+## Limits
+
+| Limit                    | Value                               |
+| ------------------------ | ----------------------------------- |
+| Clone                    | 10 minutes                          |
+| Build                    | 30 minutes (10 on the free sandbox) |
+| Start and health check   | 2 minutes to answer                 |
+| Saved log                | 5 MB per deployment                 |
+| Images kept for rollback | last 3 per app                      |

@@ -1,0 +1,110 @@
+export const metadata = {
+  title: 'Projects and frameworks',
+  description: 'How Selfship detects your framework, and every build setting you can change.',
+};
+
+# Projects and frameworks
+
+A **project** is one app from one GitHub repository (or one folder of it), deployed to one server. A repository can have several projects, for example an API and a frontend from the same monorepo.
+
+## Creating a project
+
+**Projects → New project → Import** a repository, then review the settings Selfship filled in:
+
+- **Project name:** lowercase letters, numbers and dashes, up to 40 characters. It's used in your app's address.
+- **Branch:** the branch to deploy. By default, the repository's default branch.
+- **Root directory:** leave empty unless the app lives in a subfolder, e.g. `apps/web` in a monorepo. Selfship then builds only that folder.
+
+Selfship reads the repository and shows **Detected &lt;type&gt;** with the reason, for example "Found next in package.json". If you change the branch or folder, it detects again; you can also click **Detect again**.
+
+All of these settings can be changed later under **Build settings**, except the repository.
+
+## Project types
+
+Selfship checks for each type in this order and uses the first match:
+
+| Type                | Detected when                                                                                                                                                 | How it runs                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Dockerfile**      | There's a `Dockerfile` in the root directory                                                                                                                  | Your Dockerfile, as is. The port comes from its first `EXPOSE` (else 3000) |
+| **Next.js**         | `next` is a dependency (and the config doesn't use `output: 'export'`)                                                                                        | `next start` on port 3000                                                  |
+| **Single-page app** | A `package.json` with a front-end build and no server framework: React, Vue, Angular, Svelte, Vite, Create React App, Astro, Parcel, a Next.js static export… | The build output is served by nginx                                        |
+| **Node.js server**  | A `package.json` with a `start` or `start:prod` script, or a `main` file: Express, Fastify, NestJS, Koa, Hono, Nuxt, SvelteKit…                               | Your start command on port 3000                                            |
+| **Static site**     | An `index.html` (or a `public/` folder) and no `package.json`                                                                                                 | Served by nginx as is, no build                                            |
+
+If nothing matches, Selfship asks you to pick a type, or to add a Dockerfile to the repository.
+
+<Callout kind="tip">
+  Already have a Dockerfile? Selfship always uses it, so you control the build completely. For the
+  other types, Selfship writes the Dockerfile for you.
+</Callout>
+
+## Build settings
+
+Which fields appear depends on the type:
+
+| Setting          | Next.js | Node.js | Single-page app |   Static    | Dockerfile |
+| ---------------- | :-----: | :-----: | :-------------: | :---------: | :--------: |
+| Install command  |    ✓    |    ✓    |        ✓        |             |            |
+| Build command    |    ✓    |    ✓    |        ✓        |             |            |
+| Start command    |    ✓    |    ✓    |                 |             |            |
+| Output directory |         |         |        ✓        | Site folder |            |
+| Node version     |    ✓    |    ✓    |        ✓        |             |            |
+| Port             |    ✓    |    ✓    |       80        |     80      |     ✓      |
+
+### Install command
+
+Picked from your package manager and lockfile. With a lockfile, Selfship uses the strict install, so builds are reproducible:
+
+| Package manager | With a lockfile                  | Without        |
+| --------------- | -------------------------------- | -------------- |
+| npm             | `npm ci`                         | `npm install`  |
+| pnpm            | `pnpm install --frozen-lockfile` | `pnpm install` |
+| Yarn 1          | `yarn install --frozen-lockfile` | `yarn install` |
+| Yarn 2+         | `yarn install --immutable`       | `yarn install` |
+| Bun             | `bun install --frozen-lockfile`  | `bun install`  |
+
+The package manager comes from the `packageManager` field in `package.json`, otherwise from the lockfile: `pnpm-lock.yaml`, `bun.lock`, `yarn.lock`, or npm.
+
+<Callout kind="warning">
+  A strict install fails if the lockfile doesn't match `package.json`. Run your package manager
+  locally and commit the updated lockfile, or change the install command to `npm install`.
+</Callout>
+
+### Build and start commands
+
+- **Build:** `<package manager> run build` if your `package.json` has a `build` script.
+- **Start:** for Node.js servers, `start:prod` is preferred over `start`. In NestJS, `start` is `nest start`, which recompiles at every boot, while `start:prod` runs the built code. Without either script, `node <main>`.
+
+### Output directory (single-page apps)
+
+The folder your build writes the site to. Selfship fills it in for common tools:
+
+| Tool                         | Output directory                                    |
+| ---------------------------- | --------------------------------------------------- |
+| Vite, Vue CLI, Astro, Parcel | `dist`                                              |
+| Create React App             | `build`                                             |
+| Angular                      | `dist/<project>/browser` (read from `angular.json`) |
+| Next.js static export        | `out`                                               |
+
+Single-page apps are served with client-side routing: unknown paths return `index.html`, so links like `/settings/profile` work after a refresh. If the output contains a `404.html` (Astro, Next.js export and other static-site generators create one), the site is treated as multi-page instead. `/pricing` serves `pricing.html`, and missing pages get your `404.html` with a real 404 status.
+
+### Node version
+
+18, 20, 22 or 24. Selfship reads `.nvmrc`, `.node-version` or `engines.node` in `package.json`; otherwise it uses **22**.
+
+### Port
+
+The port your app listens on. Selfship passes it to your app as the `PORT` environment variable. Make sure the app listens on `0.0.0.0` (all interfaces), not only `localhost`.
+
+## The environment your app runs in
+
+For every type except Dockerfile, Selfship builds a Docker image based on `node:<version>-alpine`:
+
+- The app runs as the unprivileged `node` user, with `NODE_ENV=production` and `PORT` set.
+- During the build, `CI=true`. Override it with a **Build** variable `CI=false` if your build treats warnings as errors.
+- Next.js also gets `HOSTNAME=0.0.0.0`.
+- `openssl` is installed (Prisma needs it).
+
+## Monorepos
+
+Set the **Root directory** to the app's folder. Selfship builds only that folder, so it must contain its own `package.json` and, ideally, its own lockfile. To deploy two apps from one repository, for example a CMS and a website, create two projects with different root directories.

@@ -1,0 +1,124 @@
+export const metadata = {
+  title: 'Troubleshooting',
+  description: 'Fixes for the most common build, start, server and domain problems.',
+};
+
+# Troubleshooting
+
+When a deployment fails, start with the deployment page: it names the failed step, shows the log, and usually a 💡 hint. If no hint matches, [Build Doctor](/docs/build-doctor) explains the failure. The previous version stays live meanwhile.
+
+Find the step that failed below.
+
+## Clone
+
+**Selfship lost access to the repository.** The GitHub app was uninstalled, or the repository was removed from it. Add it back: **GitHub → Settings → Applications → Selfship → Configure**. See [Connecting GitHub](/docs/github#when-access-changes).
+
+**The commit or branch no longer exists.** It was probably force-pushed away. Deploy the branch again.
+
+**The project folder doesn't exist in this commit.** The **Root directory** setting points at a folder that isn't on this branch.
+
+## Build
+
+### The lockfile is missing or out of date
+
+`npm ci` (and the other strict installs) refuse to install when the lockfile doesn't match `package.json`. Run your package manager locally (`npm install`, `pnpm install`…), commit the updated lockfile and push. Or, under **Build settings**, change the install command to the non-strict one, e.g. `npm install`.
+
+### Peer dependency conflict (ERESOLVE)
+
+npm found incompatible peer dependencies. Fix the versions, or change the install command to `npm install --legacy-peer-deps`.
+
+### Missing script
+
+The build or start command calls a script that isn't in `package.json`. Add the script, or change the command under **Build settings**.
+
+### Type errors that don't happen on your machine
+
+Usually generated code that's missing in a fresh checkout. For example, **Prisma**: add `"postinstall": "prisma generate"` to `package.json`. Also check file name **case**: Linux treats `Header.tsx` and `header.tsx` as different files, while macOS and Windows don't.
+
+### Environment variable not found during the build
+
+The build needs a variable that only has the **Runtime** scope. Change it to **Build + runtime**. Typical cases: Prisma's `DATABASE_URL` when the build runs migrations, and Next.js pages that read data while building. [Scopes](/docs/environment-variables#scopes-build-or-runtime).
+
+### Warnings treated as errors
+
+Older Create React App builds fail on warnings when `CI=true`. Add a **Build** variable `CI` = `false`.
+
+### ERR_OSSL_EVP_UNSUPPORTED
+
+An old build tool on a new Node version. Add a **Build** variable `NODE_OPTIONS` = `--openssl-legacy-provider`, or choose an older **Node version**.
+
+### JavaScript heap out of memory
+
+Node's memory limit is too low for the build. Add a **Build** variable `NODE_OPTIONS` = `--max-old-space-size=1536`, adjusted to your server's memory.
+
+### The server ran out of memory
+
+The build was killed (exit code 137). Use a server with more memory, or add swap. Build Doctor can add 2 GB of swap for you. Servers with less than 2 GB get swap during setup.
+
+### The disk is full
+
+Old images and build cache fill the disk over time. Build Doctor can clear the cache; Selfship also clears it when the disk is 80% full. On very small disks, resize the disk at your provider.
+
+### The output folder is missing
+
+For single-page apps, the **Output directory** must be the folder your build writes to: `dist` for Vite, `build` for Create React App, `out` for a Next.js static export. Check your build's config.
+
+### Private npm packages
+
+The install can't download a private package (E401 or E404). Selfship's generated builds can't authenticate to private registries yet. For now, use your own Dockerfile that sets up `.npmrc` with an `ARG NPM_TOKEN`, and add `NPM_TOKEN` as a **Build** variable.
+
+## Start and health check
+
+### The app exited right after starting
+
+The deployment shows the app's last 30 log lines: the cause is usually there. Common ones:
+
+- a required environment variable is missing, so add it as **Runtime**
+- the database can't be reached (see below)
+- the start command is wrong; it must start the **built** app (for NestJS, `start:prod`)
+
+### The app didn't answer on its port
+
+The app must listen on the port from the `PORT` environment variable, on `0.0.0.0` (all interfaces), not `localhost` or `127.0.0.1`. In Express: `app.listen(process.env.PORT, '0.0.0.0')`.
+
+Also check the **Health check path**: it must exist (any status below 500 counts), and the app must answer within 2 minutes of starting.
+
+### Can't connect to the database
+
+Inside the container, `localhost` means the app itself, not your server or your computer. Use the database's real address. For a managed database (Supabase, Neon, Atlas…), allow your server's IP in its network settings.
+
+### Address already in use (EADDRINUSE)
+
+Something else in the app already uses the port. Make sure the app starts one server, on `PORT`.
+
+## Server
+
+### Couldn't log in to the server
+
+Selfship's key was removed from `~/.ssh/authorized_keys`, or the user changed. Open the server and follow the instructions to give access again.
+
+### Couldn't reach the server
+
+The server is off, or a firewall blocks SSH. Check your provider's firewall or security group allows the SSH port, then click **Check again**.
+
+### Docker isn't running
+
+Open the server and click **Re-run setup**.
+
+### Ports 80/443 are already in use
+
+Another web server (nginx, Apache, Caddy) is running. Stop and disable it, for example `sudo systemctl disable --now nginx`, then **Check again**.
+
+## Domains
+
+### Waiting for DNS for a long time
+
+Check the message under the domain: it says what Selfship sees. The A record must point at your server's IP; remove other A records and any AAAA record. On Cloudflare, use **DNS only** (grey cloud). DNS changes can take a while to spread, depending on your provider's TTL.
+
+### Needs attention: no certificate
+
+Make sure port 80 is open at your provider (Let's Encrypt checks over HTTP), and that no CAA record forbids Let's Encrypt. If Let's Encrypt's rate limit was hit, wait; Selfship retries.
+
+## Still stuck?
+
+Ask Build Doctor on the failed deployment, or open an issue on [GitHub](https://github.com/YhomiAce/selfship/issues) with the failed step and the error from the log. Remove any secrets from the log first.
